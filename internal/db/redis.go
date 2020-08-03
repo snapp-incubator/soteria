@@ -1,17 +1,18 @@
-package redis
+package db
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis"
-	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 )
 
-type ModelHandler struct {
+// RedisModelHandler implements ModelHandler interface
+type RedisModelHandler struct {
 	Client redis.Cmdable
 }
 
-func (rmh ModelHandler) Save(model db.Model) error {
+// Save saves a model in redis
+func (rmh RedisModelHandler) Save(model Model) error {
 	md := model.GetMetadata()
 	pk := model.GetPrimaryKey()
 	key := generateKey(md.ModelName, pk)
@@ -22,7 +23,8 @@ func (rmh ModelHandler) Save(model db.Model) error {
 	return rmh.Client.Set(key, string(value), 0).Err()
 }
 
-func (rmh ModelHandler) Delete(modelName, pk string) error {
+// Save finds and deletes a model from redis
+func (rmh RedisModelHandler) Delete(modelName, pk string) error {
 	key := generateKey(modelName, pk)
 	res, err := rmh.Client.Del(key).Result()
 	if err != nil {
@@ -34,11 +36,12 @@ func (rmh ModelHandler) Delete(modelName, pk string) error {
 	return nil
 }
 
-func (rmh ModelHandler) Get(modelName, pk string, v interface{}) error {
+// Save finds and returns a model from redis
+func (rmh RedisModelHandler) Get(modelName, pk string, v interface{}) error {
 	key := generateKey(modelName, pk)
 	res, err := rmh.Client.Get(key).Result()
 	if err != nil {
-		return nil
+		return err
 	}
 	err = json.Unmarshal([]byte(res), &v)
 	if err != nil {
