@@ -74,6 +74,34 @@ func TestRedisModelHandler_Delete(t *testing.T) {
 	})
 }
 
+<<<<<<< HEAD
+=======
+func TestRedisModelHandler_Update(t *testing.T) {
+	r := newTestRedis()
+	s := RedisModelHandler{Client: r}
+
+	m := MockModel{Name: "test", Value: "test-1"}
+	v, _ := json.Marshal(m)
+
+	err := r.Set("mock-test", v, 0).Err()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("testing successful update", func(t *testing.T) {
+		newModel := MockModel{Name: "test", Value: "test-2"}
+		err = s.Update(newModel)
+		assert.NoError(t, err)
+
+		var updatedModel MockModel
+		err = s.Get("mock", "test", &updatedModel)
+		assert.NoError(t, err)
+
+		assert.Equal(t, newModel, updatedModel)
+	})
+}
+
+>>>>>>> master
 func newTestRedis() *redis.Client {
 	mr, err := miniredis.Run()
 	if err != nil {
@@ -86,7 +114,12 @@ func newTestRedis() *redis.Client {
 }
 
 type MockModel struct {
+<<<<<<< HEAD
 	Name string `json:"name"`
+=======
+	Name  string `json:"name"`
+	Value string `json:"value"`
+>>>>>>> master
 }
 
 func (m MockModel) GetMetadata() MetaData {

@@ -2,16 +2,18 @@ package accounts
 
 import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/accounts"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
-// SignUp is for creating new users
-func SignUp(username, password, userType string) error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MaxCost)
+// SignUp creates a user with the given information in database
+func SignUp(username, password, userType string) *accounts.Error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return accounts.CreateError(accounts.PasswordHashGenerationFailure, err.Error())
 	}
+
 	user := User{
 		MetaData: db.MetaData{
 			ModelName:    "user",
@@ -22,5 +24,9 @@ func SignUp(username, password, userType string) error {
 		Password: hash,
 		Type:     userType,
 	}
-	return ModelHandler.Save(user)
+	if err := ModelHandler.Save(user); err != nil {
+		return accounts.CreateError(accounts.DatabaseSaveFailure, err.Error())
+	}
+
+	return nil
 }

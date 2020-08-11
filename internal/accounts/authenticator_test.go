@@ -265,6 +265,10 @@ func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
 	return nil
 }
 
+func (rmh MockModelHandler) Update(model db.Model) error {
+	return nil
+}
+
 func getPublicKey(user string) (*rsa.PublicKey, error) {
 	var fileName string
 	switch user {
