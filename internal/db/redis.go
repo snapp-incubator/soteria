@@ -50,6 +50,25 @@ func (rmh RedisModelHandler) Get(modelName, pk string, v interface{}) error {
 	return nil
 }
 
+func (rmh RedisModelHandler) Update(model Model) error {
+	md := model.GetMetadata()
+	pk := model.GetPrimaryKey()
+
+	key := generateKey(md.ModelName, pk)
+
+	value, err := json.Marshal(model)
+	if err != nil {
+		return err
+	}
+
+	pipeline := rmh.Client.Pipeline()
+	pipeline.Del(key)
+	pipeline.Set(key, string(value), 0)
+	_, err = pipeline.Exec()
+
+	return err
+}
+
 func generateKey(modelName, pk string) string {
 	return fmt.Sprintf("%v-%v", modelName, pk)
 }
