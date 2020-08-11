@@ -5,20 +5,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRestApi(port int) {
+func setupRouter() *gin.Engine {
 	router := gin.Default()
 
-	accounts := router.Group("/accounts")
+	a := router.Group("/accounts")
 	{
-		accounts.POST("/", UserCreate)
-		accounts.GET("/:username", UserRead)
-		accounts.PUT("/:username", UserUpdate)
-		accounts.DELETE("/:username", UserDelete)
+		a.POST("", CreateAccount)
+
+		authorizedRoutes := a.Use(accountsBasicAuth())
+		{
+			authorizedRoutes.GET("/:username", ReadAccount)
+			authorizedRoutes.PUT("/:username", UpdateAccount)
+			authorizedRoutes.DELETE("/:username", DeleteAccount)
+		}
 	}
 
 	router.POST("/auth", Auth)
 	router.POST("/acl", ACL)
 	router.POST("/token", Token)
 
-	router.Run(fmt.Sprintf(":%v", port))
+	return router
+}
+
+func RunRestApi(port int) error {
+	router := setupRouter()
+	return router.Run(fmt.Sprintf(":%d", port))
 }

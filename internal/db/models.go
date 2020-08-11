@@ -8,6 +8,7 @@ type ModelHandler interface {
 	Save(model Model) error
 	Delete(modelName, pk string) error
 	Get(modelName, pk string, v interface{}) error
+	Update(model Model) error
 }
 
 type Model interface {
