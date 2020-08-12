@@ -3,15 +3,9 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
 )
 
-type Core struct {
-	Authenticator *accounts.Authenticator
-}
-
-func setupRouter(c *Core) *gin.Engine {
-
+func setupRouter() *gin.Engine {
 	router := gin.Default()
 
 	a := router.Group("/accounts")
@@ -25,14 +19,14 @@ func setupRouter(c *Core) *gin.Engine {
 		}
 	}
 
-	router.POST("/auth", c.Auth)
-	router.POST("/acl", c.ACL)
-	router.POST("/token", c.Token)
+	router.POST("/auth", Auth)
+	router.POST("/acl", ACL)
+	router.POST("/token", Token)
 
 	return router
 }
 
-func RunRestApi(c *Core, port int) error {
-	router := setupRouter(c)
+func RunRestApi(port int) error {
+	router := setupRouter()
 	return router.Run(fmt.Sprintf(":%d", port))
 }

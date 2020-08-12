@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"net/http"
 )
 
@@ -13,7 +14,7 @@ type aclRequest struct {
 	Topic    string `form:"topic"`
 }
 
-func (c *Core) ACL(ctx *gin.Context) {
+func ACL(ctx *gin.Context) {
 	request := &aclRequest{}
 	err := ctx.ShouldBind(request)
 	if err != nil {
@@ -27,8 +28,7 @@ func (c *Core) ACL(ctx *gin.Context) {
 	if len(tokenString) == 0 {
 		tokenString = request.Password
 	}
-
-	ok, err := c.Authenticator.Acl(request.Access, tokenString, request.Topic)
+	ok, err := app.GetInstance().Authenticator.Acl(request.Access, tokenString, request.Topic)
 	if err != nil || !ok {
 		ctx.String(http.StatusUnauthorized, "request is not authorized")
 		return

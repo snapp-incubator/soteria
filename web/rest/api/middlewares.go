@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"github.com/gin-gonic/gin"
 	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
-	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/accounts"
+	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"strings"
 )
 

@@ -3,7 +3,6 @@ package accounts
 import (
 	"crypto/rsa"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
-	"net"
 	"regexp"
 	"time"
 )
@@ -23,7 +22,7 @@ type User struct {
 	Username                string         `json:"username"`
 	Password                []byte         `json:"password"`
 	Type                    string         `json:"type"`
-	IPs                     []net.IP       `json:"ips"`
+	IPs                     []string         `json:"ips"`
 	Secret                  string         `json:"secret"`
 	PublicKey               *rsa.PublicKey `json:"public_key"`
 	TokenExpirationDuration time.Duration  `json:"token_expiration_duration"`
@@ -61,5 +60,10 @@ func (u User) CheckTopicAllowance(topicMan TopicMan, issuer, sub, topic, accessT
 
 // CheckEndpointAllowance checks whether the user is allowed to use a Herald endpoint or not
 func (u User) CheckEndpointAllowance(endpoint string) bool {
+	for _, rule := range u.Rules {
+		if rule.Endpoint == endpoint && rule.AccessType == Pub {
+			return true
+		}
+	}
 	return false
 }

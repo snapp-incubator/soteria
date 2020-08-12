@@ -6,6 +6,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"gitlab.snapp.ir/dispatching/snappids"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"golang.org/x/crypto/bcrypt"
 	"regexp"
 	"time"
 )
@@ -127,6 +130,38 @@ func (a Authenticator) Token(accessType, username, secret string) (tokenString s
 		return "", fmt.Errorf("could not sign the token. err; %v", err)
 	}
 	return tokenString, nil
+}
+
+func (a Authenticator) EndPointBasicAuth(username, password, endpoint string) (bool, error) {
+	var user User
+	if err := ModelHandler.Get("user", username, &user); err != nil {
+		return false, errors.CreateError(errors.DatabaseGetFailure, err.Error())
+	}
+
+	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(password)); err != nil {
+		return false, errors.CreateError(errors.WrongUsernameOrPassword, "wrong password")
+	}
+	ok := user.CheckEndpointAllowance(endpoint)
+	if !ok {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (a Authenticator) EndpointIPAuth(username string, ip string, endpoint string) (bool, error) {
+	var user User
+	if err := ModelHandler.Get("user", username, &user); err != nil {
+		return false, errors.CreateError(errors.DatabaseGetFailure, err.Error())
+	}
+	ok := acl.ValidateIP(ip, user.IPs, []string{})
+	if !ok {
+		return false, errors.CreateError(errors.IPMisMatch, "ip mismatch")
+	}
+	ok = user.CheckEndpointAllowance(endpoint)
+	if !ok {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (a Authenticator) validateAccessType(accessType string) bool {
