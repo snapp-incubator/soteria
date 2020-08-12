@@ -28,7 +28,8 @@ func init() {
 }
 
 func TestCreateAccount(t *testing.T) {
-	router := setupRouter()
+	c := &Core{Authenticator:&accounts.Authenticator{}}
+	router := setupRouter(c)
 
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -78,7 +79,8 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func TestReadAccount(t *testing.T) {
-	router := setupRouter()
+	c := &Core{Authenticator:&accounts.Authenticator{}}
+	router := setupRouter(c)
 
 	_ = accounts.SignUp("user", "password", "passenger")
 
@@ -108,7 +110,8 @@ func TestReadAccount(t *testing.T) {
 }
 
 func TestUpdateAccount(t *testing.T) {
-	router := setupRouter()
+	c := &Core{Authenticator:&accounts.Authenticator{}}
+	router := setupRouter(c)
 
 	_ = accounts.SignUp("user", "password", "passenger")
 
@@ -139,7 +142,8 @@ func TestUpdateAccount(t *testing.T) {
 }
 
 func TestDeleteAccount(t *testing.T) {
-	router := setupRouter()
+	c := &Core{Authenticator:&accounts.Authenticator{}}
+	router := setupRouter(c)
 
 	_ = accounts.SignUp("user", "password", "passenger")
 
