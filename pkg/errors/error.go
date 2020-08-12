@@ -1,4 +1,4 @@
-package accounts
+package errors
 
 import (
 	"fmt"

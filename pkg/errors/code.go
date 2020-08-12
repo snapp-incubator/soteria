@@ -1,8 +1,8 @@
-package accounts
+package errors
 
 import "net/http"
 
-// Code is the type of the error returned to user in REST API
+// Code is the type of the error returned to user in api
 type Code string
 
 const (
@@ -16,6 +16,7 @@ const (
 	DatabaseDeleteFailure              = "database_delete_failure"
 	PasswordHashGenerationFailure      = "password_hash_generation_failure"
 	UsernameMismatch                   = "username_mismatch"
+	IPMisMatch                         = "ip_mismatch"
 )
 
 // Message will return detailed error information
@@ -41,6 +42,8 @@ func (e Code) Message() string {
 		return "could not generate hash from password"
 	case UsernameMismatch:
 		return "provided username does not match with username in path"
+	case IPMisMatch:
+		return "ip is not authorized"
 	default:
 		return ""
 	}
@@ -68,6 +71,8 @@ func (e Code) HttpStatusCode() int {
 	case PasswordHashGenerationFailure:
 		return http.StatusInternalServerError
 	case UsernameMismatch:
+		return http.StatusUnauthorized
+	case IPMisMatch:
 		return http.StatusUnauthorized
 	default:
 		return http.StatusInternalServerError

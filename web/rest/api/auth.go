@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"net/http"
 )
 
@@ -11,7 +12,7 @@ type authRequest struct {
 	Password string `form:"password"`
 }
 
-func (c *Core) Auth(ctx *gin.Context) {
+func Auth(ctx *gin.Context) {
 	request := &authRequest{}
 	err := ctx.ShouldBind(request)
 	if err != nil {
@@ -28,7 +29,7 @@ func (c *Core) Auth(ctx *gin.Context) {
 	if len(tokenString) == 0 {
 		ctx.String(http.StatusBadRequest, "")
 	}
-	ok, err := c.Authenticator.Auth(tokenString)
+	ok, err := app.GetInstance().Authenticator.Auth(tokenString)
 	if err != nil || !ok {
 		ctx.String(http.StatusUnauthorized, "request is not authorized")
 		return

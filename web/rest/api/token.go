@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"net/http"
 )
 
@@ -12,14 +13,14 @@ type TokenRequest struct {
 	ClientSecret string `json:"client_secret" form:"client_secret" query:"client_secret"`
 }
 
-func (c *Core) Token(ctx *gin.Context) {
+func Token(ctx *gin.Context) {
 	request := &TokenRequest{}
 	err := ctx.Bind(request)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, "bad request")
 		return
 	}
-	tokenString, err := c.Authenticator.Token(request.GrantType, request.ClientID, request.ClientSecret)
+	tokenString, err := app.GetInstance().Authenticator.Token(request.GrantType, request.ClientID, request.ClientSecret)
 	if err != nil {
 		ctx.String(http.StatusUnauthorized, "unauthorized request")
 		return

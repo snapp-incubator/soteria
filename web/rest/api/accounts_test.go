@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
-	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/accounts"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -28,8 +28,7 @@ func init() {
 }
 
 func TestCreateAccount(t *testing.T) {
-	c := &Core{Authenticator:&accounts.Authenticator{}}
-	router := setupRouter(c)
+	router := setupRouter()
 
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -43,8 +42,8 @@ func TestCreateAccount(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 
 		expectedResponse := Response{
-			Code:    accountsInfo.SuccessfulOperation,
-			Message: fmt.Sprintf("%s: []", accountsInfo.SuccessfulOperation.Message()),
+			Code:    errors.SuccessfulOperation,
+			Message: fmt.Sprintf("%s: []", errors.SuccessfulOperation.Message()),
 			Data:    nil,
 		}
 
@@ -74,13 +73,12 @@ func TestCreateAccount(t *testing.T) {
 		err = json.Unmarshal(resBody, &actualResponse)
 		assert.NoError(t, err)
 
-		assert.Equal(t, accountsInfo.BadRequestPayload, string(actualResponse.Code))
+		assert.Equal(t, errors.BadRequestPayload, string(actualResponse.Code))
 	})
 }
 
 func TestReadAccount(t *testing.T) {
-	c := &Core{Authenticator:&accounts.Authenticator{}}
-	router := setupRouter(c)
+	router := setupRouter()
 
 	_ = accounts.SignUp("user", "password", "passenger")
 
@@ -101,7 +99,7 @@ func TestReadAccount(t *testing.T) {
 		err = json.Unmarshal(resBody, &actualResponse)
 		assert.NoError(t, err)
 
-		assert.Equal(t, accountsInfo.SuccessfulOperation, actualResponse.Code)
+		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
 		user := actualResponse.Data.(map[string]interface{})
 		assert.Equal(t, "user", user["username"])
@@ -110,8 +108,7 @@ func TestReadAccount(t *testing.T) {
 }
 
 func TestUpdateAccount(t *testing.T) {
-	c := &Core{Authenticator:&accounts.Authenticator{}}
-	router := setupRouter(c)
+	router := setupRouter()
 
 	_ = accounts.SignUp("user", "password", "passenger")
 
@@ -134,7 +131,7 @@ func TestUpdateAccount(t *testing.T) {
 		err = json.Unmarshal(resBody, &actualResponse)
 		assert.NoError(t, err)
 
-		assert.Equal(t, accountsInfo.SuccessfulOperation, actualResponse.Code)
+		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
 		_, err = accounts.Info("user", "password2")
 		assert.Nil(t, err)
@@ -142,8 +139,7 @@ func TestUpdateAccount(t *testing.T) {
 }
 
 func TestDeleteAccount(t *testing.T) {
-	c := &Core{Authenticator:&accounts.Authenticator{}}
-	router := setupRouter(c)
+	router := setupRouter()
 
 	_ = accounts.SignUp("user", "password", "passenger")
 
@@ -163,7 +159,7 @@ func TestDeleteAccount(t *testing.T) {
 		err = json.Unmarshal(resBody, &actualResponse)
 		assert.NoError(t, err)
 
-		assert.Equal(t, accountsInfo.SuccessfulOperation, actualResponse.Code)
+		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
 		_, err = accounts.Info("user", "password2")
 		assert.NotNil(t, err)

@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
-	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/accounts"
-	"net"
+	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 )
 
 // Response is the response structure of the REST API
@@ -78,12 +77,7 @@ func UpdateAccount(ctx *gin.Context) {
 		return
 	}
 
-	ips := make([]net.IP, len(p.IPs))
-	for i := range p.IPs {
-		ips[i] = net.ParseIP(p.IPs[i])
-	}
-
-	err := accounts.Update(username, password, p.NewPassword, ips)
+	err := accounts.Update(username, password, p.NewPassword, p.IPs)
 	if err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
