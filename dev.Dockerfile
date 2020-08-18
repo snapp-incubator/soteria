@@ -1,4 +1,4 @@
 FROM golang:alpine
 ADD . /go/src/app
 WORKDIR /go/src/app
-CMD ["go", "run", "main.go", "serve"]
+CMD ["go", "run", "cmd/soteria/soteria.go", "serve"]
