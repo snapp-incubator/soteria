@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/base64"
 	"github.com/gin-gonic/gin"
-	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
+	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"strings"
 )
@@ -30,7 +30,7 @@ func accountsBasicAuth() gin.HandlerFunc {
 			return
 		}
 
-		_, err := accounts.Info(pair[0], pair[1])
+		_, err := app.GetInstance().AccountsService.Info(pair[0], pair[1])
 		if err != nil {
 			ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 			return

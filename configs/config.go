@@ -6,10 +6,11 @@ import (
 )
 
 type AppConfig struct {
-	Redis  *RedisConfig
-	Jwt    *JwtConfig
-	Logger *LoggerConfig
-	Port   int `default:"9999"`
+	Redis    *RedisConfig
+	Jwt      *JwtConfig
+	Logger   *LoggerConfig
+	HttpPort int `default:"9999" split_words:"true"`
+	GrpcPort int `default:"50051" split_words:"true"`
 }
 
 type RedisConfig struct {

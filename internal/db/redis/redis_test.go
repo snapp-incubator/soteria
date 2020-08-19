@@ -1,10 +1,11 @@
-package db
+package redis
 
 import (
 	"encoding/json"
 	"github.com/alicebob/miniredis/v2"
 	"github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
+	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"testing"
 	"time"
 )
@@ -74,7 +75,6 @@ func TestRedisModelHandler_Delete(t *testing.T) {
 	})
 }
 
-
 func TestRedisModelHandler_Update(t *testing.T) {
 	r := newTestRedis()
 	s := RedisModelHandler{Client: r}
@@ -116,8 +116,8 @@ type MockModel struct {
 	Value string `json:"value"`
 }
 
-func (m MockModel) GetMetadata() MetaData {
-	return MetaData{
+func (m MockModel) GetMetadata() db.MetaData {
+	return db.MetaData{
 		ModelName:    "mock",
 		DateCreated:  time.Time{},
 		DateModified: time.Time{},

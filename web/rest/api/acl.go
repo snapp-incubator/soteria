@@ -3,15 +3,16 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"net/http"
 )
 
 type aclRequest struct {
-	Access   string `form:"access"`
-	Token    string `form:"token"`
-	Username string `from:"username"`
-	Password string `form:"password"`
-	Topic    string `form:"topic"`
+	Access   user.AccessType `form:"access"`
+	Token    string          `form:"token"`
+	Username string          `from:"username"`
+	Password string          `form:"password"`
+	Topic    string          `form:"topic"`
 }
 
 func ACL(ctx *gin.Context) {

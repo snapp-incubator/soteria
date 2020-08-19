@@ -8,7 +8,8 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
 	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
-	"gitlab.snapp.ir/dispatching/soteria/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	redisModel "gitlab.snapp.ir/dispatching/soteria/internal/db/redis"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"io/ioutil"
 	"net/http"
@@ -24,7 +25,11 @@ func init() {
 	client := redis.NewClient(&redis.Options{
 		Addr: mr.Addr(),
 	})
-	accounts.ModelHandler = db.RedisModelHandler{Client: client}
+	app.GetInstance().SetAccountsService(&accounts.Service{
+		Handler: redisModel.RedisModelHandler{
+			Client: client,
+		},
+	})
 }
 
 func TestCreateAccount(t *testing.T) {
@@ -80,7 +85,7 @@ func TestCreateAccount(t *testing.T) {
 func TestReadAccount(t *testing.T) {
 	router := setupRouter()
 
-	_ = accounts.SignUp("user", "password", "passenger")
+	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
 
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -110,7 +115,7 @@ func TestReadAccount(t *testing.T) {
 func TestUpdateAccount(t *testing.T) {
 	router := setupRouter()
 
-	_ = accounts.SignUp("user", "password", "passenger")
+	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
 
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -133,7 +138,7 @@ func TestUpdateAccount(t *testing.T) {
 
 		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
-		_, err = accounts.Info("user", "password2")
+		_, err = app.GetInstance().AccountsService.Info("user", "password2")
 		assert.Nil(t, err)
 	})
 }
@@ -141,7 +146,7 @@ func TestUpdateAccount(t *testing.T) {
 func TestDeleteAccount(t *testing.T) {
 	router := setupRouter()
 
-	_ = accounts.SignUp("user", "password", "passenger")
+	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
 
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -161,7 +166,7 @@ func TestDeleteAccount(t *testing.T) {
 
 		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
-		_, err = accounts.Info("user", "password2")
+		_, err = app.GetInstance().AccountsService.Info("user", "password2")
 		assert.NotNil(t, err)
 	})
 }
