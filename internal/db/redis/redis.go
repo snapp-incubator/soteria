@@ -1,9 +1,10 @@
-package db
+package redis
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis"
+	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 )
 
 // RedisModelHandler implements ModelHandler interface
@@ -12,7 +13,7 @@ type RedisModelHandler struct {
 }
 
 // Save saves a model in redis
-func (rmh RedisModelHandler) Save(model Model) error {
+func (rmh RedisModelHandler) Save(model db.Model) error {
 	md := model.GetMetadata()
 	pk := model.GetPrimaryKey()
 	key := generateKey(md.ModelName, pk)
@@ -50,7 +51,7 @@ func (rmh RedisModelHandler) Get(modelName, pk string, v interface{}) error {
 	return nil
 }
 
-func (rmh RedisModelHandler) Update(model Model) error {
+func (rmh RedisModelHandler) Update(model db.Model) error {
 	md := model.GetMetadata()
 	pk := model.GetPrimaryKey()
 

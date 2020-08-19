@@ -1,4 +1,4 @@
-package accounts
+package authenticator
 
 import (
 	"crypto/rsa"
@@ -6,8 +6,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"gitlab.snapp.ir/dispatching/snappids"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 	"regexp"
 	"time"
@@ -16,27 +17,10 @@ import (
 // Authenticator is responsible for Acl/Auth/Token of users
 type Authenticator struct {
 	PrivateKeys        map[string]*rsa.PrivateKey
-	AllowedAccessTypes []string
+	AllowedAccessTypes []user.AccessType
 	ModelHandler       db.ModelHandler
 	SnappIDsManager    *snappids.Manager
 }
-
-// TopicMan is a function that takes issuer and subject as inputs and generates topic name
-type TopicMan func(issuer, sub string) string
-
-const (
-	// Issuers
-	Driver     = "0"
-	Passenger  = "1"
-	ThirdParty = "100"
-
-	// Access Types
-	Sub    = "1"
-	Pub    = "2"
-	PubSub = "3"
-
-	ClientCredentials = "client_credentials"
-)
 
 // Auth check user authentication by checking the user's token
 func (a Authenticator) Auth(tokenString string) (bool, error) {
@@ -49,12 +33,12 @@ func (a Authenticator) Auth(tokenString string) (bool, error) {
 			return nil, fmt.Errorf("could not found iss in token claims")
 		}
 		issuer := fmt.Sprintf("%v", claims["iss"])
-		user := User{}
-		err = a.ModelHandler.Get("user", issuer, &user)
+		u := user.User{}
+		err = a.ModelHandler.Get("user", issuer, &u)
 		if err != nil {
 			return false, fmt.Errorf("error getting issuer from db err: %v", err)
 		}
-		key := user.PublicKey
+		key := u.PublicKey
 		if key == nil {
 			return nil, fmt.Errorf("cannot find issuer %v public key", issuer)
 		}
@@ -67,7 +51,7 @@ func (a Authenticator) Auth(tokenString string) (bool, error) {
 }
 
 // ACL check a user access to a topic
-func (a Authenticator) Acl(accessType, tokenString, topic string) (bool, error) {
+func (a Authenticator) Acl(accessType user.AccessType, tokenString, topic string) (bool, error) {
 	if !a.validateAccessType(accessType) {
 		return false, fmt.Errorf("requested access type %s is invalid", accessType)
 	}
@@ -84,17 +68,17 @@ func (a Authenticator) Acl(accessType, tokenString, topic string) (bool, error) 
 		}
 		issuer := fmt.Sprintf("%v", claims["iss"])
 		sub := fmt.Sprintf("%v", claims["sub"])
-		user := User{}
-		err := a.ModelHandler.Get("user", primaryKey(issuer, sub), &user)
+		u := user.User{}
+		err := a.ModelHandler.Get("user", primaryKey(user.Issuer(issuer), sub), &u)
 		if err != nil {
 			return false, fmt.Errorf("error getting user from db err: %v", err)
 		}
-		key := user.PublicKey
+		key := u.PublicKey
 		if key == nil {
 			return nil, fmt.Errorf("cannot find user %v public key", issuer)
 		}
 		topicMan := a.getTopicMan(topic)
-		if ok := user.CheckTopicAllowance(topicMan, issuer, sub, topic, accessType); !ok {
+		if ok := u.CheckTopicAllowance(topicMan, user.Issuer(issuer), sub, topic, accessType); !ok {
 			return nil, fmt.Errorf("issuer %v with sub %v is not allowed to %v on topic %v", issuer, sub, accessType, topic)
 		}
 		return key, nil
@@ -106,26 +90,26 @@ func (a Authenticator) Acl(accessType, tokenString, topic string) (bool, error) 
 }
 
 // Token function issues JWT token by taking client credentials
-func (a Authenticator) Token(accessType, username, secret string) (tokenString string, err error) {
-	if accessType == ClientCredentials {
-		accessType = Sub
+func (a Authenticator) Token(accessType user.AccessType, username, secret string) (tokenString string, err error) {
+	if accessType == user.ClientCredentials {
+		accessType = user.Sub
 	}
-	user := User{}
-	err = a.ModelHandler.Get("user", username, &user)
+	u := user.User{}
+	err = a.ModelHandler.Get("user", username, &u)
 	if err != nil {
 		return "", fmt.Errorf("could not get user. err: %v", err)
 	}
-	if user.Secret != secret {
+	if u.Secret != secret {
 		return "", fmt.Errorf("invlaid secret %v", secret)
 	}
 
 	claims := jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(user.TokenExpirationDuration).Unix(),
-		Issuer:    ThirdParty,
+		ExpiresAt: time.Now().Add(u.TokenExpirationDuration).Unix(),
+		Issuer:    user.ThirdParty,
 		Subject:   username,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	tokenString, err = token.SignedString(a.PrivateKeys[ThirdParty])
+	tokenString, err = token.SignedString(a.PrivateKeys[user.ThirdParty])
 	if err != nil {
 		return "", fmt.Errorf("could not sign the token. err; %v", err)
 	}
@@ -133,15 +117,15 @@ func (a Authenticator) Token(accessType, username, secret string) (tokenString s
 }
 
 func (a Authenticator) EndPointBasicAuth(username, password, endpoint string) (bool, error) {
-	var user User
-	if err := ModelHandler.Get("user", username, &user); err != nil {
+	var u user.User
+	if err := a.ModelHandler.Get("user", username, &u); err != nil {
 		return false, errors.CreateError(errors.DatabaseGetFailure, err.Error())
 	}
 
-	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword(u.Password, []byte(password)); err != nil {
 		return false, errors.CreateError(errors.WrongUsernameOrPassword, "wrong password")
 	}
-	ok := user.CheckEndpointAllowance(endpoint)
+	ok := u.CheckEndpointAllowance(endpoint)
 	if !ok {
 		return false, nil
 	}
@@ -149,22 +133,22 @@ func (a Authenticator) EndPointBasicAuth(username, password, endpoint string) (b
 }
 
 func (a Authenticator) EndpointIPAuth(username string, ip string, endpoint string) (bool, error) {
-	var user User
-	if err := ModelHandler.Get("user", username, &user); err != nil {
+	var u user.User
+	if err := a.ModelHandler.Get("user", username, &u); err != nil {
 		return false, errors.CreateError(errors.DatabaseGetFailure, err.Error())
 	}
-	ok := acl.ValidateIP(ip, user.IPs, []string{})
+	ok := acl.ValidateIP(ip, u.IPs, []string{})
 	if !ok {
 		return false, errors.CreateError(errors.IPMisMatch, "ip mismatch")
 	}
-	ok = user.CheckEndpointAllowance(endpoint)
+	ok = u.CheckEndpointAllowance(endpoint)
 	if !ok {
 		return false, nil
 	}
 	return true, nil
 }
 
-func (a Authenticator) validateAccessType(accessType string) bool {
+func (a Authenticator) validateAccessType(accessType user.AccessType) bool {
 	for _, allowedAccessType := range a.AllowedAccessTypes {
 		if allowedAccessType == accessType {
 			return true
@@ -173,17 +157,17 @@ func (a Authenticator) validateAccessType(accessType string) bool {
 	return false
 }
 
-func primaryKey(issuer, sub string) string {
-	if issuer == Passenger || issuer == Driver {
-		return issuer
+func primaryKey(issuer user.Issuer, sub string) string {
+	if issuer == user.Passenger || issuer == user.Driver {
+		return string(issuer)
 	}
 	return sub
 }
 
-func (a Authenticator) getTopicMan(topic string) TopicMan {
+func (a Authenticator) getTopicMan(topic string) user.TopicMan {
 	matched, _ := regexp.Match(`(\w+)-event-(\w*\d*|\d*\w*)`, []byte(topic))
 	if matched {
-		return func(issuer, sub string) string {
+		return func(issuer user.Issuer, sub string) string {
 			id, _ := a.SnappIDsManager.DecodeHashID(sub, toAudience(issuer))
 			ch, _ := a.SnappIDsManager.CreateChannelName(id, toAudience(issuer))
 			return ch
@@ -191,7 +175,7 @@ func (a Authenticator) getTopicMan(topic string) TopicMan {
 	}
 	matched, _ = regexp.Match(`snapp/driver/(\w*\d*|\d*\w*)/location`, []byte(topic))
 	if matched {
-		return func(issuer, sub string) string {
+		return func(issuer user.Issuer, sub string) string {
 			ch, _ := a.SnappIDsManager.CreateDriverLocationChannelName(sub)
 			return ch
 		}
@@ -199,13 +183,13 @@ func (a Authenticator) getTopicMan(topic string) TopicMan {
 	return nil
 }
 
-func toAudience(issuer string) snappids.Audience {
+func toAudience(issuer user.Issuer) snappids.Audience {
 	switch issuer {
-	case Passenger:
+	case user.Passenger:
 		return snappids.PassengerAudience
-	case Driver:
+	case user.Driver:
 		return snappids.DriverAudience
-	case ThirdParty:
+	case user.ThirdParty:
 		return snappids.ThirdPartyAudience
 	default:
 		return -1

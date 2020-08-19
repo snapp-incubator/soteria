@@ -1,4 +1,4 @@
-package accounts
+package authenticator
 
 import (
 	"crypto/rsa"
@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.snapp.ir/dispatching/snappids"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"testing"
@@ -22,13 +23,13 @@ func TestAuthenticator_Auth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	key, err := getPrivateKey(ThirdParty)
+	key, err := getPrivateKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
 	authenticator := Authenticator{
 		PrivateKeys: map[string]*rsa.PrivateKey{
-			ThirdParty: key,
+			user.ThirdParty: key,
 		},
 		ModelHandler: MockModelHandler{},
 	}
@@ -46,22 +47,22 @@ func TestAuthenticator_Auth(t *testing.T) {
 }
 
 func TestAuthenticator_Token(t *testing.T) {
-	key, err := getPrivateKey(ThirdParty)
+	key, err := getPrivateKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
-	pk, err := getPublicKey(ThirdParty)
+	pk, err := getPublicKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
 	authenticator := Authenticator{
 		PrivateKeys: map[string]*rsa.PrivateKey{
-			ThirdParty: key,
+			user.ThirdParty: key,
 		},
 		ModelHandler: MockModelHandler{},
 	}
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
-		tokenString, err := authenticator.Token(ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
+		tokenString, err := authenticator.Token(user.ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return pk, nil
@@ -72,7 +73,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		assert.Equal(t, "100", claims["iss"].(string))
 	})
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
-		tokenString, err := authenticator.Token(ClientCredentials, "snappbox", "invalid secret")
+		tokenString, err := authenticator.Token(user.ClientCredentials, "snappbox", "invalid secret")
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return pk, nil
 		})
@@ -82,7 +83,7 @@ func TestAuthenticator_Token(t *testing.T) {
 }
 
 func TestAuthenticator_Acl(t *testing.T) {
-	key, err := getPrivateKey(ThirdParty)
+	key, err := getPrivateKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,9 +97,9 @@ func TestAuthenticator_Acl(t *testing.T) {
 	}
 	authenticator := Authenticator{
 		PrivateKeys: map[string]*rsa.PrivateKey{
-			ThirdParty: key,
+			user.ThirdParty: key,
 		},
-		AllowedAccessTypes: []string{Pub, Sub},
+		AllowedAccessTypes: []user.AccessType{user.Pub, user.Sub},
 		ModelHandler:       MockModelHandler{},
 		SnappIDsManager: snappids.NewEMQManager(map[snappids.Audience]string{
 			snappids.DriverAudience: "12345678901234567890123456789012",
@@ -107,29 +108,29 @@ func TestAuthenticator_Acl(t *testing.T) {
 		}),
 	}
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.Acl(PubSub, tokenString, "test")
+		ok, err := authenticator.Acl(user.PubSub, tokenString, "test")
 		assert.Error(t, err)
 		assert.False(t, ok)
 		assert.Equal(t, "requested access type 3 is invalid", err.Error())
 	})
 	t.Run("testing acl with invalid token", func(t *testing.T) {
-		ok, err := authenticator.Acl(Pub, invalidTokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(user.Pub, invalidTokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
 		assert.False(t, ok)
 		assert.Error(t, err)
 		assert.Equal(t, "illegal base64 data at input byte 37", err.Error())
 	})
 	t.Run("testing acl with valid inputs", func(t *testing.T) {
-		ok, err := authenticator.Acl(Sub, tokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(user.Sub, tokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 	t.Run("testing acl with invalid topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(Sub, tokenString, "driver-event-5ab8f6e552c4423fc8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(user.Sub, tokenString, "driver-event-5ab8f6e552c4423fc8d38f9f38ca4e2b")
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.Acl(Pub, tokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(user.Pub, tokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
@@ -138,10 +139,10 @@ func TestAuthenticator_Acl(t *testing.T) {
 
 func TestAuthenticator_validateAccessType(t *testing.T) {
 	type fields struct {
-		AllowedAccessTypes []string
+		AllowedAccessTypes []user.AccessType
 	}
 	type args struct {
-		accessType string
+		accessType user.AccessType
 	}
 	tests := []struct {
 		name   string
@@ -151,56 +152,56 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 	}{
 		{
 			name:   "#1 testing with no allowed access type",
-			fields: fields{AllowedAccessTypes: []string{}},
-			args:   args{accessType: Sub},
+			fields: fields{AllowedAccessTypes: []user.AccessType{}},
+			args:   args{accessType: user.Sub},
 			want:   false,
 		},
 		{
 			name:   "#2 testing with no allowed access type",
-			fields: fields{AllowedAccessTypes: []string{}},
-			args:   args{accessType: Pub},
+			fields: fields{AllowedAccessTypes: []user.AccessType{}},
+			args:   args{accessType: user.Pub},
 			want:   false,
 		},
 		{
 			name:   "#3 testing with no allowed access type",
-			fields: fields{AllowedAccessTypes: []string{}},
-			args:   args{accessType: PubSub},
+			fields: fields{AllowedAccessTypes: []user.AccessType{}},
+			args:   args{accessType: user.PubSub},
 			want:   false,
 		},
 		{
 			name:   "#4 testing with one allowed access type",
-			fields: fields{AllowedAccessTypes: []string{Pub}},
-			args:   args{accessType: Pub},
+			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub}},
+			args:   args{accessType: user.Pub},
 			want:   true,
 		},
 		{
 			name:   "#5 testing with one allowed access type",
-			fields: fields{AllowedAccessTypes: []string{Pub}},
-			args:   args{accessType: Sub},
+			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub}},
+			args:   args{accessType: user.Sub},
 			want:   false,
 		},
 		{
 			name:   "#6 testing with two allowed access type",
-			fields: fields{AllowedAccessTypes: []string{Pub, Sub}},
-			args:   args{accessType: Sub},
+			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub, user.Sub}},
+			args:   args{accessType: user.Sub},
 			want:   true,
 		},
 		{
 			name:   "#7 testing with two allowed access type",
-			fields: fields{AllowedAccessTypes: []string{Pub, Sub}},
-			args:   args{accessType: Pub},
+			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub, user.Sub}},
+			args:   args{accessType: user.Pub},
 			want:   true,
 		},
 		{
 			name:   "#8 testing with two allowed access type",
-			fields: fields{AllowedAccessTypes: []string{Pub, Sub}},
-			args:   args{accessType: PubSub},
+			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub, user.Sub}},
+			args:   args{accessType: user.PubSub},
 			want:   false,
 		},
 		{
 			name:   "#9 testing with three allowed access type",
-			fields: fields{AllowedAccessTypes: []string{Pub, Sub, PubSub}},
-			args:   args{accessType: PubSub},
+			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub, user.Sub, user.PubSub}},
+			args:   args{accessType: user.PubSub},
 			want:   true,
 		},
 	}
@@ -227,36 +228,36 @@ func (rmh MockModelHandler) Delete(modelName, pk string) error {
 }
 
 func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
-	key0, _ := getPublicKey(Driver)
-	key1, _ := getPublicKey(Passenger)
-	key100, _ := getPublicKey(ThirdParty)
+	key0, _ := getPublicKey(user.Driver)
+	key1, _ := getPublicKey(user.Passenger)
+	key100, _ := getPublicKey(user.ThirdParty)
 	switch pk {
-	case Passenger:
-		*v.(*User) = User{
+	case string(user.Passenger):
+		*v.(*user.User) = user.User{
 			MetaData:  db.MetaData{},
-			Username:  Passenger,
-			Type:      EMQUser,
+			Username:  user.Passenger,
+			Type:      user.EMQUser,
 			PublicKey: key1,
 		}
-	case Driver:
-		*v.(*User) = User{
+	case string(user.Driver):
+		*v.(*user.User) = user.User{
 			MetaData:  db.MetaData{},
-			Username:  Driver,
-			Type:      EMQUser,
+			Username:  string(user.Driver),
+			Type:      user.EMQUser,
 			PublicKey: key0,
-			Rules: []Rule{{
+			Rules: []user.Rule{{
 				UID:          1,
 				Endpoint:     "",
 				TopicPattern: `(\w+)-event-(\w*\d*|\d*\w*)`,
-				AccessType:   Sub,
+				AccessType:   user.Sub,
 			}},
 		}
 	case "snappbox":
-		*v.(*User) = User{
+		*v.(*user.User) = user.User{
 			MetaData:                db.MetaData{},
 			Username:                "snappbox",
 			Password:                getSamplePassword(),
-			Type:                    HeraldUser,
+			Type:                    user.HeraldUser,
 			PublicKey:               key100,
 			Secret:                  "KJIikjIKbIYVGj)YihYUGIB&",
 			TokenExpirationDuration: time.Hour * 72,
@@ -269,14 +270,14 @@ func (rmh MockModelHandler) Update(model db.Model) error {
 	return nil
 }
 
-func getPublicKey(user string) (*rsa.PublicKey, error) {
+func getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
 	var fileName string
-	switch user {
-	case Passenger:
+	switch u {
+	case user.Passenger:
 		fileName = "../../test/1.test.pem"
-	case Driver:
+	case user.Driver:
 		fileName = "../../test/1.test.pem"
-	case ThirdParty:
+	case user.ThirdParty:
 		fileName = "../../test/100.test.pem"
 	default:
 		return nil, fmt.Errorf("invalid user, public key not found")
@@ -292,10 +293,10 @@ func getPublicKey(user string) (*rsa.PublicKey, error) {
 	return publicKey, nil
 }
 
-func getPrivateKey(user string) (*rsa.PrivateKey, error) {
+func getPrivateKey(u string) (*rsa.PrivateKey, error) {
 	var fileName string
-	switch user {
-	case ThirdParty:
+	switch u {
+	case user.ThirdParty:
 		fileName = "../../test/100.test.private.pem"
 	default:
 		return nil, fmt.Errorf("invalid user, private key not found")

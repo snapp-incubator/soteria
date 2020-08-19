@@ -2,11 +2,13 @@ package app
 
 import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
+	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"sync"
 )
 
 type app struct {
-	Authenticator *accounts.Authenticator
+	Authenticator   *authenticator.Authenticator
+	AccountsService *accounts.Service
 }
 
 var singleton *app
@@ -19,6 +21,10 @@ func GetInstance() *app {
 	return singleton
 }
 
-func (a *app) SetAuthenticator(authenticator *accounts.Authenticator) {
+func (a *app) SetAuthenticator(authenticator *authenticator.Authenticator) {
 	a.Authenticator = authenticator
+}
+
+func (a *app) SetAccountsService(service *accounts.Service) {
+	a.AccountsService = service
 }

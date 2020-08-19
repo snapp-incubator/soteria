@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func setupRouter() *gin.Engine {
@@ -26,7 +27,9 @@ func setupRouter() *gin.Engine {
 	return router
 }
 
-func RunRestApi(port int) error {
-	router := setupRouter()
-	return router.Run(fmt.Sprintf(":%d", port))
+func RestServer(port int) *http.Server {
+	return &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: setupRouter(),
+	}
 }
