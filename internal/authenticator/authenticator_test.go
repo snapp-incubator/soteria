@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/assert"
-	"gitlab.snapp.ir/dispatching/snappids"
+	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"golang.org/x/crypto/bcrypt"
@@ -95,17 +95,24 @@ func TestAuthenticator_Acl(t *testing.T) {
 	if err != nil {
 		t.Fatal(t, err)
 	}
+
+	hid := &snappids.HashIDSManager{
+		Salts: map[snappids.Audience]string{
+			snappids.DriverAudience: "12345678901234567890123456789012",
+		},
+		Lengths: map[snappids.Audience]int{
+			snappids.DriverAudience: 15,
+		},
+	}
+
 	authenticator := Authenticator{
 		PrivateKeys: map[string]*rsa.PrivateKey{
 			user.ThirdParty: key,
 		},
 		AllowedAccessTypes: []user.AccessType{user.Pub, user.Sub},
 		ModelHandler:       MockModelHandler{},
-		SnappIDsManager: snappids.NewEMQManager(map[snappids.Audience]string{
-			snappids.DriverAudience: "12345678901234567890123456789012",
-		}, map[snappids.Audience]int{
-			snappids.DriverAudience: 15,
-		}),
+		EMQTopicManager:    snappids.NewEMQManager(hid),
+		HashIDSManager:     hid,
 	}
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
 		ok, err := authenticator.Acl(user.PubSub, tokenString, "test")
