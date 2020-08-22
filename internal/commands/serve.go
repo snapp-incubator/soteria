@@ -28,7 +28,7 @@ func serveRun(cmd *cobra.Command, args []string) {
 
 	rClient, err := redis.NewRedisClient(cfg.Redis)
 	if err != nil {
-		log.Fatal("could not create redis client: %w", err)
+		log.Fatalf("could not create redis client: %v", err)
 	}
 
 	app.GetInstance().SetAccountsService(&accounts.Service{
