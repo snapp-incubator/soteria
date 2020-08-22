@@ -3,10 +3,12 @@ package app
 import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/metrics"
 	"sync"
 )
 
 type app struct {
+	Metrics         metrics.Metrics
 	Authenticator   *authenticator.Authenticator
 	AccountsService *accounts.Service
 }
@@ -23,6 +25,10 @@ func GetInstance() *app {
 
 func (a *app) SetAuthenticator(authenticator *authenticator.Authenticator) {
 	a.Authenticator = authenticator
+}
+
+func (a *app) SetMetrics(m metrics.Metrics) {
+	a.Metrics = m
 }
 
 func (a *app) SetAccountsService(service *accounts.Service) {
