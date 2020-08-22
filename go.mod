@@ -15,7 +15,8 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.1 // indirect
 	github.com/stretchr/testify v1.5.1
-	gitlab.snapp.ir/dispatching/snappids v1.2.0
+	gitlab.snapp.ir/dispatching/snappids v1.3.0
+	gitlab.snapp.ir/dispatching/snappids/v2 v2.0.2
 	go.uber.org/zap v1.15.0
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c // indirect

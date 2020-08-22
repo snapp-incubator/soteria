@@ -4,7 +4,7 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"gitlab.snapp.ir/dispatching/snappids"
+	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
@@ -19,7 +19,8 @@ type Authenticator struct {
 	PrivateKeys        map[string]*rsa.PrivateKey
 	AllowedAccessTypes []user.AccessType
 	ModelHandler       db.ModelHandler
-	SnappIDsManager    *snappids.Manager
+	EMQTopicManager    *snappids.EMQTopicManager
+	HashIDSManager     *snappids.HashIDSManager
 }
 
 // Auth check user authentication by checking the user's token
@@ -165,19 +166,20 @@ func primaryKey(issuer user.Issuer, sub string) string {
 }
 
 func (a Authenticator) getTopicMan(topic string) user.TopicMan {
-	matched, _ := regexp.Match(`(\w+)-event-(\w*\d*|\d*\w*)`, []byte(topic))
+	matched, _ := regexp.Match(`(\w+)-event-[a-zA-Z0-9]+`, []byte(topic))
 	if matched {
 		return func(issuer user.Issuer, sub string) string {
-			id, _ := a.SnappIDsManager.DecodeHashID(sub, toAudience(issuer))
-			ch, _ := a.SnappIDsManager.CreateChannelName(id, toAudience(issuer))
-			return ch
+			id, _ := a.HashIDSManager.DecodeHashID(sub, toAudience(issuer))
+			ch, _ := a.EMQTopicManager.CreateCabEventTopic(id, toAudience(issuer))
+			return string(ch)
 		}
 	}
-	matched, _ = regexp.Match(`snapp/driver/(\w*\d*|\d*\w*)/location`, []byte(topic))
+	matched, _ = regexp.Match(`snapp/driver/[a-zA-Z0-9]+/location`, []byte(topic))
 	if matched {
 		return func(issuer user.Issuer, sub string) string {
-			ch, _ := a.SnappIDsManager.CreateDriverLocationChannelName(sub)
-			return ch
+			id, _ := a.HashIDSManager.DecodeHashID(sub, toAudience(issuer))
+			ch, _ := a.EMQTopicManager.CreateLocationTopic(id, toAudience(issuer))
+			return string(ch)
 		}
 	}
 	return nil
