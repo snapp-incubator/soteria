@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: ${SERVICE_NAME}-configmap
+objects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: ${SERVICE_NAME}-jwt-keys
+      labels:
+        app.snappcloud.io/name: ${SERVICE_NAME}
+        app.snappcloud.io/instance: ${SERVICE_NAME}-${CI_COMMIT_REF_SLUG}
+        app.snappcloud.io/version: ${CI_COMMIT_REF_SLUG}
+        app.snappcloud.io/managed-by: dispatching
+        app.snappcloud.io/created-by: ${CREATED_BY}
+        app: ${SERVICE_NAME}
+    data:
+    SOTERIA_PORT: "9999"
+    SOTERIA_REDIS_ADDRESS: "${REDIS_ADDR}"
+    SOTERIA_REDIS_POOL_SIZE: "10"
+    SOTERIA_REDIS_MAX_RETRIES: "0"
+    SOTERIA_REDIS_READ_TIMEOUT: "3s"
+    SOTERIA_REDIS_POOL_TIMEOUT: "4s"
+    SOTERIA_REDIS_MIN_RETRY_BACKOFF: "8ms"
+    SOTERIA_REDIS_MAX_RETRY_BACKOFF: "512ms"
+    SOTERIA_REDIS_IDLE_TIMEOUT: "300s"
+    SOTERIA_REDIS_IDLE_CHECK_FREQUENCY: "60s"
+    SOTERIA_REDIS_SET_MEMBER_EXP_TIME: "300s"
+    SOTERIA_LOGGER_LEVEL: "${LOG_LEVEL}"
+    SOTERIA_LOGGER_SENTRY_ENABLED: "false"
+    SOTERIA_LOGGER_SENTRY_DSN: ""
+    SOTERIA_LOGGER_SENTRY_TIMEOUT: "500ms"
+    SOTERIA_JWK_KEY_PATH: ${JWT_KEY_PATH}
+    100.private.pem: ${THIRD_PARTY_JWT_PRIVATE_KEY}
+
+parameters:
+  - name: SERVICE_NAME
+    displayName: Service name
+    required: true
+    value: "soteria"
+  - name: CREATED_BY
+    displayName: Created By
+    required: true
+    value: mozart
+  - name: CI_COMMIT_REF_SLUG
+    displayName: Commit Ref Slug
+    required: true
+    value: "qe"
+  - name: LOG_LEVEL
+    value: "INFO"
+    displayName: Log Level
+    description: How much log do you want? (DEBUG|INFO|WARN|ERROR|OFF)
+  - name: JWT_KEY_PATH
+    value: "/jwt_pems/""
+    displayName: Private Key Path
+    description: Private key Path
+    required: true
+  - name: REDIS_ADDR
+    required: true
+    value: "rediscentral:6379"
+  - name: THIRD_PARTY_JWT_PRIVATE_KEY
+    displayName: Third Party JWT Private Key
+    required: true
+    value: |-
+      -----BEGIN RSA PRIVATE KEY-----
+      MIICWwIBAAKBgQCTxwVGmWzJNOaZnBRL+9/V1Mc8OWWzUDxlG2kL+0WxHh8/+76n
+      gIvp7YsHHxUadR0iY6NkzLgFv+sBkKh523Nx0YtuGgmGuuVTaD27G2inwgFDabUs
+      AKISBbn6d6jwlkfk3D+O6h5pdLqoI64Zq/NPmD0oWsupn2HVhMSjFbE6dwIDAQAB
+      AoGAJDRGHp3IASNsu4V5k4QJuqF+jkqhl+S4Zyzn939/+3ydu1c5xl+/53fC7+O1
+      j93RXXN7vF5LV11FfgSqwe/5wDEcAtyLXWPCHtLB1CIYFfqHxgwOQm4gQSyOgBnP
+      hMccyv0VCDK23+Mk37lLkuON6xXMC8+IUq5UW/aadxkeqoECQQDU9Z5IFCmp3Ibs
+      hJXx/x+ZQI+gLj0hh71pQEO2zqhu19i+M62KKnDb7k2OtK9IJR2ucU+YE3SXGShh
+      1sPmgfVfAkEAsaTtZ1oZmszOs5TPYhs2e7LKLPNADZ36GVsG2h1FHVX+LyNkwk/E
+      pn+FV3Dd1vkzxG/a3znEKz+2BJiz4vF56QJATUxKA4euB8XQA5Gsi4Y7Bfl1KIMg
+      FUeb7NQyv+wLHxChz4gaeYgmJu48oIvdA6bVOzhN17lYHHA5RCocOVL6qQJAdHdT
+      6nmo5dO3BQfgO0rqGolqgbPtX8AeE3eZc3DTOluBrbf/vGF95UcfzedCmkmBxh0r
+      m0SNN2mq1TKkZXq52QJAIjxhG7spkOSZJQnVBA9TfLYZFM/aUzDpLxflvFAuJuqJ
+      l+PFsbek2Zl6fgy294dXRvQhp1PJryngDaXTBiWK6g==
+      -----END RSA PRIVATE KEY-----
