@@ -34,7 +34,6 @@ objects:
     SOTERIA_LOGGER_SENTRY_ENABLED: "false"
     SOTERIA_LOGGER_SENTRY_DSN: ""
     SOTERIA_LOGGER_SENTRY_TIMEOUT: "500ms"
-    SOTERIA_JWK_KEY_PATH: "${JWT_KEY_PATH}"
     SOTERIA_ALLOWED_ACCESS_TYPES: "sub,pub"
     
     
@@ -46,11 +45,6 @@ parameters:
   value: "INFO"
   displayName: Log Level
   description: How much log do you want? (DEBUG|INFO|WARN|ERROR|OFF)
-- name: JWT_KEY_PATH
-  displayName: Private Key Path
-  description: Private key Path
-  value: "/jwt_pems/""
-  required: true
 - name: REDIS_ADDR
   required: true
   value: "rediscentral:6379"
