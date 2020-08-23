@@ -62,6 +62,8 @@ objects:
             envFrom:
               - secretRef:
                   name: "${SERVICE_NAME}-auth-env"
+              - configMapRef:
+                name: "${SERVICE_NAME}-env"
             env:
               - name: LOG_LEVEL
                 value: "${LOG_LEVEL}"
@@ -85,22 +87,9 @@ objects:
                 subPath: 100.pem
                 readOnly: true
           volumes:
-            - name: "${SERVICE_NAME}-passenger-keys"
-              secret:
-                secretName: passengeroauth-keys
-                items:
-                - key: passenger-public.pem
-                  path: "1.pem"
-            - name: "${SERVICE_NAME}-driver-keys"
-              secret:
-                secretName: driveroauth-keys
-                items:
-                - key: driver-public.pem
-                  path: "0.pem"
             - name: "${SERVICE_NAME}-3rd-party-keys"
               configMap:
                 name: ${SERVICE_NAME}-jwt-keys
-
             # - name: "readiness-check"
             #   emptyDir: {}
           dnsPolicy: ClusterFirst
