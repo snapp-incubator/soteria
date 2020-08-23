@@ -1,0 +1,271 @@
+image: registry.snapp.tech/docker/golang:1.11.4-alpine3.8
+
+stages:
+  - pre-compile
+  - compile
+  - test
+  - build
+  - release
+  - deploy
+
+variables:
+  BUILD_PATH: "./"
+  OKD_TEH1_CLUSTER_ADDRESS: "okd.private.teh-1.snappcloud.io"
+  OKD_TEH2_CLUSTER_ADDRESS: "okd.private.teh-2.snappcloud.io"
+  OKD_TEH1_REGISTRY: 'registry.apps.private.teh-1.snappcloud.io'
+  OKD_TEH2_REGISTRY: 'registry.apps.private.teh-2.snappcloud.io'
+  OKD_SERVICE_NAME: 'soteria'
+  PROJECT_STAGING: 'realtime-staging'
+  PROJECT_PRODUCTION: 'realtime-production'
+  PROJECT_MOZART: 'mozart'
+  PORT: '9999'
+
+cache:
+  paths:
+    - /apt-cache
+    - /go/src/github.com
+    - /go/src/golang.org
+    - /go/src/google.golang.org
+    - /go/src/gopkg.in
+
+
+code-generator:
+  stage: pre-compile
+  image:
+    name: namely/protoc-all
+    entrypoint: [""]
+  script:
+    - entrypoint.sh -d ./web/grpc/contracts -l go -o ./web/grpc/contracts --with-gateway
+  artifacts:
+    paths:
+      - ./web/grpc/contracts
+    expire_in: 1 week
+  cache:
+    paths:
+      - ./web/grpc/contracts
+
+.git_template: &git
+  before_script:
+    - git config --global url.git@gitlab.snapp.ir:.insteadOf https://gitlab.snapp.ir/
+    - echo "$GITLAB_CI_INTERNAL_PRIVATE_KEY" > /root/.ssh/id_rsa
+    - chmod 0600 /root/.ssh/id_rsa
+    - go env -w GOPRIVATE="gitlab.snapp.ir/dispatching","gitlab.snapp.ir/snapp-sdks"
+
+compile:
+  <<: *git
+  image: registry.snapp.tech/docker/golang:1.13.5-alpine3.10
+  stage: compile
+  variables:
+    HTTP_PROXY: ${SNAPP_HTTP_PROXY}
+    HTTPS_PROXY: ${SNAPP_HTTPS_PROXY}
+    no_proxy: ${SNAPP_NOPROXY}
+    GOOS: "linux"
+    GOARCH: "amd64"
+    CGO_ENABLED: 0
+  script:
+    - go mod vendor -v
+    - go build -mod vendor -v -o ${BUILD_PATH}/${CI_PROJECT_NAME} cmd/soteria/soteria.go
+  cache:
+    paths:
+      - vendor/
+  artifacts:
+    name: "$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG"
+    paths:
+      - ${BUILD_PATH}/${CI_PROJECT_NAME}
+    expire_in: 1 week
+
+
+unit_tests:
+  <<: *git
+  stage: test
+  image: registry.snapp.tech/docker/golang:1.13.5-alpine3.10
+  coverage: '/total:\s*\(statements\)\s*([\d.]+)%/'
+  variables:
+    http_proxy: ${SNAPP_HTTP_PROXY}
+    https_proxy: ${SNAPP_HTTP_PROXY}
+    no_proxy: ${SNAPP_NOPROXY}
+  cache:
+    policy: pull
+    paths:
+      - vendor/
+  script:
+    - go test -gcflags=-l -v -coverprofile .coverage.out.tmp ./...
+    - cat .coverage.out.tmp | grep -v "mock.go" > .coverage.out
+    - rm -rf .coverage.out.tmp
+    - go tool cover -func .coverage.out
+  dependencies:
+    - code-generator
+    - compile
+
+build:
+  image: docker:latest
+  stage: build
+  variables:
+    HTTP_PROXY: ${SNAPP_HTTP_PROXY}
+    HTTPS_PROXY: ${SNAPP_HTTPS_PROXY}
+    no_proxy: ${SNAPP_NOPROXY}
+  script:
+    - export CURRENT_DATETIME=$(TZ=Asia/Tehran date '+%FT%T')
+    - docker build --build-arg BUILD_DATE=$CURRENT_DATETIME --build-arg VCS_REF=${CI_COMMIT_SHA} --build-arg BUILD_VERSION=${CI_COMMIT_REF_SLUG} -t ${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG} .
+  after_script:
+    - docker save -o ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}.tar ${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}
+  artifacts:
+    name: "docker-image-$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG"
+    paths:
+      - ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}.tar
+    expire_in: 1 week
+  dependencies:
+    - code-generator
+    - compile
+
+.release_template: &release_job_definition
+  image: docker:latest
+  stage: release
+  before_script:
+    - docker info
+    - docker login -u ${CONTAINER_REGISTRY_USERNAME} -p ${CONTAINER_REGISTRY_PASSWORD} ${CONTAINER_REGISTRY_ADDRESS}
+    - docker load --input ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}.tar
+    - docker tag ${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG} ${CONTAINER_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
+  script:
+    - docker push ${CONTAINER_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
+  dependencies:
+    - build
+
+
+release:staging:
+  <<: *release_job_definition
+  variables:
+    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
+    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_STAGING/$CI_PROJECT_NAME"
+    CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+    CONTAINER_REGISTRY_PASSWORD: "$OKD_STAGING_TOKEN"
+  only:
+    - master
+    - tags
+    - branches
+
+release:mozart:
+  <<: *release_job_definition
+  variables:
+    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
+    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_MOZART/$CI_PROJECT_NAME"
+    CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+    CONTAINER_REGISTRY_PASSWORD: "$OKD_MOZART_TOKEN"
+  only:
+    - master
+    - tags
+    - branches
+  when: manual
+
+release:production:teh-1:
+  <<: *release_job_definition
+  variables:
+    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
+    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_PRODUCTION/$CI_PROJECT_NAME"
+    CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+    CONTAINER_REGISTRY_PASSWORD: "$OKD_PRODUCTION_TOKEN_TEH1"
+  only:
+    - tags
+
+release:production:teh-2:
+  <<: *release_job_definition
+  variables:
+    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH2_REGISTRY"
+    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH2_REGISTRY/$PROJECT_PRODUCTION/$CI_PROJECT_NAME"
+    CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+    CONTAINER_REGISTRY_PASSWORD: "$OKD_PRODUCTION_TOKEN_TEH2"
+  only:
+    - tags
+
+
+
+.deploy_template: &deploy_job_definition
+  image: openshift/origin-cli:v3.10
+  stage: deploy
+  variables:
+    HOST: "soteria"
+  before_script:
+    - oc version
+    - oc login https://${DEPLOY_ADDRESS} --token=${DEPLOY_TOKEN}
+    - oc project ${DEPLOY_PROJECT}
+    - |
+      oc process -f .okd/ConfigMap.yaml \
+        --param THIRD_PARTY_JWT_PRIVATE_KEY= ${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY} \
+        --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}"  | oc apply -f -
+      oc process -f .okd/Secret.yaml \
+        --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}" \
+        --param PASSENGER_HASH_SALT="${DEPLOY_PASSENGER_SALT_DEV}" \
+        --param PASSENGER_HASH_MIN_LENGTH="15" \
+        --param DRIVER_HASH_SALT="${DEPLOY_DRIVER_SALT_DEV}" \
+        --param REDIS_ADDR="${DEPLOY_REDIS_ADDR}" \
+        --param DRIVER_HASH_MIN_LENGTH="15" | oc apply -f -
+    - oc process -f .okd/AutoScaler.yaml | oc apply -f -
+    - oc process -f .okd/Route.yaml --param APP_HOST=${HOST} --param PORT=${PORT} --param SERVICE_NAME=${OKD_SERVICE_NAME} | oc apply -f -
+    - oc process -f .okd/Service.yaml --param PORT=${PORT} --param SERVICE_NAME=${OKD_SERVICE_NAME} | oc apply -f -
+  script:
+    - oc rollout latest dc/${OKD_SERVICE_NAME}
+  environment:
+    name: staging
+    url: http://${OKD_SERVICE_NAME}-staging.apps.private.teh-1.snappcloud.io
+  only:
+    - master
+    - tags
+    - branches
+  when: manual
+
+
+
+
+deploy:staging:
+  <<: *deploy_job_definition
+  variables:
+    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
+    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_PRODUCTION/$CI_PROJECT_NAME"
+    DEPLOY_ADDRESS: "${OKD_TEH1_CLUSTER_ADDRESS}"
+    DEPLOY_PROJECT: "${PROJECT_STAGING}"
+    DEPLOY_TOKEN: "${OKD_STAGING_TOKEN}"
+    DEPLOY_PASSENGER_SALT_DEV: "${PASSENGER_SALT_DEV}"
+    Deploy_DRIVER_SALT_DEV: "${DRIVER_SALT_DEV}"
+    DEPLOY_SERVICE_NAME: "${OKD_SERVICE_NAME}"
+    DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY_MOZART}"
+    DEPLOY_REDIS_ADDR: "soteria-staging-redis:6379"
+
+
+deploy:production:teh_1:
+  <<: *deploy_job_definition
+  variables:
+    HOST: "soteria"
+    MIN_REPLICA_COUNT: 2
+    MAX_REPLICA_COUNT: 80
+    CPU_UTILIZATION: 80
+    METRICS_ENABLED: "true"
+    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
+    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_PRODUCTION/$CI_PROJECT_NAME"
+    DEPLOY_ADDRESS: "${OKD_TEH1_CLUSTER_ADDRESS}"
+    DEPLOY_PROJECT: "${PROJECT_PRODUCTION}"
+    DEPLOY_TOKEN: "$OKD_PRODUCTION_TOKEN_TEH2"
+    DEPLOY_PASSENGER_SALT_DEV: "${PASSENGER_SALT_DEV}"
+    Deploy_DRIVER_SALT_DEV: "${DRIVER_SALT_DEV}"
+    DEPLOY_SERVICE_NAME: ${OKD_SERVICE_NAME}
+    DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
+    #DEPLOY_REDIS_ADDR:
+
+deploy:production:teh_2:
+  <<: *deploy_job_definition
+  variables:
+    HOST: "soteria"
+    MIN_REPLICA_COUNT: 2
+    MAX_REPLICA_COUNT: 80
+    CPU_UTILIZATION: 80
+    METRICS_ENABLED: "true"
+    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH2_REGISTRY"
+    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH2_REGISTRY/$PROJECT_PRODUCTION/$CI_PROJECT_NAME"
+    DEPLOY_ADDRESS: "${OKD_TEH2_CLUSTER_ADDRESS}"
+    DEPLOY_PROJECT: "${PROJECT_PRODUCTION}"
+    DEPLOY_TOKEN: "$OKD_PRODUCTION_TOKEN_TEH2"
+    DEPLOY_PASSENGER_SALT_DEV: "${PASSENGER_SALT_DEV}"
+    Deploy_DRIVER_SALT_DEV: "${DRIVER_SALT_DEV}"
+    DEPLOY_SERVICE_NAME: ${OKD_SERVICE_NAME}
+    DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
+    #DEPLOY_REDIS_ADDR:
+
