@@ -70,21 +70,9 @@ objects:
               - name: HTTP_PROXY
               - name: HTTPS_PROXY
             volumeMounts:
-              - name: "${SERVICE_NAME}-passenger-keys"
-                mountPath: "/jwt_pems/1.pem"
-                subPath: "1.pem"
-                readOnly: true
-              - name: "${SERVICE_NAME}-driver-keys"
-                mountPath: "/jwt_pems/0.pem"
-                subPath: "0.pem"
-                readOnly: true
               - name: "${SERVICE_NAME}-3rd-party-keys"
                 mountPath: "/jwt_pems/100.private.pem"
                 subPath: 100.private.pem
-                readOnly: true
-              - name: "${SERVICE_NAME}-3rd-party-keys"
-                mountPath: "/jwt_pems/100.pem"
-                subPath: 100.pem
                 readOnly: true
           volumes:
             - name: "${SERVICE_NAME}-3rd-party-keys"
