@@ -7,7 +7,7 @@ import (
 )
 
 // Update updates given username with given new data in `newInfo` in database
-func (s Service) Update(username, password, newPassword string, ips []string) *errors.Error {
+func (s Service) Update(username, password, newPassword, secret string, ips []string) *errors.Error {
 	var u user.User
 	if err := s.Handler.Get("user", username, &u); err != nil {
 		return errors.CreateError(errors.DatabaseGetFailure, err.Error())
@@ -24,6 +24,11 @@ func (s Service) Update(username, password, newPassword string, ips []string) *e
 		}
 		u.Password = hash
 	}
+
+	if secret != "" {
+		u.Secret = secret
+	}
+
 	if len(ips) != 0 {
 		u.IPs = ips
 	}

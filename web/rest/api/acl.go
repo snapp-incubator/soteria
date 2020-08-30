@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// aclRequest is the body payload structure of the ACL endpoint
 type aclRequest struct {
 	Access   user.AccessType `form:"access"`
 	Token    string          `form:"token"`
@@ -18,6 +19,7 @@ type aclRequest struct {
 	Topic    string          `form:"topic"`
 }
 
+// ACL is the handler responsible for ACL requests
 func ACL(ctx *gin.Context) {
 	s := time.Now()
 	request := &aclRequest{}

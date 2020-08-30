@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// setupRouter will attach all routes needed for Soteria to gin's default router
 func setupRouter() *gin.Engine {
 	router := gin.Default()
 
@@ -27,6 +28,7 @@ func setupRouter() *gin.Engine {
 	return router
 }
 
+// RestServer will return an HTTP.Server with given port and our router
 func RestServer(port int) *http.Server {
 	return &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),

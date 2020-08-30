@@ -20,13 +20,13 @@ variables:
   PROJECT_MOZART: 'mozart'
   PORT: '9999'
 
-cache:
-  paths:
-    - /apt-cache
-    - /go/src/github.com
-    - /go/src/golang.org
-    - /go/src/google.golang.org
-    - /go/src/gopkg.in
+#cache:
+#  paths:
+#    - /apt-cache
+#    - /go/src/github.com
+#    - /go/src/golang.org
+#    - /go/src/google.golang.org
+#    - /go/src/gopkg.in
 
 
 code-generator:
@@ -40,9 +40,9 @@ code-generator:
     paths:
       - ./web/grpc/contracts
     expire_in: 1 week
-  cache:
-    paths:
-      - ./web/grpc/contracts
+#  cache:
+#    paths:
+#      - ./web/grpc/contracts
 
 .git_template: &git
   before_script:
@@ -65,9 +65,9 @@ compile:
   script:
     - go mod vendor -v
     - go build -mod vendor -v -o ${BUILD_PATH}/${CI_PROJECT_NAME} cmd/soteria/soteria.go
-  cache:
-    paths:
-      - vendor/
+#  cache:
+#    paths:
+#      - vendor/
   artifacts:
     name: "$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG"
     paths:
@@ -84,10 +84,10 @@ unit_tests:
     http_proxy: ${SNAPP_HTTP_PROXY}
     https_proxy: ${SNAPP_HTTP_PROXY}
     no_proxy: ${SNAPP_NOPROXY}
-  cache:
-    policy: pull
-    paths:
-      - vendor/
+#  cache:
+#    policy: pull
+#    paths:
+#      - vendor/
   script:
     - go test -gcflags=-l -v -coverprofile .coverage.out.tmp ./...
     - cat .coverage.out.tmp | grep -v "mock.go" > .coverage.out

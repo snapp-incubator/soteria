@@ -26,7 +26,7 @@ func init() {
 		Addr: mr.Addr(),
 	})
 	app.GetInstance().SetAccountsService(&accounts.Service{
-		Handler: redisModel.RedisModelHandler{
+		Handler: redisModel.ModelHandler{
 			Client: client,
 		},
 	})
