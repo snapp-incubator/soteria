@@ -64,6 +64,7 @@ func ReadAccount(ctx *gin.Context) {
 // updateAccountPayload is the body payload structure of update account endpoint
 type updateAccountPayload struct {
 	NewPassword string   `json:"new_password" form:"new_password"`
+	Secret      string   `json:"secret" form:"secret"`
 	IPs         []string `json:"ips" form:"ips"`
 }
 
@@ -78,7 +79,7 @@ func UpdateAccount(ctx *gin.Context) {
 		return
 	}
 
-	err := app.GetInstance().AccountsService.Update(username, password, p.NewPassword, p.IPs)
+	err := app.GetInstance().AccountsService.Update(username, password, p.NewPassword, p.Secret, p.IPs)
 	if err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return

@@ -12,14 +12,15 @@ import (
 
 func TestRedisModelHandler_Get(t *testing.T) {
 	r := newTestRedis()
-	s := RedisModelHandler{Client: r}
+	s := ModelHandler{
+		Client: r,
+	}
 	expected := MockModel{Name: "test"}
 	v, _ := json.Marshal(expected)
 
 	err := r.Set("mock-test", v, 0).Err()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
+
 	t.Run("testing successful get", func(t *testing.T) {
 		var actual MockModel
 		err := s.Get("mock", "test", &actual)
@@ -33,11 +34,16 @@ func TestRedisModelHandler_Get(t *testing.T) {
 		assert.Equal(t, "redis: nil", err.Error())
 	})
 
+	err = r.Del("mock-test").Err()
+	assert.NoError(t, err)
+
 }
 
 func TestRedisModelHandler_Save(t *testing.T) {
 	r := newTestRedis()
-	s := RedisModelHandler{Client: r}
+	s := ModelHandler{
+		Client: r,
+	}
 
 	t.Run("testing save model", func(t *testing.T) {
 		expected := MockModel{Name: "save-test"}
@@ -52,7 +58,10 @@ func TestRedisModelHandler_Save(t *testing.T) {
 
 func TestRedisModelHandler_Delete(t *testing.T) {
 	r := newTestRedis()
-	s := RedisModelHandler{Client: r}
+	s := ModelHandler{
+		Client: r,
+	}
+
 	expected := MockModel{Name: "test"}
 	v, _ := json.Marshal(expected)
 
@@ -66,6 +75,7 @@ func TestRedisModelHandler_Delete(t *testing.T) {
 		err = r.Get("mock-test").Err()
 		assert.Error(t, err)
 		assert.Equal(t, "redis: nil", err.Error())
+
 	})
 	t.Run("testing failed delete", func(t *testing.T) {
 		var actual MockModel
@@ -77,7 +87,9 @@ func TestRedisModelHandler_Delete(t *testing.T) {
 
 func TestRedisModelHandler_Update(t *testing.T) {
 	r := newTestRedis()
-	s := RedisModelHandler{Client: r}
+	s := ModelHandler{
+		Client: r,
+	}
 
 	m := MockModel{Name: "test", Value: "test-1"}
 	v, _ := json.Marshal(m)

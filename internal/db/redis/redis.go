@@ -8,12 +8,13 @@ import (
 )
 
 // RedisModelHandler implements ModelHandler interface
-type RedisModelHandler struct {
+type ModelHandler struct {
 	Client redis.Cmdable
 }
 
+
 // Save saves a model in redis
-func (rmh RedisModelHandler) Save(model db.Model) error {
+func (rmh ModelHandler) Save(model db.Model) error {
 	md := model.GetMetadata()
 	pk := model.GetPrimaryKey()
 	key := generateKey(md.ModelName, pk)
@@ -21,12 +22,18 @@ func (rmh RedisModelHandler) Save(model db.Model) error {
 	if err != nil {
 		return err
 	}
-	return rmh.Client.Set(key, string(value), 0).Err()
+
+	if err := rmh.Client.Set(key, string(value), 0).Err(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-// Save finds and deletes a model from redis
-func (rmh RedisModelHandler) Delete(modelName, pk string) error {
+// Delete finds and deletes a model from redis and cache
+func (rmh ModelHandler) Delete(modelName, pk string) error {
 	key := generateKey(modelName, pk)
+
 	res, err := rmh.Client.Del(key).Result()
 	if err != nil {
 		return err
@@ -37,21 +44,24 @@ func (rmh RedisModelHandler) Delete(modelName, pk string) error {
 	return nil
 }
 
-// Save finds and returns a model from redis
-func (rmh RedisModelHandler) Get(modelName, pk string, v interface{}) error {
+// Get returns a model from redis or from cache, if exists
+func (rmh ModelHandler) Get(modelName, pk string, v interface{}) error {
 	key := generateKey(modelName, pk)
+
 	res, err := rmh.Client.Get(key).Result()
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal([]byte(res), &v)
-	if err != nil {
+
+	if err := json.Unmarshal([]byte(res), &v); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (rmh RedisModelHandler) Update(model db.Model) error {
+// Update finds and updates a model in redis
+func (rmh ModelHandler) Update(model db.Model) error {
 	md := model.GetMetadata()
 	pk := model.GetPrimaryKey()
 
@@ -65,11 +75,14 @@ func (rmh RedisModelHandler) Update(model db.Model) error {
 	pipeline := rmh.Client.Pipeline()
 	pipeline.Del(key)
 	pipeline.Set(key, string(value), 0)
-	_, err = pipeline.Exec()
+	if _, err := pipeline.Exec(); err != nil {
+		return err
+	}
 
-	return err
+	return nil
 }
 
+// generateKey is used to generate redis keys
 func generateKey(modelName, pk string) string {
 	return fmt.Sprintf("%v-%v", modelName, pk)
 }

@@ -7,10 +7,10 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"io/ioutil"
-	"log"
 	"time"
 )
 
+// AppConfig is the main container of Soteria's config
 type AppConfig struct {
 	AllowedAccessTypes  []string `default:"sub,pub" split_words:"true"`
 	PassengerHashLength int      `split_words:"true"`
@@ -20,10 +20,12 @@ type AppConfig struct {
 	Redis               *RedisConfig
 	Jwt                 *JwtConfig
 	Logger              *LoggerConfig
+	Cache               *CacheConfig
 	HttpPort            int `default:"9999" split_words:"true"`
 	GrpcPort            int `default:"50051" split_words:"true"`
 }
 
+// RedisConfig is all configs needed to connect to a Redis server
 type RedisConfig struct {
 	Address            string        `split_words:"true"`
 	Password           string        `default:"" split_words:"true"`
@@ -38,10 +40,18 @@ type RedisConfig struct {
 	IdleCheckFrequency time.Duration `split_words:"true" default:"60s"`
 }
 
+// CacheConfig contains configs of in memory cache
+type CacheConfig struct {
+	DefaultExpirationMinutes int `split_words:"true" default:"120"`
+	DefaultCleanupMinutes    int `split_words:"true" default:"240"`
+}
+
+// JwtConfig contains path of the keys for JWT encryption
 type JwtConfig struct {
 	JwtKeysPath string `split_words:"true"`
 }
 
+// LoggerConfig is the config for logging and this kind of stuff
 type LoggerConfig struct {
 	Level string `default:"warn" split_words:"true"`
 
@@ -54,16 +64,19 @@ type LoggerConfig struct {
 func InitConfig() AppConfig {
 	appConfig := &AppConfig{}
 	appConfig.Redis = &RedisConfig{}
+	appConfig.Cache = &CacheConfig{}
 	appConfig.Jwt = &JwtConfig{}
 	appConfig.Logger = &LoggerConfig{}
 
 	envconfig.MustProcess("soteria", appConfig)
 	envconfig.MustProcess("soteria_redis", appConfig.Redis)
+	envconfig.MustProcess("soteria_cache", appConfig.Cache)
 	envconfig.MustProcess("soteria_jwt", appConfig.Jwt)
 	envconfig.MustProcess("soteria_logger", appConfig.Logger)
 	return *appConfig
 }
 
+// ReadPrivateKey will read and return private key that is used for JWT encryption
 func (a *AppConfig) ReadPrivateKey(u string) (*rsa.PrivateKey, error) {
 	var fileName string
 	switch u {
@@ -83,18 +96,20 @@ func (a *AppConfig) ReadPrivateKey(u string) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func (a *AppConfig) GetAllowedAccessTypes() []user.AccessType {
+// GetAllowedAccessTypes will return all allowed access types in Soteria
+func (a *AppConfig) GetAllowedAccessTypes() ([]user.AccessType, error) {
 	var allowedAccessTypes []user.AccessType
 	for _, a := range a.AllowedAccessTypes {
 		at, err := toUserAccessType(a)
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("could not convert %s: %w", at, err)
 		}
 		allowedAccessTypes = append(allowedAccessTypes, at)
 	}
-	return allowedAccessTypes
+	return allowedAccessTypes, nil
 }
 
+// toUserAccessType will convert string access type to it's own type
 func toUserAccessType(i string) (user.AccessType, error) {
 	switch i {
 	case "pub":
