@@ -11,27 +11,35 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db/redis"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/log"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"gitlab.snapp.ir/dispatching/soteria/web/grpc"
 	"gitlab.snapp.ir/dispatching/soteria/web/rest/api"
-	"log"
+	"go.uber.org/zap"
 	"net"
 	"os"
 	"os/signal"
 )
 
 var Serve = &cobra.Command{
-	Use:   "serve",
-	Short: "serve runs the application",
-	Long:  `serve will run Soteria REST and gRPC server and waits until user disrupts.`,
-	Run:   serveRun,
+	Use:    "serve",
+	Short:  "serve runs the application",
+	Long:   `serve will run Soteria REST and gRPC server and waits until user disrupts.`,
+	PreRun: servePreRun,
+	Run:    serveRun,
 }
 
-func serveRun(cmd *cobra.Command, args []string) {
-	cfg := configs.InitConfig()
+var cfg configs.AppConfig
+
+func servePreRun(cmd *cobra.Command, args []string) {
+	cfg = configs.InitConfig()
+
+	log.InitLogger()
+	log.SetLevel(cfg.Logger.Level)
+
 	pk, err := cfg.ReadPrivateKey(user.ThirdParty)
 	if err != nil {
-		log.Fatal("could not read third party private key")
+		zap.L().Fatal("could not read third party private key")
 	}
 
 	hid := &snappids.HashIDSManager{
@@ -47,45 +55,51 @@ func serveRun(cmd *cobra.Command, args []string) {
 
 	rClient, err := redis.NewRedisClient(cfg.Redis)
 	if err != nil {
-		log.Fatalf("could not create redis client: %v", err)
+		zap.L().Fatal("could not create redis client", zap.Error(err))
 	}
 
 	app.GetInstance().SetAccountsService(&accounts.Service{
-		Handler: redis.RedisModelHandler{
+		Handler: redis.ModelHandler{
 			Client: rClient,
 		},
 	})
 
+	allowedAccessTypes, err := cfg.GetAllowedAccessTypes()
+	if err != nil {
+		zap.L().Fatal("error while getting allowed access types", zap.Error(err))
+	}
 	app.GetInstance().SetAuthenticator(&authenticator.Authenticator{
 		PrivateKeys: map[string]*rsa.PrivateKey{
 			user.ThirdParty: pk,
 		},
-		AllowedAccessTypes: cfg.GetAllowedAccessTypes(),
-		ModelHandler: redis.RedisModelHandler{
+		AllowedAccessTypes: allowedAccessTypes,
+		ModelHandler: redis.ModelHandler{
 			Client: rClient,
 		},
 		HashIDSManager:  hid,
 		EMQTopicManager: snappids.NewEMQManager(hid),
 	})
+}
 
+func serveRun(cmd *cobra.Command, args []string) {
 	rest := api.RestServer(cfg.HttpPort)
 
 	gListen, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GrpcPort))
 	if err != nil {
-		log.Fatal("failed to listen: %w", err)
+		zap.L().Fatal("failed to listen", zap.Int("port", cfg.GrpcPort), zap.Error(err))
 	}
 
 	grpcServer := grpc.GRPCServer()
 
 	go func() {
 		if err := rest.ListenAndServe(); err != nil {
-			log.Fatal(err)
+			zap.L().Fatal("failed to run REST HTTP server", zap.Error(err))
 		}
 	}()
 
 	go func() {
 		if err := grpcServer.Serve(gListen); err != nil {
-			log.Fatal(err)
+			zap.L().Fatal("failed to run GRPC server", zap.Error(err))
 		}
 	}()
 
@@ -94,7 +108,7 @@ func serveRun(cmd *cobra.Command, args []string) {
 	<-c
 
 	if err := rest.Shutdown(context.Background()); err != nil {
-		log.Fatal("error happened during REST API shutdown: %w", err)
+		zap.L().Error("error happened during REST API shutdown", zap.Error(err))
 	}
 
 	grpcServer.Stop()
