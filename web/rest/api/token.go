@@ -10,13 +10,14 @@ import (
 	"time"
 )
 
-// TokenRequest is payload structure for token request
+// TokenRequest is the body payload structure of the token endpoint
 type TokenRequest struct {
 	GrantType    user.AccessType `json:"grant_type" form:"grant_type" query:"grant_type"`
 	ClientID     string          `json:"client_id" form:"client_id" query:"client_id"`
 	ClientSecret string          `json:"client_secret" form:"client_secret" query:"client_secret"`
 }
 
+// Token is the handler responsible for Token requests
 func Token(ctx *gin.Context) {
 	s := time.Now()
 	request := &TokenRequest{}

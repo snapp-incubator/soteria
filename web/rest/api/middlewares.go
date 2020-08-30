@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// accountsBasicAuth is the authentication middleware for the accounts API
 func accountsBasicAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		auth := strings.SplitN(ctx.Request.Header.Get("Authorization"), " ", 2)

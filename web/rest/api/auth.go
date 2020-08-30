@@ -9,12 +9,14 @@ import (
 	"time"
 )
 
+// authRequest is the body payload structure of the auth endpoint
 type authRequest struct {
 	Token    string `form:"token"`
 	Username string `from:"username"`
 	Password string `form:"password"`
 }
 
+// Auth is the handler responsible for authentication
 func Auth(ctx *gin.Context) {
 	s := time.Now()
 	request := &authRequest{}

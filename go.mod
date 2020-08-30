@@ -11,6 +11,7 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/onsi/ginkgo v1.14.0 // indirect
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.7.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.5.1
