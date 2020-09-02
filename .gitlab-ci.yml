@@ -20,14 +20,6 @@ variables:
   PROJECT_MOZART: 'mozart'
   PORT: '9999'
 
-#cache:
-#  paths:
-#    - /apt-cache
-#    - /go/src/github.com
-#    - /go/src/golang.org
-#    - /go/src/google.golang.org
-#    - /go/src/gopkg.in
-
 
 code-generator:
   stage: pre-compile
