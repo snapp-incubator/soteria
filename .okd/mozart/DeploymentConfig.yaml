@@ -61,9 +61,9 @@ objects:
               timeoutSeconds: 2
             envFrom:
               - secretRef:
-                  name: "${SERVICE_NAME}-auth-env"
+                  name: ${SERVICE_NAME}-auth-env
               - configMapRef:
-                name: "${SERVICE_NAME}-env"
+                  name: ${SERVICE_NAME}-env
             env:
               - name: LOG_LEVEL
                 value: "${LOG_LEVEL}"
