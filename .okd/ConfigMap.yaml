@@ -8,7 +8,10 @@ objects:
   metadata:
     name: ${SERVICE_NAME}-jwt-keys
     labels:
-      app: ${SERVICE_NAME}
+      app: "${SERVICE_NAME}"
+      app.snappcloud.io/managed-by: "${MANAGED_BY}"
+      app.snappcloud.io/version: "${APP_VERSION}"
+      app.snappcloud.io/instance: "${SERVICE_NAME}-${CI_COMMIT_REF_SLUG}"
   data:
     100.private.pem: ${THIRD_PARTY_JWT_PRIVATE_KEY}
 - apiVersion: v1
@@ -16,7 +19,10 @@ objects:
   metadata:
     name: ${SERVICE_NAME}-env
     labels:
-      app: ${SERVICE_NAME}
+      app: "${SERVICE_NAME}"
+      app.snappcloud.io/managed-by: "${MANAGED_BY}"
+      app.snappcloud.io/version: "${APP_VERSION}"
+      app.snappcloud.io/instance: "${SERVICE_NAME}-${CI_COMMIT_REF_SLUG}"
   data:
     SOTERIA_HTTP_PORT: "9999"
     SOTERIA_GRPC_PORT: "50051"
@@ -52,4 +58,14 @@ parameters:
   displayName: Third party Private Key
   description: Private key of third party's token
   required: true
+- name: MANAGED_BY
+  displayName: Managed by
+  required: true
+  value: "dispatching-team"
+- name: APP_VERSION
+  required: true
+- name: CI_COMMIT_REF_SLUG
+  required: true
+
+
 
