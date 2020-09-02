@@ -17,7 +17,7 @@ type ModelHandler struct {
 func (rmh ModelHandler) Save(model db.Model) error {
 	md := model.GetMetadata()
 	pk := model.GetPrimaryKey()
-	key := generateKey(md.ModelName, pk)
+	key := GenerateKey(md.ModelName, pk)
 	value, err := json.Marshal(model)
 	if err != nil {
 		return err
@@ -32,7 +32,7 @@ func (rmh ModelHandler) Save(model db.Model) error {
 
 // Delete finds and deletes a model from redis and cache
 func (rmh ModelHandler) Delete(modelName, pk string) error {
-	key := generateKey(modelName, pk)
+	key := GenerateKey(modelName, pk)
 
 	res, err := rmh.Client.Del(key).Result()
 	if err != nil {
@@ -46,7 +46,7 @@ func (rmh ModelHandler) Delete(modelName, pk string) error {
 
 // Get returns a model from redis or from cache, if exists
 func (rmh ModelHandler) Get(modelName, pk string, v interface{}) error {
-	key := generateKey(modelName, pk)
+	key := GenerateKey(modelName, pk)
 
 	res, err := rmh.Client.Get(key).Result()
 	if err != nil {
@@ -65,7 +65,7 @@ func (rmh ModelHandler) Update(model db.Model) error {
 	md := model.GetMetadata()
 	pk := model.GetPrimaryKey()
 
-	key := generateKey(md.ModelName, pk)
+	key := GenerateKey(md.ModelName, pk)
 
 	value, err := json.Marshal(model)
 	if err != nil {
@@ -82,7 +82,7 @@ func (rmh ModelHandler) Update(model db.Model) error {
 	return nil
 }
 
-// generateKey is used to generate redis keys
-func generateKey(modelName, pk string) string {
+// GenerateKey is used to generate redis keys
+func GenerateKey(modelName, pk string) string {
 	return fmt.Sprintf("%v-%v", modelName, pk)
 }
