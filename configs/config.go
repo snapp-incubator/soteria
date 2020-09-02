@@ -42,8 +42,7 @@ type RedisConfig struct {
 
 // CacheConfig contains configs of in memory cache
 type CacheConfig struct {
-	DefaultExpirationMinutes int `split_words:"true" default:"120"`
-	DefaultCleanupMinutes    int `split_words:"true" default:"240"`
+	Enabled bool `split_words:"true" default:"true"`
 }
 
 // JwtConfig contains path of the keys for JWT encryption
