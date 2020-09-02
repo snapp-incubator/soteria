@@ -21,19 +21,19 @@ func getHttpMetric() *metrics.HttpCall {
 		Namespace: "dispatching",
 		Subsystem: "soteria",
 		Name:      "status_codes",
-		Help:      "status codes observed from privent and its all external calls",
+		Help:      "status codes observed from soteria and its all external calls",
 	}
 	statusesOpts := prometheus.CounterOpts{
 		Namespace: "dispatching",
 		Subsystem: "soteria",
 		Name:      "statuses",
-		Help:      "statuses observed from privent and its all external calls",
+		Help:      "statuses observed from soteria and its all external calls",
 	}
 	sumOpts := prometheus.SummaryOpts{
 		Namespace: "dispatching",
 		Subsystem: "soteria",
 		Name:      "response_times",
-		Help:      "response times observed from privent and its all external calls",
+		Help:      "response times observed from soteria and its all external calls",
 	}
 	h.StatusCodeCounterVec = prometheus.NewCounterVec(statusCodesOps, []string{"service", "function", "code"})
 	h.StatusCounterVec = prometheus.NewCounterVec(statusesOpts, []string{"service", "function", "status", "info"})

@@ -4,13 +4,17 @@ import (
 	"context"
 	"crypto/rsa"
 	"fmt"
+	"github.com/patrickmn/go-cache"
 	"github.com/spf13/cobra"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/configs"
 	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/internal/db/cachedredis"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db/redis"
+	"gitlab.snapp.ir/dispatching/soteria/pkg"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/log"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"gitlab.snapp.ir/dispatching/soteria/web/grpc"
@@ -33,9 +37,15 @@ var cfg configs.AppConfig
 
 func servePreRun(cmd *cobra.Command, args []string) {
 	cfg = configs.InitConfig()
-
 	log.InitLogger()
 	log.SetLevel(cfg.Logger.Level)
+
+	zap.L().Debug("config init successfully",
+		zap.String("cache_config", pkg.PrettifyStruct(cfg.Cache)),
+		zap.String("redis_config", pkg.PrettifyStruct(cfg.Redis)),
+		zap.String("logger_config", pkg.PrettifyStruct(cfg.Logger)),
+		zap.String("jwt_keys_path", cfg.Jwt.JwtKeysPath),
+		zap.String("allowed_access_types", fmt.Sprintf("%v", cfg.AllowedAccessTypes)))
 
 	pk, err := cfg.ReadPrivateKey(user.ThirdParty)
 	if err != nil {
@@ -58,10 +68,17 @@ func servePreRun(cmd *cobra.Command, args []string) {
 		zap.L().Fatal("could not create redis client", zap.Error(err))
 	}
 
+	redisModelHandler := &redis.ModelHandler{Client: rClient}
+	var modelHandler db.ModelHandler
+
+	if cfg.Cache.Enabled {
+		modelHandler = cachedredis.NewCachedRedisModelHandler(redisModelHandler, cache.New(cache.NoExpiration, cache.NoExpiration))
+	} else {
+		modelHandler = redisModelHandler
+	}
+
 	app.GetInstance().SetAccountsService(&accounts.Service{
-		Handler: redis.ModelHandler{
-			Client: rClient,
-		},
+		Handler: modelHandler,
 	})
 
 	allowedAccessTypes, err := cfg.GetAllowedAccessTypes()
@@ -73,11 +90,9 @@ func servePreRun(cmd *cobra.Command, args []string) {
 			user.ThirdParty: pk,
 		},
 		AllowedAccessTypes: allowedAccessTypes,
-		ModelHandler: redis.ModelHandler{
-			Client: rClient,
-		},
-		HashIDSManager:  hid,
-		EMQTopicManager: snappids.NewEMQManager(hid),
+		ModelHandler:       modelHandler,
+		HashIDSManager:     hid,
+		EMQTopicManager:    snappids.NewEMQManager(hid),
 	})
 }
 
