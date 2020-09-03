@@ -86,14 +86,10 @@ parameters:
 - name: APP_IMAGE
   displayName: Application Docker Image
   description: application will pull and run this docker image. It has to be in Snapp Cloud registery
-  value: "realtime-staging/soteria:add-gitlab-ci"
+  value: "$CONTAINER_REGISTRY_IMAGE"
 - name: SERVICE_NAME
   displayName: Service name
   description: The name of the application (should be unique in the namespace)
-  value: "soteria"
-- name: PORT
-  displayName: Port
-  description: the port which will be open by your application
 - name: MEMORY_LIMIT
   value: "512Mi"
 - name: MEMORY_REQUEST
