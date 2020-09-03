@@ -42,7 +42,7 @@ parameters:
   description: How much log do you want? (DEBUG|INFO|WARN|ERROR|OFF)
 - name: REDIS_ADDR
   required: true
-  - name: MANAGED_BY
+- name: MANAGED_BY
   displayName: Managed by
   required: true
   value: "dispatching-team"
