@@ -186,7 +186,7 @@ release:production:teh-2:
         --param APP_VERSION="${PROJECT_VERSION}" \
         --param REDIS_ADDR="${DEPLOY_REDIS_ADDR}" \
         --param CI_COMMIT_REF_SLUG="${CI_COMMIT_REF_SLUG}" | oc apply -f -
-    - |-
+    - |
       oc process -f .okd/Secret.yaml \
         --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}" \
         --param APP_VERSION="${PROJECT_VERSION}" \
