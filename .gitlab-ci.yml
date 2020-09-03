@@ -195,7 +195,7 @@ release:production:teh-2:
         --param PASSENGER_HASH_LENGTH="15" \
         --param DRIVER_HASH_SALT="${DEPLOY_DRIVER_SALT_DEV}" \
         --param DRIVER_HASH_LENGTH="15" \
-        --param THIRD_PARTY_JWT_PRIVATE_KEY= ${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY} | oc apply -f -
+        --param THIRD_PARTY_JWT_PRIVATE_KEY="${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY}" | oc apply -f -
     - oc process -f .okd/AutoScaler.yaml | oc apply -f -
     - oc process -f .okd/Route.yaml --param APP_HOST=${HOST} --param PORT=${PORT} --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
     - oc process -f .okd/Service.yaml --param PORT=${PORT} --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
