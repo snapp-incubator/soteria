@@ -190,7 +190,7 @@ release:production:teh-2:
     - oc project ${DEPLOY_PROJECT}
     - |
       oc process -f .okd/ConfigMap.yaml \
-        --param THIRD_PARTY_JWT_PRIVATE_KEY= ${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY} \
+        --param THIRD_PARTY_JWT_PRIVATE_KEY= "${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY}" \
         --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}"  | oc apply -f -
       oc process -f .okd/Secret.yaml \
         --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}" \

@@ -63,7 +63,7 @@ objects:
               - secretRef:
                   name: ${SERVICE_NAME}-auth-env
               - configMapRef:
-                  name: ${SERVICE_NAME}-env
+                  name: "${SERVICE_NAME}-env"
             env:
               - name: LOG_LEVEL
                 value: "${LOG_LEVEL}"
