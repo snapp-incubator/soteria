@@ -123,7 +123,7 @@ func (a Authenticator) EndPointBasicAuth(username, password, endpoint string) (b
 		return false, errors.CreateError(errors.DatabaseGetFailure, err.Error())
 	}
 
-	if err := bcrypt.CompareHashAndPassword(u.Password, []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
 		return false, errors.CreateError(errors.WrongUsernameOrPassword, "wrong password")
 	}
 	ok := u.CheckEndpointAllowance(endpoint)

@@ -47,7 +47,7 @@ type CacheConfig struct {
 
 // JwtConfig contains path of the keys for JWT encryption
 type JwtConfig struct {
-	JwtKeysPath string `split_words:"true"`
+	KeysPath string `split_words:"true"`
 }
 
 // LoggerConfig is the config for logging and this kind of stuff
@@ -80,7 +80,8 @@ func (a *AppConfig) ReadPrivateKey(u string) (*rsa.PrivateKey, error) {
 	var fileName string
 	switch u {
 	case user.ThirdParty:
-		fileName = fmt.Sprintf("%s%s", a.Jwt.JwtKeysPath, "100.private.pem")
+		fileName = fmt.Sprintf("%s%s", a.Jwt.KeysPath, "100.private.pem")
+		fmt.Println(fileName)
 	default:
 		return nil, fmt.Errorf("invalid user, private key not found")
 	}

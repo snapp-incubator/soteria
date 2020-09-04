@@ -13,7 +13,7 @@ func (s Service) Delete(username, password string) *errors.Error {
 		return errors.CreateError(errors.DatabaseGetFailure, err.Error())
 	}
 
-	if err := bcrypt.CompareHashAndPassword(u.Password, []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
 		return errors.CreateError(errors.WrongUsernameOrPassword, "")
 	}
 

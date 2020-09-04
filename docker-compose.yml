@@ -2,10 +2,7 @@ version: '3.7'
 services:
   soteria:
     container_name: soteria
-    build:
-      context: .
-      dockerfile: dev.Dockerfile
-    command: go run cmd/soteria/soteria.go serve
+    image: soteria:latest
     working_dir: /go/src/app
     ports:
       - 9999:9999
@@ -15,6 +12,8 @@ services:
     depends_on:
       - redis
     environment:
+      SOTERIA_LOGGER_LEVEL: 'DEBUG'
+      SOTERIA_JWT_KEYS_PATH: '/go/src/app/test/'
       SOTERIA_HTTP_PORT: '9999'
       SOTERIA_GRPC_PORT: '50051'
       SOTERIA_REDIS_ADDRESS: 'redis:6379'
