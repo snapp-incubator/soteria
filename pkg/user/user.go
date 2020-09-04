@@ -2,6 +2,7 @@ package user
 
 import (
 	"crypto/rsa"
+	"github.com/google/uuid"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"regexp"
 	"time"
@@ -43,7 +44,7 @@ type TopicMan func(issuer Issuer, sub string) string
 type User struct {
 	MetaData                db.MetaData    `json:"meta_data"`
 	Username                string         `json:"username"`
-	Password                []byte         `json:"password"`
+	Password                string         `json:"password"`
 	Type                    UserType       `json:"type"`
 	IPs                     []string       `json:"ips"`
 	Secret                  string         `json:"secret"`
@@ -54,7 +55,7 @@ type User struct {
 
 // Rule tells about a access to a specific topic or endpoint
 type Rule struct {
-	UID          int        `json:"uid"`
+	UUID         uuid.UUID  `json:"uuid"`
 	Endpoint     string     `json:"endpoint"`
 	TopicPattern string     `json:"topic_pattern"`
 	AccessType   AccessType `json:"access_type"`

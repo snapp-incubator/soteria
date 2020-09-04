@@ -24,3 +24,11 @@ push-image: build-image
 
 build-image-dev: compile
 	docker build -t soteria:latest .
+
+up: build-image-dev
+	docker-compose up
+
+down:
+	docker-compose down
+	docker-compose stop
+	docker rmi soteria
