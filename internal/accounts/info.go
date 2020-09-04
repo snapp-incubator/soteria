@@ -13,7 +13,7 @@ func (s Service) Info(username, password string) (*user.User, *errors.Error) {
 		return nil, errors.CreateError(errors.DatabaseGetFailure, err.Error())
 	}
 
-	if err := bcrypt.CompareHashAndPassword(u.Password, []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
 		return nil, errors.CreateError(errors.WrongUsernameOrPassword, "")
 	}
 

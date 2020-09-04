@@ -13,7 +13,7 @@ func (s Service) Update(username, password, newPassword, secret string, ips []st
 		return errors.CreateError(errors.DatabaseGetFailure, err.Error())
 	}
 
-	if err := bcrypt.CompareHashAndPassword(u.Password, []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
 		return errors.CreateError(errors.WrongUsernameOrPassword, "")
 	}
 
@@ -22,7 +22,7 @@ func (s Service) Update(username, password, newPassword, secret string, ips []st
 		if err != nil {
 			return errors.CreateError(errors.PasswordHashGenerationFailure, err.Error())
 		}
-		u.Password = hash
+		u.Password = string(hash)
 	}
 
 	if secret != "" {

@@ -44,7 +44,7 @@ func servePreRun(cmd *cobra.Command, args []string) {
 		zap.String("cache_config", pkg.PrettifyStruct(cfg.Cache)),
 		zap.String("redis_config", pkg.PrettifyStruct(cfg.Redis)),
 		zap.String("logger_config", pkg.PrettifyStruct(cfg.Logger)),
-		zap.String("jwt_keys_path", cfg.Jwt.JwtKeysPath),
+		zap.String("jwt_keys_path", cfg.Jwt.KeysPath),
 		zap.String("allowed_access_types", fmt.Sprintf("%v", cfg.AllowedAccessTypes)))
 
 	pk, err := cfg.ReadPrivateKey(user.ThirdParty)

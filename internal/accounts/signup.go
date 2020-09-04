@@ -22,7 +22,7 @@ func (s Service) SignUp(username, password string, userType user.UserType) *erro
 			DateModified: time.Now(),
 		},
 		Username: username,
-		Password: hash,
+		Password: string(hash),
 		Type:     userType,
 	}
 	if err := s.Handler.Save(u); err != nil {

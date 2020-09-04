@@ -4,6 +4,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
+	"strings"
 )
 
 var atom zap.AtomicLevel
@@ -24,6 +25,7 @@ func SetLevel(lvl string) {
 
 // parseLevel will convert a string based log level to zapcore.Level
 func parseLevel(lvl string) zapcore.Level {
+	lvl = strings.ToLower(lvl)
 	switch lvl {
 	case "debug":
 		return zapcore.DebugLevel
