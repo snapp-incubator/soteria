@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
@@ -253,7 +254,7 @@ func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
 			Type:      user.EMQUser,
 			PublicKey: key0,
 			Rules: []user.Rule{{
-				UID:          1,
+				UUID:         uuid.Nil,
 				Endpoint:     "",
 				TopicPattern: `(\w+)-event-(\w*\d*|\d*\w*)`,
 				AccessType:   user.Sub,
@@ -281,11 +282,11 @@ func getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
 	var fileName string
 	switch u {
 	case user.Passenger:
-		fileName = "../../test/1.test.pem"
+		fileName = "../../test/1.pem"
 	case user.Driver:
-		fileName = "../../test/1.test.pem"
+		fileName = "../../test/1.pem"
 	case user.ThirdParty:
-		fileName = "../../test/100.test.pem"
+		fileName = "../../test/100.pem"
 	default:
 		return nil, fmt.Errorf("invalid user, public key not found")
 	}
@@ -304,7 +305,7 @@ func getPrivateKey(u string) (*rsa.PrivateKey, error) {
 	var fileName string
 	switch u {
 	case user.ThirdParty:
-		fileName = "../../test/100.test.private.pem"
+		fileName = "../../test/100.private.pem"
 	default:
 		return nil, fmt.Errorf("invalid user, private key not found")
 	}
@@ -333,7 +334,7 @@ func getSampleToken(isValid bool) (string, error) {
 	return string(token), nil
 }
 
-func getSamplePassword() []byte {
+func getSamplePassword() string {
 	hash, _ := bcrypt.GenerateFromPassword([]byte("test"), bcrypt.DefaultCost)
-	return hash
+	return string(hash)
 }
