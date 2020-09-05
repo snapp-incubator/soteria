@@ -15,9 +15,9 @@ objects:
       name: ${SERVICE_NAME}
       apiVersion: v1
       subresource: scale
-    minReplicas: ${MIN_REPLICA}
-    maxReplicas: ${MAX_REPLICA}
-    targetCPUUtilizationPercentage: ${CPU_UTILIZATION}
+    minReplicas: ${{MIN_REPLICA}}
+    maxReplicas: ${{MAX_REPLICA}}
+    targetCPUUtilizationPercentage: ${{CPU_UTILIZATION}}
 
 parameters:
 - name: SERVICE_NAME
