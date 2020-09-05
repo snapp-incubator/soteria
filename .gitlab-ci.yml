@@ -35,6 +35,9 @@ code-generator:
 #  cache:
 #    paths:
 #      - ./web/grpc/contracts
+  only:
+    - master
+    - tags
 
 .git_template: &git
   before_script:
@@ -65,7 +68,9 @@ compile:
     paths:
       - ${BUILD_PATH}/${CI_PROJECT_NAME}
     expire_in: 1 week
-
+  only:
+    - master
+    - tags
 
 unit_tests:
   <<: *git
@@ -88,7 +93,10 @@ unit_tests:
   dependencies:
     - code-generator
     - compile
-
+  only:
+    - master
+    - tags
+    
 build:
   image: docker:latest
   stage: build
@@ -122,7 +130,9 @@ build:
     - docker push ${CONTAINER_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
   dependencies:
     - build
-
+  only:
+    - master
+    - tags
 
 release:staging:
   <<: *release_job_definition
