@@ -134,7 +134,7 @@ release:staging:
   only:
     - master
     - tags
-    - branches
+  #  - branches
 
 release:mozart:
   <<: *release_job_definition
@@ -146,7 +146,7 @@ release:mozart:
   only:
     - master
     - tags
-    - branches
+ #   - branches
   when: manual
 
 release:production:teh-1:
