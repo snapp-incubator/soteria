@@ -16,6 +16,7 @@ objects:
     SOTERIA_HTTP_PORT: "9999"
     SOTERIA_GRPC_PORT: "50051"
     SOTERIA_REDIS_ADDRESS: "${REDIS_ADDR}"
+    SOTERIA_REDIS_PASS: "${REDIS_PASS}"
     SOTERIA_REDIS_POOL_SIZE: "10"
     SOTERIA_REDIS_MAX_RETRIES: "0"
     SOTERIA_REDIS_READ_TIMEOUT: "3s"
@@ -41,6 +42,8 @@ parameters:
   displayName: Log Level
   description: How much log do you want? (DEBUG|INFO|WARN|ERROR|OFF)
 - name: REDIS_ADDR
+  required: true
+- name: REDIS_PASS
   required: true
 - name: MANAGED_BY
   displayName: Managed by
