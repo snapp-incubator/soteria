@@ -209,7 +209,10 @@ release:production:teh-2:
 #    - master
 #    - tags
 #    - branches
-  when: manual
+#  when: manual
+  rules:
+    - if: '$test == "true"'
+      when: manual
 
 
 
@@ -231,9 +234,7 @@ deploy:staging:teh_1:
     DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
     DEPLOY_REDIS_ADDR: "redis:6379"
     DEPLOY_REDIS_PASS: "test"
-  only:
-    variables:
-      - $test
+
 
 
 deploy:production:teh_1:
