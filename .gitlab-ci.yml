@@ -183,6 +183,7 @@ release:production:teh-2:
         --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}" \
         --param APP_VERSION="${PROJECT_VERSION}" \
         --param REDIS_ADDR="${DEPLOY_REDIS_ADDR}" \
+        --param REDIS_PASS="${DEPLOY_REDIS_PASS}" \
         --param CI_COMMIT_REF_SLUG="${CI_COMMIT_REF_SLUG}" | oc apply -f -
     - |
       oc process -f .okd/Secret.yaml \
@@ -229,6 +230,7 @@ deploy:staging:teh_1:
     #DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_MOZART}"
     DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
     DEPLOY_REDIS_ADDR: "redis:6379"
+    DEPLOY_REDIS_PASS: "test"
 
 
 deploy:production:teh_1:
