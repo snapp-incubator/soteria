@@ -15,9 +15,9 @@ objects:
       name: ${SERVICE_NAME}
       apiVersion: v1
       subresource: scale
-    minReplicas: 6
-    maxReplicas: 25
-    targetCPUUtilizationPercentage: 80
+    minReplicas: ${MIN_REPLICA}
+    maxReplicas: ${MAX_REPLICA}
+    targetCPUUtilizationPercentage: ${CPU_UTILIZATION}
 
 parameters:
 - name: SERVICE_NAME
@@ -26,10 +26,10 @@ parameters:
   value: "soteria"
 - name: MIN_REPLICA
   displayName: Minimum number of replica
-  value: "2"
+  value: "6"
 - name: MAX_REPLICA
   displayName: Maximum number of replica
-  value: "80"
+  value: "25"
 - name: CPU_UTILIZATION
   displayName: Target CPU Utilization Percentage
-  value: "70"
+  value: "80"
