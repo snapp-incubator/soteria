@@ -197,7 +197,7 @@ release:production:teh-2:
     - oc process -f .okd/AutoScaler.yaml | oc apply -f -
     - oc process -f .okd/Route.yaml --param APP_HOST=${PROJECT_SERVICE_NAME} --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
     - oc process -f .okd/Service.yaml --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
-    - oc process -f .okd/DeploymentConfig.yaml--param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
+    - oc process -f .okd/DeploymentConfig.yaml --param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
   script:
     - oc rollout latest dc/${PROJECT_SERVICE_NAME}
   only:
