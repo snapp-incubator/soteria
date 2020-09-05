@@ -205,10 +205,10 @@ release:production:teh-2:
     - oc process -f .okd/DeploymentConfig.yaml --param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
   script:
     - oc rollout latest dc/${DEPLOY_SERVICE_NAME}
-  only:
-    - master
-    - tags
-    - branches
+#  only:
+#    - master
+#    - tags
+#    - branches
   when: manual
 
 
@@ -231,6 +231,9 @@ deploy:staging:teh_1:
     DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
     DEPLOY_REDIS_ADDR: "redis:6379"
     DEPLOY_REDIS_PASS: "test"
+  only:
+    variables:
+      - $test
 
 
 deploy:production:teh_1:
