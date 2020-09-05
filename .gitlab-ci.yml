@@ -174,8 +174,6 @@ release:production:teh-2:
 .deploy_template: &deploy_job_definition
   image: openshift/origin-cli:v3.10
   stage: deploy
-  variables:
-    HOST: "${PROJECT_SERVICE_NAME}"
   before_script:
     - oc version
     - oc login https://${DEPLOY_ADDRESS} --token=${DEPLOY_TOKEN}
@@ -197,7 +195,7 @@ release:production:teh-2:
         --param DRIVER_HASH_LENGTH="15" \
         --param THIRD_PARTY_JWT_PRIVATE_KEY="${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY}" | oc apply -f -
     - oc process -f .okd/AutoScaler.yaml | oc apply -f -
-    - oc process -f .okd/Route.yaml --param APP_HOST=${HOST} --param PORT=${PORT} --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
+    - oc process -f .okd/Route.yaml --param APP_HOST=${PROJECT_SERVICE_NAME} --param PORT=${PORT} --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
     - oc process -f .okd/Service.yaml --param PORT=${PORT} --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
     - oc process -f .okd/DeploymentConfig.yaml--param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
   script:
