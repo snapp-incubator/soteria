@@ -200,14 +200,14 @@ release:production:teh-2:
         --param CI_COMMIT_REF_SLUG="${CI_COMMIT_REF_SLUG}" | oc apply -f -
     - |
       oc process -f .okd/Secret.yaml \
+        --param THIRD_PARTY_JWT_PRIVATE_KEY="${THIRD_PARTY_JWT_PRIVATE_KEY_MOZART}" \
         --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}" \
         --param APP_VERSION="${PROJECT_VERSION}" \
         --param CI_COMMIT_REF_SLUG="${CI_COMMIT_REF_SLUG}" \
         --param PASSENGER_HASH_SALT="${DEPLOY_PASSENGER_SALT_DEV}" \
         --param PASSENGER_HASH_LENGTH="15" \
         --param DRIVER_HASH_SALT="${DEPLOY_DRIVER_SALT_DEV}" \
-        --param DRIVER_HASH_LENGTH="15" \
-        --param THIRD_PARTY_JWT_PRIVATE_KEY="${THIRD_PARTY_JWT_PRIVATE_KEY_MOZART}" | oc apply -f -
+        --param DRIVER_HASH_LENGTH="15" | oc apply -f -
     - |
       oc process -f .okd/AutoScaler.yaml \
         --param MIN_REPLICA=${DEPLOY_MIN_REPLICA} \
