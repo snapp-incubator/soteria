@@ -87,7 +87,7 @@ parameters:
 - name: SERVICE_IMAGE_TAG
   displayName: Application Docker Image
   description: application will pull and run this docker image. It has to be in Snapp Cloud registery
-  value: "master"
+  value: "dev"
 - name: CI_COMMIT_REF_SLUG
   displayName: Deployment branch
   required: true
