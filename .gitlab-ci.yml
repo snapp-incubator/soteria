@@ -117,7 +117,10 @@ build:
   dependencies:
     - code-generator
     - compile
-
+  only:
+    - master
+    - tags
+    
 .release_template: &release_job_definition
   image: docker:latest
   stage: release
@@ -220,9 +223,7 @@ release:production:teh-2:
 #    - tags
 #    - branches
 #  when: manual
-  rules:
-    - if: '$test == "true"'
-      when: manual
+  when: manual
 
 
 
