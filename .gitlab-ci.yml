@@ -194,7 +194,11 @@ release:production:teh-2:
         --param DRIVER_HASH_SALT="${DEPLOY_DRIVER_SALT_DEV}" \
         --param DRIVER_HASH_LENGTH="15" \
         --param THIRD_PARTY_JWT_PRIVATE_KEY="${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY}" | oc apply -f -
-    - oc process -f .okd/AutoScaler.yaml --param MIN_REPLICA=${DEPLOY_MIN_REPLICA} --param MAX_REPLICA=${DEPLOY_MAX_REPLICA} --param CPU_UTILIZATION=${DEPLOY_CPU_UTILIZATION} | oc apply -f -
+    - |
+      oc process -f .okd/AutoScaler.yaml \
+        --param MIN_REPLICA=${DEPLOY_MIN_REPLICA} \
+        --param MAX_REPLICA=${DEPLOY_MAX_REPLICA} \
+        --param CPU_UTILIZATION=${DEPLOY_CPU_UTILIZATION} | oc apply -f -
     - oc process -f .okd/Route.yaml --param APP_HOST=${PROJECT_SERVICE_NAME} --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
     - oc process -f .okd/Service.yaml --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
     - oc process -f .okd/DeploymentConfig.yaml --param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${PROJECT_SERVICE_NAME} | oc apply -f -
