@@ -26,10 +26,10 @@ parameters:
   value: "soteria"
 - name: MIN_REPLICA
   displayName: Minimum number of replica
-  value: "6"
+  required: true
 - name: MAX_REPLICA
   displayName: Maximum number of replica
-  value: "25"
+  required: true
 - name: CPU_UTILIZATION
   displayName: Target CPU Utilization Percentage
-  value: "80"
+  required: true
