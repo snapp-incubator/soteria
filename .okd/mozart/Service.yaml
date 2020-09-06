@@ -9,7 +9,7 @@ objects:
         app.snappcloud.io/name: ${SERVICE_NAME}
         app.snappcloud.io/instance: ${SERVICE_NAME}-${CI_COMMIT_REF_SLUG}
         app.snappcloud.io/version: ${CI_COMMIT_REF_SLUG}
-        app.snappcloud.io/managed-by: bravo
+        app.snappcloud.io/managed-by: dispatching-team
         app.snappcloud.io/created-by: ${CREATED_BY}
         app: "${SERVICE_NAME}"
     spec:
@@ -32,4 +32,4 @@ parameters:
   - name: CI_COMMIT_REF_SLUG
     displayName: Commit Ref Slug
     required: true
-    value: "qe"
+    value: "dev"
