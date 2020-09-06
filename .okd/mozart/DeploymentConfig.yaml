@@ -12,6 +12,7 @@ objects:
         app.snappcloud.io/instance: ${SERVICE_NAME}-${CI_COMMIT_REF_SLUG}
         app.snappcloud.io/version: ${CI_COMMIT_REF_SLUG}
         app.snappcloud.io/managed-by: ${MANAGED_BY}
+        app.snappcloud.io/created-by: mozart
       name: ${SERVICE_NAME}
     spec:
       replicas: 1
@@ -69,16 +70,14 @@ objects:
               - name: HTTP_PROXY
               - name: HTTPS_PROXY
             volumeMounts:
-              - name: "${SERVICE_NAME}-3rd-party-keys"
+              - name: "${SERVICE_NAME}-jwt-keys"
                 mountPath: "/jwt_pems/100.private.pem"
                 subPath: 100.private.pem
                 readOnly: true
           volumes:
-            - name: "${SERVICE_NAME}-3rd-party-keys"
-              configMap:
-                name: ${SERVICE_NAME}-jwt-keys
-            # - name: "readiness-check"
-            #   emptyDir: {}
+            - name: "${SERVICE_NAME}-jwt-keys"
+              secret:
+                secretName: "${SERVICE_NAME}-jwt-keys"
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           terminationGracePeriodSeconds: 30
