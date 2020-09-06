@@ -191,6 +191,7 @@ release:production:teh-2:
     - oc version
     - oc login https://${DEPLOY_ADDRESS} --token=${DEPLOY_TOKEN}
     - oc project ${DEPLOY_PROJECT}
+    -  - oc process -f .okd/DeploymentConfig.yaml --param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
     - |
       oc process -f .okd/ConfigMap.yaml \
         --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}" \
@@ -214,7 +215,6 @@ release:production:teh-2:
         --param CPU_UTILIZATION=${DEPLOY_CPU_UTILIZATION} | oc apply -f -
     - oc process -f .okd/Route.yaml --param APP_HOST=${DEPLOY_SERVICE_NAME} --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
     - oc process -f .okd/Service.yaml --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
-    - oc process -f .okd/DeploymentConfig.yaml --param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
   script:
     - oc rollout latest dc/${DEPLOY_SERVICE_NAME}
 #  only:
