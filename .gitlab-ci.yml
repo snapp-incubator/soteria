@@ -35,9 +35,7 @@ code-generator:
 #  cache:
 #    paths:
 #      - ./web/grpc/contracts
-  only:
-    - master
-    - tags
+
 
 .git_template: &git
   before_script:
@@ -68,9 +66,7 @@ compile:
     paths:
       - ${BUILD_PATH}/${CI_PROJECT_NAME}
     expire_in: 1 week
-  only:
-    - master
-    - tags
+
 
 unit_tests:
   <<: *git
@@ -93,9 +89,7 @@ unit_tests:
   dependencies:
     - code-generator
     - compile
-  only:
-    - master
-    - tags
+
     
 build:
   image: docker:latest
@@ -117,9 +111,7 @@ build:
   dependencies:
     - code-generator
     - compile
-  only:
-    - master
-    - tags
+
     
 .release_template: &release_job_definition
   image: docker:latest
@@ -133,9 +125,7 @@ build:
     - docker push ${CONTAINER_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
   dependencies:
     - build
-  only:
-    - master
-    - tags
+
 
 release:staging:
   <<: *release_job_definition
@@ -147,7 +137,7 @@ release:staging:
   only:
     - master
     - tags
-  #  - branches
+    - branches
 
 release:mozart:
   <<: *release_job_definition
@@ -159,7 +149,7 @@ release:mozart:
   only:
     - master
     - tags
- #   - branches
+    - branches
   when: manual
 
 release:production:teh-1:
@@ -205,9 +195,10 @@ release:production:teh-2:
         --param APP_VERSION="${PROJECT_VERSION}" \
         --param CI_COMMIT_REF_SLUG="${CI_COMMIT_REF_SLUG}" \
         --param PASSENGER_HASH_SALT="${DEPLOY_PASSENGER_SALT_DEV}" \
-        --param PASSENGER_HASH_LENGTH="15" \
+        --param PASSENGER_HASH_LENGTH=15 \
         --param DRIVER_HASH_SALT="${DEPLOY_DRIVER_SALT_DEV}" \
-        --param DRIVER_HASH_LENGTH="15" | oc apply -f -
+        --param DRIVER_HASH_LENGTH=15 \
+        --param THIRD_PARTY_JWT_PRIVATE_KEY="${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY}" | oc apply -f -
     - |
       oc process -f .okd/AutoScaler.yaml \
         --param MIN_REPLICA=${DEPLOY_MIN_REPLICA} \
@@ -217,11 +208,8 @@ release:production:teh-2:
     - oc process -f .okd/Service.yaml --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
   script:
     - oc rollout latest dc/${DEPLOY_SERVICE_NAME}
-#  only:
-#    - master
-#    - tags
-#    - branches
-#  when: manual
+  only:
+    - tags
   when: manual
 
 
@@ -240,11 +228,12 @@ deploy:staging:teh_1:
     DEPLOY_PASSENGER_SALT_DEV: "${PASSENGER_SALT_DEV}"
     DEPLOY_DRIVER_SALT_DEV: "${DRIVER_SALT_DEV}"
     DEPLOY_SERVICE_NAME: "${PROJECT_SERVICE_NAME}-staging"
-    #DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_MOZART}"
-    DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
+    DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_MOZART}"
     DEPLOY_REDIS_ADDR: "redis:6379"
     DEPLOY_REDIS_PASS: "test"
-
+  only:
+    - master
+    - branches
 
 
 deploy:production:teh_1:
