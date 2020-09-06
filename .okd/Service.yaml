@@ -32,3 +32,4 @@ parameters:
 - name: PORT
   displayName: Port
   description: the port which will be open by your application
+  value: "9999"

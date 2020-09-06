@@ -14,19 +14,11 @@ variables:
   OKD_TEH2_CLUSTER_ADDRESS: "okd.private.teh-2.snappcloud.io"
   OKD_TEH1_REGISTRY: 'registry.apps.private.teh-1.snappcloud.io'
   OKD_TEH2_REGISTRY: 'registry.apps.private.teh-2.snappcloud.io'
-  OKD_SERVICE_NAME: 'soteria'
+  PROJECT_SERVICE_NAME: 'soteria'
   PROJECT_STAGING: 'realtime-staging'
   PROJECT_PRODUCTION: 'realtime-production'
   PROJECT_MOZART: 'mozart'
-  PORT: '9999'
-
-#cache:
-#  paths:
-#    - /apt-cache
-#    - /go/src/github.com
-#    - /go/src/golang.org
-#    - /go/src/google.golang.org
-#    - /go/src/gopkg.in
+  PROJECT_VERSION: "${CI_COMMIT_SHA}" 
 
 
 code-generator:
@@ -43,6 +35,9 @@ code-generator:
 #  cache:
 #    paths:
 #      - ./web/grpc/contracts
+  only:
+    - master
+    - tags
 
 .git_template: &git
   before_script:
@@ -73,7 +68,9 @@ compile:
     paths:
       - ${BUILD_PATH}/${CI_PROJECT_NAME}
     expire_in: 1 week
-
+  only:
+    - master
+    - tags
 
 unit_tests:
   <<: *git
@@ -96,7 +93,10 @@ unit_tests:
   dependencies:
     - code-generator
     - compile
-
+  only:
+    - master
+    - tags
+    
 build:
   image: docker:latest
   stage: build
@@ -117,7 +117,10 @@ build:
   dependencies:
     - code-generator
     - compile
-
+  only:
+    - master
+    - tags
+    
 .release_template: &release_job_definition
   image: docker:latest
   stage: release
@@ -130,7 +133,9 @@ build:
     - docker push ${CONTAINER_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
   dependencies:
     - build
-
+  only:
+    - master
+    - tags
 
 release:staging:
   <<: *release_job_definition
@@ -142,7 +147,7 @@ release:staging:
   only:
     - master
     - tags
-    - branches
+  #  - branches
 
 release:mozart:
   <<: *release_job_definition
@@ -154,7 +159,7 @@ release:mozart:
   only:
     - master
     - tags
-    - branches
+ #   - branches
   when: manual
 
 release:production:teh-1:
@@ -182,90 +187,95 @@ release:production:teh-2:
 .deploy_template: &deploy_job_definition
   image: openshift/origin-cli:v3.10
   stage: deploy
-  variables:
-    HOST: "soteria"
   before_script:
     - oc version
     - oc login https://${DEPLOY_ADDRESS} --token=${DEPLOY_TOKEN}
     - oc project ${DEPLOY_PROJECT}
+    -  - oc process -f .okd/DeploymentConfig.yaml --param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
     - |
       oc process -f .okd/ConfigMap.yaml \
-        --param THIRD_PARTY_JWT_PRIVATE_KEY= "${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY}" \
-        --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}"  | oc apply -f -
+        --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}" \
+        --param APP_VERSION="${PROJECT_VERSION}" \
+        --param REDIS_ADDR="${DEPLOY_REDIS_ADDR}" \
+        --param REDIS_PASS="${DEPLOY_REDIS_PASS}" \
+        --param CI_COMMIT_REF_SLUG="${CI_COMMIT_REF_SLUG}" | oc apply -f -
+    - |
       oc process -f .okd/Secret.yaml \
         --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}" \
+        --param APP_VERSION="${PROJECT_VERSION}" \
+        --param CI_COMMIT_REF_SLUG="${CI_COMMIT_REF_SLUG}" \
         --param PASSENGER_HASH_SALT="${DEPLOY_PASSENGER_SALT_DEV}" \
-        --param PASSENGER_HASH_MIN_LENGTH="15" \
+        --param PASSENGER_HASH_LENGTH="15" \
         --param DRIVER_HASH_SALT="${DEPLOY_DRIVER_SALT_DEV}" \
-        --param REDIS_ADDR="${DEPLOY_REDIS_ADDR}" \
-        --param DRIVER_HASH_MIN_LENGTH="15" | oc apply -f -
-    - oc process -f .okd/AutoScaler.yaml | oc apply -f -
-    - oc process -f .okd/Route.yaml --param APP_HOST=${HOST} --param PORT=${PORT} --param SERVICE_NAME=${OKD_SERVICE_NAME} | oc apply -f -
-    - oc process -f .okd/Service.yaml --param PORT=${PORT} --param SERVICE_NAME=${OKD_SERVICE_NAME} | oc apply -f -
+        --param DRIVER_HASH_LENGTH="15" | oc apply -f -
+    - |
+      oc process -f .okd/AutoScaler.yaml \
+        --param MIN_REPLICA=${DEPLOY_MIN_REPLICA} \
+        --param MAX_REPLICA=${DEPLOY_MAX_REPLICA} \
+        --param CPU_UTILIZATION=${DEPLOY_CPU_UTILIZATION} | oc apply -f -
+    - oc process -f .okd/Route.yaml --param APP_HOST=${DEPLOY_SERVICE_NAME} --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
+    - oc process -f .okd/Service.yaml --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
   script:
-    - oc rollout latest dc/${OKD_SERVICE_NAME}
-  environment:
-    name: staging
-    url: http://${OKD_SERVICE_NAME}-staging.apps.private.teh-1.snappcloud.io
-  only:
-    - master
-    - tags
-    - branches
+    - oc rollout latest dc/${DEPLOY_SERVICE_NAME}
+#  only:
+#    - master
+#    - tags
+#    - branches
+#  when: manual
   when: manual
 
 
 
 
-deploy:staging:
+deploy:staging:teh_1:
   <<: *deploy_job_definition
   variables:
-    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
-    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_PRODUCTION/$CI_PROJECT_NAME"
+    DEPLOY_MIN_REPLICA: "1"
+    DEPLOY_MAX_REPLICA: "2"
+    DEPLOY_CPU_UTILIZATION: "80"
+    CONTAINER_REGISTRY_IMAGE: "$PROJECT_STAGING/${PROJECT_SERVICE_NAME}:$CI_COMMIT_REF_SLUG"
     DEPLOY_ADDRESS: "${OKD_TEH1_CLUSTER_ADDRESS}"
     DEPLOY_PROJECT: "${PROJECT_STAGING}"
     DEPLOY_TOKEN: "${OKD_STAGING_TOKEN}"
     DEPLOY_PASSENGER_SALT_DEV: "${PASSENGER_SALT_DEV}"
-    Deploy_DRIVER_SALT_DEV: "${DRIVER_SALT_DEV}"
-    DEPLOY_SERVICE_NAME: "${OKD_SERVICE_NAME}"
-    DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY_MOZART}"
-    DEPLOY_REDIS_ADDR: "soteria-staging-redis:6379"
+    DEPLOY_DRIVER_SALT_DEV: "${DRIVER_SALT_DEV}"
+    DEPLOY_SERVICE_NAME: "${PROJECT_SERVICE_NAME}-staging"
+    #DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_MOZART}"
+    DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
+    DEPLOY_REDIS_ADDR: "redis:6379"
+    DEPLOY_REDIS_PASS: "test"
+
 
 
 deploy:production:teh_1:
   <<: *deploy_job_definition
   variables:
-    HOST: "soteria"
-    MIN_REPLICA_COUNT: 2
-    MAX_REPLICA_COUNT: 80
-    CPU_UTILIZATION: 80
-    METRICS_ENABLED: "true"
-    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
-    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_PRODUCTION/$CI_PROJECT_NAME"
+    DEPLOY_MIN_REPLICA: "6"
+    DEPLOY_MAX_REPLICA: "25"
+    DEPLOY_CPU_UTILIZATION: "80"
+    CONTAINER_REGISTRY_IMAGE: "$PROJECT_PRODUCTION/$PROJECT_SERVICE_NAME:$CI_COMMIT_REF_SLUG"
     DEPLOY_ADDRESS: "${OKD_TEH1_CLUSTER_ADDRESS}"
     DEPLOY_PROJECT: "${PROJECT_PRODUCTION}"
     DEPLOY_TOKEN: "$OKD_PRODUCTION_TOKEN_TEH2"
     DEPLOY_PASSENGER_SALT_DEV: "${PASSENGER_SALT_DEV}"
-    Deploy_DRIVER_SALT_DEV: "${DRIVER_SALT_DEV}"
-    DEPLOY_SERVICE_NAME: ${OKD_SERVICE_NAME}
-    DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
+    DEPLOY_DRIVER_SALT_DEV: "${DRIVER_SALT_DEV}"
+    DEPLOY_SERVICE_NAME: "${PROJECT_SERVICE_NAME}"
+    DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
     #DEPLOY_REDIS_ADDR:
 
 deploy:production:teh_2:
   <<: *deploy_job_definition
   variables:
-    HOST: "soteria"
-    MIN_REPLICA_COUNT: 2
-    MAX_REPLICA_COUNT: 80
-    CPU_UTILIZATION: 80
-    METRICS_ENABLED: "true"
-    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH2_REGISTRY"
-    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH2_REGISTRY/$PROJECT_PRODUCTION/$CI_PROJECT_NAME"
+    DEPLOY_MIN_REPLICA: "6"
+    DEPLOY_MAX_REPLICA: "25"
+    DEPLOY_CPU_UTILIZATION: "80"
+    CONTAINER_REGISTRY_IMAGE: "$PROJECT_PRODUCTION/$PROJECT_SERVICE_NAME:$CI_COMMIT_REF_SLUG"
     DEPLOY_ADDRESS: "${OKD_TEH2_CLUSTER_ADDRESS}"
     DEPLOY_PROJECT: "${PROJECT_PRODUCTION}"
     DEPLOY_TOKEN: "$OKD_PRODUCTION_TOKEN_TEH2"
     DEPLOY_PASSENGER_SALT_DEV: "${PASSENGER_SALT_DEV}"
-    Deploy_DRIVER_SALT_DEV: "${DRIVER_SALT_DEV}"
-    DEPLOY_SERVICE_NAME: ${OKD_SERVICE_NAME}
-    DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
+    DEPLOY_DRIVER_SALT_DEV: "${DRIVER_SALT_DEV}"
+    DEPLOY_SERVICE_NAME: "${PROJECT_SERVICE_NAME}"
+    DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
     #DEPLOY_REDIS_ADDR:
 
