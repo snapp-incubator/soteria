@@ -71,30 +71,25 @@ objects:
             - name: HTTPS_PROXY
           volumeMounts:
             - name: "${SERVICE_NAME}-jwt-keys"
-              mountPath: "/jwt_pems/"
+              mountPath: "/jwt_pems/100.private.pem"
+              subPath: 100.private.pem
+              readOnly: true
         volumes:
           - name: "${SERVICE_NAME}-jwt-keys"
-            configMap:
-              name: "${SERVICE_NAME}-jwt-keys"
-          # - name: "readiness-check"
-          #   emptyDir: {}
+            secret:
+              secretName: "${SERVICE_NAME}-jwt-keys"
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         terminationGracePeriodSeconds: 30
     triggers: []
-
 parameters:
 - name: APP_IMAGE
   displayName: Application Docker Image
   description: application will pull and run this docker image. It has to be in Snapp Cloud registery
-  value: "dispathing/soteria:master"
+  value: "$CONTAINER_REGISTRY_IMAGE"
 - name: SERVICE_NAME
   displayName: Service name
   description: The name of the application (should be unique in the namespace)
-  value: "soteria"
-- name: PORT
-  displayName: Port
-  description: the port which will be open by your application
 - name: MEMORY_LIMIT
   value: "512Mi"
 - name: MEMORY_REQUEST
@@ -108,6 +103,6 @@ parameters:
   displayName: Log Level
   description: How much log do you want? (DEBUG|INFO|WARN|ERROR|OFF)
 - name: METRICS_ENABLED
-  value: "false"
+  value: "true"
   displayName: Metrics Endpoint?
   description: /metrics endpoint will be available for Prometheus

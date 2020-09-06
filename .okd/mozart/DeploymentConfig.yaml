@@ -7,12 +7,11 @@ objects:
     kind: DeploymentConfig
     metadata:
       labels:
+        app: ${SERVICE_NAME}
         app.snappcloud.io/name: ${SERVICE_NAME}
         app.snappcloud.io/instance: ${SERVICE_NAME}-${CI_COMMIT_REF_SLUG}
         app.snappcloud.io/version: ${CI_COMMIT_REF_SLUG}
-        app.snappcloud.io/managed-by: dispatching
-        app.snappcloud.io/created-by: ${CREATED_BY}
-        app: ${SERVICE_NAME}
+        app.snappcloud.io/managed-by: ${MANAGED_BY}
       name: ${SERVICE_NAME}
     spec:
       replicas: 1
@@ -87,11 +86,11 @@ parameters:
 - name: SERVICE_IMAGE_TAG
   displayName: Application Docker Image
   description: application will pull and run this docker image. It has to be in Snapp Cloud registery
-  value: "qe"
+  value: "dev"
 - name: CI_COMMIT_REF_SLUG
   displayName: Deployment branch
   required: true
-  value: "master"
+  value: "dev"
 - name: SERVICE_NAME
   displayName: Service name
   description: The name of the application (should be unique in the namespace)
@@ -116,7 +115,7 @@ parameters:
   value: "false"
   displayName: Metrics Endpoint?
   description: /metrics endpoint will be available for Prometheus
-- name: CREATED_BY
-  displayName: Created By
+- name: MANAGED_BY
+  displayName: Managed By
   required: true
-  value: mozart
+  value: dispatching-team
