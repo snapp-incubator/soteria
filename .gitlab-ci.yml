@@ -200,7 +200,6 @@ release:production:teh-2:
         --param CI_COMMIT_REF_SLUG="${CI_COMMIT_REF_SLUG}" | oc apply -f -
     - |
       oc process -f .okd/Secret.yaml \
-        --param THIRD_PARTY_JWT_PRIVATE_KEY="${THIRD_PARTY_JWT_PRIVATE_KEY_MOZART}" \
         --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}" \
         --param APP_VERSION="${PROJECT_VERSION}" \
         --param CI_COMMIT_REF_SLUG="${CI_COMMIT_REF_SLUG}" \
