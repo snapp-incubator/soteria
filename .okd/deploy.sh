@@ -6,7 +6,7 @@ echo "processing config map..."
 oc process -f ./mozart/ConfigMap.yaml --param-file=.env --ignore-unknown-parameters=true | oc apply -f -
 
 echo "processing secret..."
-oc process -f Secret.yaml --param-file=.env --ignore-unknown-parameters=true | oc apply -f -
+oc process -f ./mozart/Secret.yaml --param-file=.env --ignore-unknown-parameters=true | oc apply -f -
 
 echo "processing service..."
 oc process -f ./mozart/Service.yaml --param-file=.env --ignore-unknown-parameters=true | oc apply -f -
