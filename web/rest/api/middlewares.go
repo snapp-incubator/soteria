@@ -14,7 +14,7 @@ func accountsBasicAuth() gin.HandlerFunc {
 		auth := strings.SplitN(ctx.Request.Header.Get("Authorization"), " ", 2)
 
 		if len(auth) != 2 || auth[0] != "Basic" {
-			ctx.JSON(CreateResponse(accountsInfo.WrongUsernameOrPassword, nil))
+			ctx.AbortWithStatusJSON(CreateResponse(accountsInfo.WrongUsernameOrPassword, nil))
 			return
 		}
 
@@ -22,18 +22,18 @@ func accountsBasicAuth() gin.HandlerFunc {
 		pair := strings.SplitN(string(payload), ":", 2)
 
 		if len(pair) != 2 {
-			ctx.JSON(CreateResponse(accountsInfo.WrongUsernameOrPassword, nil))
+			ctx.AbortWithStatusJSON(CreateResponse(accountsInfo.WrongUsernameOrPassword, nil))
 			return
 		}
 
 		if pair[0] != ctx.Param("username") {
-			ctx.JSON(CreateResponse(accountsInfo.UsernameMismatch, nil))
+			ctx.AbortWithStatusJSON(CreateResponse(accountsInfo.UsernameMismatch, nil))
 			return
 		}
 
 		_, err := app.GetInstance().AccountsService.Info(pair[0], pair[1])
 		if err != nil {
-			ctx.JSON(CreateResponse(err.Code, nil, err.Message))
+			ctx.AbortWithStatusJSON(CreateResponse(err.Code, nil, err.Message))
 			return
 		}
 
