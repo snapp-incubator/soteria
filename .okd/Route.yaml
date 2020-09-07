@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: ${SERVICE_NAME}-route
+objects:
+- apiVersion: v1
+  kind: Route
+  metadata:
+    labels:
+      app: ${SERVICE_NAME}
+      router: inter-dc
+    name: ${SERVICE_NAME}-inter-dc
+  spec:
+    host: ${APP_HOST}.apps.inter-dc.${DC}.snappcloud.io
+    port:
+      targetPort: 9999-tcp
+    to:
+      kind: Service
+      name: ${SERVICE_NAME}
+      weight: 100
+    wildcardPolicy: None
+
+- apiVersion: v1
+  kind: Route
+  metadata:
+    annotations:
+      haproxy.router.openshift.io/ip_whitelist: "${IP_WHITE_LIST}"
+    labels:
+      app: ${SERVICE_NAME}
+      router: "public"
+    name: ${SERVICE_NAME}-public
+  spec:
+    host: ${APP_HOST}.apps.public.${DC}.snappcloud.io
+    port:
+      targetPort: 9999-tcp
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+    to:
+      kind: Service
+      name: ${SERVICE_NAME}
+      weight: 100
+    wildcardPolicy: None
+
+parameters:
+- name: APP_HOST
+  required: true
+  displayName: Application host
+- name: PORT
+  displayName: Port
+  description: the port which will be open by your application
+  value: "9999"
+- name: IP_WHITE_LIST
+  displayName: IP White list
+  description: The valid IP Addresses which can send request to public route
+  value: "*"
+- name: SERVICE_NAME
+  displayName: Service name
+  description: The name of the application (should be unique in the namespace)
+  value: "soteria"
+- name: DC
+  displayName: Data center
+  value: "teh-1"

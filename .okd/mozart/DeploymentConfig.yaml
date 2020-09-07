@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: ${SERVICE_NAME}-deployment-config
+objects:
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      labels:
+        app: ${SERVICE_NAME}
+        app.snappcloud.io/name: ${SERVICE_NAME}
+        app.snappcloud.io/instance: ${SERVICE_NAME}-${CI_COMMIT_REF_SLUG}
+        app.snappcloud.io/version: ${CI_COMMIT_REF_SLUG}
+        app.snappcloud.io/managed-by: ${MANAGED_BY}
+        app.snappcloud.io/created-by: mozart
+      name: ${SERVICE_NAME}
+    spec:
+      replicas: 1
+      selector:
+        app: ${SERVICE_NAME}
+        deploymentconfig: ${SERVICE_NAME}
+      triggers: []
+      template:
+        metadata:
+          annotations:
+            prometheus.io/scrape: "${METRICS_ENABLED}"
+            prometheus.io/path: "/metrics"
+          labels:
+            app: ${SERVICE_NAME}
+            deploymentconfig: ${SERVICE_NAME}
+        spec:
+          containers:
+          - name: ${SERVICE_NAME}-app
+            image: docker-registry.default.svc:5000/mozart/${SERVICE_NAME}:${SERVICE_IMAGE_TAG}
+            imagePullPolicy: Always
+            ports:
+            - containerPort: 9999
+              protocol: TCP
+            resources:
+              limits:
+                memory: "${MEMORY_LIMIT}"
+                # cpu: "${CPU_LIMIT}"
+              requests:
+                memory: "${MEMORY_REQUEST}"
+                # cpu: "${CPU_REQUEST}"
+            readinessProbe:
+              failureThreshold: 3
+              initialDelaySeconds: 10
+              periodSeconds: 23
+              successThreshold: 1
+              tcpSocket:
+                port: 9999
+              timeoutSeconds: 2
+            livenessProbe:
+              failureThreshold: 3
+              initialDelaySeconds: 10
+              periodSeconds: 29
+              successThreshold: 1
+              tcpSocket:
+                port: 9999
+              timeoutSeconds: 2
+            envFrom:
+              - secretRef:
+                  name: ${SERVICE_NAME}-auth-env
+              - configMapRef:
+                  name: "${SERVICE_NAME}-env"
+            env:
+              - name: LOG_LEVEL
+                value: "${LOG_LEVEL}"
+              - name: HTTP_PROXY
+              - name: HTTPS_PROXY
+            volumeMounts:
+              - name: "${SERVICE_NAME}-jwt-keys"
+                mountPath: "/jwt_pems/100.private.pem"
+                subPath: 100.private.pem
+                readOnly: true
+          volumes:
+            - name: "${SERVICE_NAME}-jwt-keys"
+              secret:
+                secretName: "${SERVICE_NAME}-jwt-keys"
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          terminationGracePeriodSeconds: 30
+parameters:
+- name: SERVICE_IMAGE_TAG
+  displayName: Application Docker Image
+  description: application will pull and run this docker image. It has to be in Snapp Cloud registery
+  value: "dev"
+- name: CI_COMMIT_REF_SLUG
+  displayName: Deployment branch
+  required: true
+  value: "dev"
+- name: SERVICE_NAME
+  displayName: Service name
+  description: The name of the application (should be unique in the namespace)
+  value: "soteria"
+- name: PORT
+  value: "9999"
+  displayName: Port
+  description: the port which will be open by your application
+- name: MEMORY_LIMIT
+  value: "150Mi"
+- name: MEMORY_REQUEST
+  value: "150Mi"
+- name: CPU_LIMIT
+  value: "500m"
+- name: CPU_REQUEST
+  value: "500m"
+- name: LOG_LEVEL
+  value: "DEBUG"
+  displayName: Log Level
+  description: How much log do you want? (DEBUG|INFO|WARN|ERROR|OFF)
+- name: METRICS_ENABLED
+  value: "false"
+  displayName: Metrics Endpoint?
+  description: /metrics endpoint will be available for Prometheus
+- name: MANAGED_BY
+  displayName: Managed By
+  required: true
+  value: dispatching-team

@@ -1,25 +1,37 @@
-package db
+package cachedredis
 
 import (
 	"encoding/json"
 	"github.com/alicebob/miniredis/v2"
 	"github.com/go-redis/redis"
+	"github.com/patrickmn/go-cache"
 	"github.com/stretchr/testify/assert"
+	"gitlab.snapp.ir/dispatching/soteria/internal/db"
+	redisdb "gitlab.snapp.ir/dispatching/soteria/internal/db/redis"
 	"testing"
 	"time"
 )
 
-func TestRedisModelHandler_Get(t *testing.T) {
+func TestModelHandler_Get(t *testing.T) {
 	r := newTestRedis()
-	s := RedisModelHandler{Client: r}
+	s := ModelHandler{
+		redisModelHandler: &redisdb.ModelHandler{Client: r},
+		cache:             cache.New(time.Minute*60, time.Minute*60),
+		validationTable:   make(map[string]bool, 32),
+	}
 	expected := MockModel{Name: "test"}
 	v, _ := json.Marshal(expected)
 
 	err := r.Set("mock-test", v, 0).Err()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Run("testing successful get", func(t *testing.T) {
+	assert.NoError(t, err)
+
+	t.Run("testing first successful get", func(t *testing.T) {
+		var actual MockModel
+		err := s.Get("mock", "test", &actual)
+		assert.Equal(t, expected, actual)
+		assert.NoError(t, err)
+	})
+	t.Run("testing second successful get", func(t *testing.T) {
 		var actual MockModel
 		err := s.Get("mock", "test", &actual)
 		assert.Equal(t, expected, actual)
@@ -31,12 +43,22 @@ func TestRedisModelHandler_Get(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, "redis: nil", err.Error())
 	})
-
+	isValid, err := s.IsCacheValid("mock-test")
+	assert.Equal(t, 1, s.GetMiss())
+	assert.Equal(t, 1, s.GetHit())
+	assert.Equal(t, true, isValid)
+	assert.NoError(t, err)
+	err = r.Del("mock-test").Err()
+	assert.NoError(t, err)
 }
 
-func TestRedisModelHandler_Save(t *testing.T) {
+func TestModelHandler_Save(t *testing.T) {
 	r := newTestRedis()
-	s := RedisModelHandler{Client: r}
+	s := ModelHandler{
+		redisModelHandler: &redisdb.ModelHandler{Client: r},
+		cache:             cache.New(time.Minute*60, time.Minute*60),
+		validationTable:   make(map[string]bool, 32),
+	}
 
 	t.Run("testing save model", func(t *testing.T) {
 		expected := MockModel{Name: "save-test"}
@@ -51,7 +73,12 @@ func TestRedisModelHandler_Save(t *testing.T) {
 
 func TestRedisModelHandler_Delete(t *testing.T) {
 	r := newTestRedis()
-	s := RedisModelHandler{Client: r}
+	s := ModelHandler{
+		redisModelHandler: &redisdb.ModelHandler{Client: r},
+		cache:             cache.New(time.Minute*60, time.Minute*60),
+		validationTable:   make(map[string]bool, 32),
+	}
+
 	expected := MockModel{Name: "test"}
 	v, _ := json.Marshal(expected)
 
@@ -65,6 +92,10 @@ func TestRedisModelHandler_Delete(t *testing.T) {
 		err = r.Get("mock-test").Err()
 		assert.Error(t, err)
 		assert.Equal(t, "redis: nil", err.Error())
+		item, ok := s.cache.Get("mock-test")
+		assert.False(t, ok)
+		assert.Nil(t, item)
+
 	})
 	t.Run("testing failed delete", func(t *testing.T) {
 		var actual MockModel
@@ -76,7 +107,11 @@ func TestRedisModelHandler_Delete(t *testing.T) {
 
 func TestRedisModelHandler_Update(t *testing.T) {
 	r := newTestRedis()
-	s := RedisModelHandler{Client: r}
+	s := ModelHandler{
+		redisModelHandler: &redisdb.ModelHandler{Client: r},
+		cache:             cache.New(time.Minute*60, time.Minute*60),
+		validationTable:   make(map[string]bool, 32),
+	}
 
 	m := MockModel{Name: "test", Value: "test-1"}
 	v, _ := json.Marshal(m)
@@ -90,12 +125,15 @@ func TestRedisModelHandler_Update(t *testing.T) {
 		newModel := MockModel{Name: "test", Value: "test-2"}
 		err = s.Update(newModel)
 		assert.NoError(t, err)
-
+		ok, err := s.IsCacheValid("mock-test")
+		assert.False(t, ok)
+		assert.NoError(t, err)
 		var updatedModel MockModel
 		err = s.Get("mock", "test", &updatedModel)
 		assert.NoError(t, err)
-
 		assert.Equal(t, newModel, updatedModel)
+		assert.Equal(t, 1, s.GetMiss())
+		assert.Equal(t, 0, s.GetHit())
 	})
 }
 
@@ -115,8 +153,8 @@ type MockModel struct {
 	Value string `json:"value"`
 }
 
-func (m MockModel) GetMetadata() MetaData {
-	return MetaData{
+func (m MockModel) GetMetadata() db.MetaData {
+	return db.MetaData{
 		ModelName:    "mock",
 		DateCreated:  time.Time{},
 		DateModified: time.Time{},
