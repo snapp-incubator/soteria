@@ -240,14 +240,14 @@ func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
 	key1, _ := getPublicKey(user.Passenger)
 	key100, _ := getPublicKey(user.ThirdParty)
 	switch pk {
-	case string(user.Passenger):
+	case "passenger":
 		*v.(*user.User) = user.User{
 			MetaData:  db.MetaData{},
 			Username:  user.Passenger,
 			Type:      user.EMQUser,
 			PublicKey: key1,
 		}
-	case string(user.Driver):
+	case "driver":
 		*v.(*user.User) = user.User{
 			MetaData:  db.MetaData{},
 			Username:  string(user.Driver),

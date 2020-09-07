@@ -14,6 +14,7 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db/cachedredis"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db/redis"
+	"gitlab.snapp.ir/dispatching/soteria/internal/factory"
 	"gitlab.snapp.ir/dispatching/soteria/pkg"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/log"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
@@ -94,6 +95,8 @@ func servePreRun(cmd *cobra.Command, args []string) {
 		HashIDSManager:     hid,
 		EMQTopicManager:    snappids.NewEMQManager(hid),
 	})
+
+	app.GetInstance().SetMetrics(factory.GetMetrics("http"))
 }
 
 func serveRun(cmd *cobra.Command, args []string) {
