@@ -1,0 +1,218 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: emq-auth-module
+  annotations:
+    description: "EMQ Authentication/Autherization (ACL/AUTH)"
+    iconClass: "go-gopher"
+    tags: "emq,realtime"
+objects:
+- apiVersion: v1
+  kind: Template
+  metadata:
+    name: ${SERVICE_NAME}
+  objects:
+  - apiVersion: autoscaling/v1
+    kind: HorizontalPodAutoscaler
+    metadata:
+      labels:
+        app: ${SERVICE_NAME}
+      name: ${SERVICE_NAME}
+    spec:
+      scaleTargetRef:
+        kind: DeploymentConfig
+        name: ${SERVICE_NAME}
+        apiVersion: v1
+        subresource: scale
+      minReplicas: ${MIN_REPLICA}
+      maxReplicas: ${MAX_REPLICA}
+      targetCPUUtilizationPercentage: ${CPU_UTILIZATION}
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: "${SERVICE_NAME}-jwt-keys"
+      labels:
+        app: "${SERVICE_NAME}"
+
+  - apiVersion: v1
+    kind: Template
+    metadata:
+      name: ${SERVICE_NAME}
+    objects:
+    - apiVersion: v1
+      kind: Route
+      metadata:
+        labels:
+          app: ${SERVICE_NAME}
+        name: ${SERVICE_NAME}
+      spec:
+        host: ${APP_HOST}.apps.private.teh-1.snappcloud.io
+        port:
+          targetPort: ${PORT}-tcp
+        tls:
+          termination: edge
+          insecureEdgeTerminationPolicy: Redirect
+        to:
+          kind: Service
+          name: ${SERVICE_NAME}
+          weight: 100
+        wildcardPolicy: None
+  - apiVersion: v1
+    kind: Secret
+    type: Opaque
+    metadata:
+      name: "${SERVICE_NAME}-auth-env"
+      labels:
+        app: "${SERVICE_NAME}"
+    stringData:
+      CHANNEL_PREFIX: "emqch-"
+      JWT_BASE_PATH: "/jwt_pems/"
+      PASSENGER_HASH_SALT: "${PASSENGER_HASH_SALT}"
+      PASSENGER_HASH_MIN_LENGTH: "${PASSENGER_HASH_MIN_LENGTH}"
+      DRIVER_HASH_SALT: "${DRIVER_HASH_SALT}"
+      DRIVER_HASH_MIN_LENGTH: "${DRIVER_HASH_MIN_LENGTH}"
+      PASSENGER_ISSUER: "0"
+      DRIVER_ISSUER: "1"
+  - apiVersion: v1
+    kind: Template
+    metadata:
+      name: ${SERVICE_NAME}-svc
+    objects:
+    - apiVersion: v1
+      kind: Service
+      metadata:
+        annotations:
+        labels:
+          app: ${SERVICE_NAME}
+        name: ${SERVICE_NAME}
+      spec:
+        ports:
+        - name: ${PORT}-tcp
+          port: ${PORT}
+          protocol: TCP
+          targetPort: ${PORT}
+        selector:
+          app: ${SERVICE_NAME}
+        sessionAffinity: None
+        type: ClusterIP
+  - apiVersion: v1
+    kind: Template
+    metadata:
+      name: ${SERVICE_NAME}
+    objects:
+    - apiVersion: v1
+      kind: DeploymentConfig
+      metadata:
+        labels:
+          app: ${SERVICE_NAME}
+        name: ${SERVICE_NAME}
+      spec:
+        selector:
+          app: ${SERVICE_NAME}
+        strategy:
+          rollingParams:
+            intervalSeconds: 1
+            maxSurge: 1
+            maxUnavailable: 0
+            timeoutSeconds: 600
+            updatePeriodSeconds: 10
+          type: Rolling
+        template:
+          metadata:
+            # annotations:
+            #   prometheus.io/scrape: "true"
+            #   prometheus.io/path: "/metrics"
+            labels:
+              app: ${SERVICE_NAME}
+          spec:
+            containers:
+            - name: ${SERVICE_NAME}-app
+              image: "docker-registry.default.svc:5000/${APP_IMAGE}"
+              imagePullPolicy: Always
+              ports:
+              - containerPort: ${PORT}
+                protocol: TCP
+              resources:
+                limits:
+                  memory: "${MEMORY_LIMIT}"
+                  # cpu: "${CPU_LIMIT}"
+                requests:
+                  memory: "${MEMORY_REQUEST}"
+                  # cpu: "${CPU_REQUEST}"
+              readinessProbe:
+                failureThreshold: 3
+                initialDelaySeconds: 10
+                periodSeconds: 23
+                successThreshold: 1
+                tcpSocket:
+                  port: ${PORT}
+                timeoutSeconds: 2
+              livenessProbe:
+                failureThreshold: 3
+                initialDelaySeconds: 10
+                periodSeconds: 29
+                successThreshold: 1
+                tcpSocket:
+                  port: ${PORT}
+                timeoutSeconds: 2
+              envFrom:
+                - secretRef:
+                    name: "${SERVICE_NAME}-auth-env"
+              env:
+                - name: HTTP_PROXY
+                - name: HTTPS_PROXY
+              volumeMounts:
+                - name: "${SERVICE_NAME}-jwt-keys"
+                  mountPath: "/jwt_pems/"
+            volumes:
+              - name: "${SERVICE_NAME}-jwt-keys"
+                configMap:
+                  name: "${SERVICE_NAME}-jwt-keys"
+              # - name: "readiness-check"
+              #   emptyDir: {}
+            dnsPolicy: ClusterFirst
+            restartPolicy: Always
+            terminationGracePeriodSeconds: 30
+        triggers: []
+
+parameters:
+- name: SERVICE_NAME
+  displayName: Service name
+  description: The name of the application (should be unique in the namespace)
+  value: soteria
+- name: MIN_REPLICA
+  displayName: Minimum number of replica
+  value: 2
+- name: MAX_REPLICA
+  displayName: Maximum number of replica
+  value: 80
+- name: CPU_UTILIZATION
+  displayName: Target CPU Utilization Percentage
+  value: 80
+- name: PASSENGER_HASH_SALT
+  displayName: Passenger hash salt for HashIds
+  required: true
+- name: PASSENGER_HASH_MIN_LENGTH
+  displayName: Minimum length of passenger generated hash for HashIds
+  value: 15
+- name: DRIVER_HASH_SALT
+  displayName: Passenger hash salt for HashIds
+  required: true
+- name: DRIVER_HASH_MIN_LENGTH
+  displayName: Minimum length of driver generated hash for HashIds
+  value: 15
+- name: APP_HOST
+  required: true
+  displayName: Application host
+- name: APP_IMAGE
+  displayName: Application Docker Image
+  description: application will pull and run this docker image. It has to be in Snapp Cloud registery
+  value: "bravo-testing/soteria:master"
+- name: MEMORY_LIMIT
+  value: "512Mi"
+- name: MEMORY_REQUEST
+  value: "512Mi"
+- name: CPU_LIMIT
+  value: "600m"
+- name: CPU_REQUEST
+  value: "600m"

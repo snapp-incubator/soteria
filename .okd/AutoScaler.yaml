@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: ${SERVICE_NAME}-scaler-tpl
+objects:
+- apiVersion: autoscaling/v1
+  kind: HorizontalPodAutoscaler
+  metadata:
+    labels:
+      app: ${SERVICE_NAME}
+    name: ${SERVICE_NAME}
+  spec:
+    scaleTargetRef:
+      kind: DeploymentConfig
+      name: ${SERVICE_NAME}
+      apiVersion: v1
+      subresource: scale
+    minReplicas: ${{MIN_REPLICA}}
+    maxReplicas: ${{MAX_REPLICA}}
+    targetCPUUtilizationPercentage: ${{CPU_UTILIZATION}}
+
+parameters:
+- name: SERVICE_NAME
+  displayName: Service name
+  description: The name of the application (should be unique in the namespace)
+  value: "soteria"
+- name: MIN_REPLICA
+  displayName: Minimum number of replica
+  required: true
+- name: MAX_REPLICA
+  displayName: Maximum number of replica
+  required: true
+- name: CPU_UTILIZATION
+  displayName: Target CPU Utilization Percentage
+  required: true

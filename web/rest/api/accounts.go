@@ -3,9 +3,9 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
-	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/accounts"
-	"net"
+	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/errors"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 )
 
 // Response is the response structure of the REST API
@@ -26,9 +26,9 @@ func CreateResponse(code accountsInfo.Code, data interface{}, details ...string)
 
 // createAccountPayload is the body payload structure of create account endpoint
 type createAccountPayload struct {
-	Username string `json:"username" form:"username" binding:"required"`
-	Password string `json:"password" form:"password" binding:"required"`
-	UserType string `json:"user_type" form:"user_type" binding:"required"`
+	Username string        `json:"username" form:"username" binding:"required"`
+	Password string        `json:"password" form:"password" binding:"required"`
+	UserType user.UserType `json:"user_type" form:"user_type" binding:"required"`
 }
 
 // CreateAccount is the handler of the create account endpoint
@@ -39,7 +39,7 @@ func CreateAccount(ctx *gin.Context) {
 		return
 	}
 
-	if err := accounts.SignUp(p.Username, p.Password, p.UserType); err != nil {
+	if err := app.GetInstance().AccountsService.SignUp(p.Username, p.Password, p.UserType); err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
 	}
@@ -52,18 +52,19 @@ func ReadAccount(ctx *gin.Context) {
 	username := ctx.MustGet("username").(string)
 	password := ctx.MustGet("password").(string)
 
-	user, err := accounts.Info(username, password)
+	u, err := app.GetInstance().AccountsService.Info(username, password)
 	if err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
 	}
 
-	ctx.JSON(CreateResponse(accountsInfo.SuccessfulOperation, user))
+	ctx.JSON(CreateResponse(accountsInfo.SuccessfulOperation, u))
 }
 
 // updateAccountPayload is the body payload structure of update account endpoint
 type updateAccountPayload struct {
 	NewPassword string   `json:"new_password" form:"new_password"`
+	Secret      string   `json:"secret" form:"secret"`
 	IPs         []string `json:"ips" form:"ips"`
 }
 
@@ -78,12 +79,7 @@ func UpdateAccount(ctx *gin.Context) {
 		return
 	}
 
-	ips := make([]net.IP, len(p.IPs))
-	for i := range p.IPs {
-		ips[i] = net.ParseIP(p.IPs[i])
-	}
-
-	err := accounts.Update(username, password, p.NewPassword, ips)
+	err := app.GetInstance().AccountsService.Update(username, password, p.NewPassword, p.Secret, p.IPs)
 	if err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
@@ -97,7 +93,7 @@ func DeleteAccount(ctx *gin.Context) {
 	username := ctx.MustGet("username").(string)
 	password := ctx.MustGet("password").(string)
 
-	err := accounts.Delete(username, password)
+	err := app.GetInstance().AccountsService.Delete(username, password)
 	if err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return

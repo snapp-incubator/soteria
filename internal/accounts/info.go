@@ -1,20 +1,21 @@
 package accounts
 
 import (
-	"gitlab.snapp.ir/dispatching/soteria/pkg/accounts"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Info returns a user based on given username and password
-func Info(username, password string) (*User, *accounts.Error) {
-	var user User
-	if err := ModelHandler.Get("user", username, &user); err != nil {
-		return nil, accounts.CreateError(accounts.DatabaseGetFailure, err.Error())
+func (s Service) Info(username, password string) (*user.User, *errors.Error) {
+	var u user.User
+	if err := s.Handler.Get("user", username, &u); err != nil {
+		return nil, errors.CreateError(errors.DatabaseGetFailure, err.Error())
 	}
 
-	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(password)); err != nil {
-		return nil, accounts.CreateError(accounts.WrongUsernameOrPassword, "")
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
+		return nil, errors.CreateError(errors.WrongUsernameOrPassword, "")
 	}
 
-	return &user, nil
+	return &u, nil
 }

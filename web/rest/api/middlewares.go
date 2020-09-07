@@ -3,17 +3,18 @@ package api
 import (
 	"encoding/base64"
 	"github.com/gin-gonic/gin"
-	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
-	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/accounts"
+	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"strings"
 )
 
+// accountsBasicAuth is the authentication middleware for the accounts API
 func accountsBasicAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		auth := strings.SplitN(ctx.Request.Header.Get("Authorization"), " ", 2)
 
 		if len(auth) != 2 || auth[0] != "Basic" {
-			ctx.JSON(CreateResponse(accountsInfo.WrongUsernameOrPassword, nil))
+			ctx.AbortWithStatusJSON(CreateResponse(accountsInfo.WrongUsernameOrPassword, nil))
 			return
 		}
 
@@ -21,18 +22,18 @@ func accountsBasicAuth() gin.HandlerFunc {
 		pair := strings.SplitN(string(payload), ":", 2)
 
 		if len(pair) != 2 {
-			ctx.JSON(CreateResponse(accountsInfo.WrongUsernameOrPassword, nil))
+			ctx.AbortWithStatusJSON(CreateResponse(accountsInfo.WrongUsernameOrPassword, nil))
 			return
 		}
 
 		if pair[0] != ctx.Param("username") {
-			ctx.JSON(CreateResponse(accountsInfo.UsernameMismatch, nil))
+			ctx.AbortWithStatusJSON(CreateResponse(accountsInfo.UsernameMismatch, nil))
 			return
 		}
 
-		_, err := accounts.Info(pair[0], pair[1])
+		_, err := app.GetInstance().AccountsService.Info(pair[0], pair[1])
 		if err != nil {
-			ctx.JSON(CreateResponse(err.Code, nil, err.Message))
+			ctx.AbortWithStatusJSON(CreateResponse(err.Code, nil, err.Message))
 			return
 		}
 

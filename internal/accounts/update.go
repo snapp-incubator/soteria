@@ -1,35 +1,40 @@
 package accounts
 
 import (
-	"gitlab.snapp.ir/dispatching/soteria/pkg/accounts"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"golang.org/x/crypto/bcrypt"
-	"net"
 )
 
 // Update updates given username with given new data in `newInfo` in database
-func Update(username, password, newPassword string, ips []net.IP) *accounts.Error {
-	var user User
-	if err := ModelHandler.Get("user", username, &user); err != nil {
-		return accounts.CreateError(accounts.DatabaseGetFailure, err.Error())
+func (s Service) Update(username, password, newPassword, secret string, ips []string) *errors.Error {
+	var u user.User
+	if err := s.Handler.Get("user", username, &u); err != nil {
+		return errors.CreateError(errors.DatabaseGetFailure, err.Error())
 	}
 
-	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(password)); err != nil {
-		return accounts.CreateError(accounts.WrongUsernameOrPassword, "")
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
+		return errors.CreateError(errors.WrongUsernameOrPassword, "")
 	}
 
 	if newPassword != "" {
 		hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 		if err != nil {
-			return accounts.CreateError(accounts.PasswordHashGenerationFailure, err.Error())
+			return errors.CreateError(errors.PasswordHashGenerationFailure, err.Error())
 		}
-		user.Password = hash
-	}
-	if len(ips) != 0 {
-		user.IPs = ips
+		u.Password = string(hash)
 	}
 
-	if err := ModelHandler.Update(user); err != nil {
-		return accounts.CreateError(accounts.DatabaseUpdateFailure, err.Error())
+	if secret != "" {
+		u.Secret = secret
+	}
+
+	if len(ips) != 0 {
+		u.IPs = ips
+	}
+
+	if err := s.Handler.Update(u); err != nil {
+		return errors.CreateError(errors.DatabaseUpdateFailure, err.Error())
 	}
 
 	return nil
