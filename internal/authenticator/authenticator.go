@@ -35,9 +35,10 @@ func (a Authenticator) Auth(tokenString string) (bool, error) {
 		}
 		issuer := fmt.Sprintf("%v", claims["iss"])
 		u := user.User{}
-		err = a.ModelHandler.Get("user", issuer, &u)
+		err = a.ModelHandler.Get("user", issuerToUsername(issuer), &u)
+		fmt.Println(u)
 		if err != nil {
-			return false, fmt.Errorf("error getting issuer from db err: %v", err)
+			return false, fmt.Errorf("error getting issuer %v from db err: %v", issuer, err)
 		}
 		key := u.PublicKey
 		if key == nil {
@@ -160,7 +161,7 @@ func (a Authenticator) validateAccessType(accessType user.AccessType) bool {
 
 func primaryKey(issuer user.Issuer, sub string) string {
 	if issuer == user.Passenger || issuer == user.Driver {
-		return string(issuer)
+		return issuerToUsername(string(issuer))
 	}
 	return sub
 }
@@ -196,4 +197,14 @@ func toAudience(issuer user.Issuer) snappids.Audience {
 	default:
 		return -1
 	}
+}
+
+func issuerToUsername(issuer string) string {
+	switch issuer {
+	case string(user.Passenger):
+		return "passenger"
+	case string(user.Driver):
+		return "driver"
+	}
+	return ""
 }
