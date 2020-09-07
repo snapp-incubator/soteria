@@ -81,7 +81,6 @@ func (a *AppConfig) ReadPrivateKey(u string) (*rsa.PrivateKey, error) {
 	switch u {
 	case user.ThirdParty:
 		fileName = fmt.Sprintf("%s%s", a.Jwt.KeysPath, "100.private.pem")
-		fmt.Println(fileName)
 	default:
 		return nil, fmt.Errorf("invalid user, private key not found")
 	}
