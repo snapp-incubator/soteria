@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/web/grpc/contracts"
 	"google.golang.org/grpc"
 	"net/http"
@@ -33,7 +33,7 @@ func (s *Server) Auth(ctx context.Context, in *contracts.AuthContract) (*contrac
 }
 
 func (s *Server) GetToken(ctx context.Context, in *contracts.GetTokenContract) (*contracts.GetTokenResponse, error) {
-	tokenString, err := app.GetInstance().Authenticator.Token(user.AccessType(in.GetGrantType()), in.GetClientID(), in.GetClientSecret())
+	tokenString, err := app.GetInstance().Authenticator.Token(acl.AccessType(in.GetGrantType()), in.GetClientID(), in.GetClientSecret())
 	if err != nil {
 		return &contracts.GetTokenResponse{
 			Code:  http.StatusUnauthorized,

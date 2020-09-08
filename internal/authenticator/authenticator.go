@@ -6,18 +6,18 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"golang.org/x/crypto/bcrypt"
-	"regexp"
 	"time"
 )
 
 // Authenticator is responsible for Acl/Auth/Token of users
 type Authenticator struct {
 	PrivateKeys        map[string]*rsa.PrivateKey
-	AllowedAccessTypes []user.AccessType
+	AllowedAccessTypes []acl.AccessType
 	ModelHandler       db.ModelHandler
 	EMQTopicManager    *snappids.EMQTopicManager
 	HashIDSManager     *snappids.HashIDSManager
@@ -33,12 +33,11 @@ func (a Authenticator) Auth(tokenString string) (bool, error) {
 		if claims["iss"] == nil {
 			return nil, fmt.Errorf("could not found iss in token claims")
 		}
-		issuer := fmt.Sprintf("%v", claims["iss"])
+		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
 		u := user.User{}
-		err = a.ModelHandler.Get("user", issuerToUsername(issuer), &u)
-		fmt.Println(u)
+		err = a.ModelHandler.Get("user", primaryKey(issuer, ""), &u)
 		if err != nil {
-			return false, fmt.Errorf("error getting issuer %v from db err: %v", issuer, err)
+			return false, fmt.Errorf("error getting issuer %v from db err: %w", issuer, err)
 		}
 		key := u.PublicKey
 		if key == nil {
@@ -47,13 +46,13 @@ func (a Authenticator) Auth(tokenString string) (bool, error) {
 		return key, nil
 	})
 	if err != nil {
-		return false, fmt.Errorf("token is invalid err: %v", err)
+		return false, fmt.Errorf("token is invalid err: %w", err)
 	}
 	return true, nil
 }
 
 // ACL check a user access to a topic
-func (a Authenticator) Acl(accessType user.AccessType, tokenString, topic string) (bool, error) {
+func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic topics.Topic) (bool, error) {
 	if !a.validateAccessType(accessType) {
 		return false, fmt.Errorf("requested access type %s is invalid", accessType)
 	}
@@ -68,20 +67,31 @@ func (a Authenticator) Acl(accessType user.AccessType, tokenString, topic string
 		if claims["sub"] == nil {
 			return nil, fmt.Errorf("could not find sub in token claims")
 		}
-		issuer := fmt.Sprintf("%v", claims["iss"])
+
+		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
+
 		sub := fmt.Sprintf("%v", claims["sub"])
-		u := user.User{}
-		err := a.ModelHandler.Get("user", primaryKey(user.Issuer(issuer), sub), &u)
+		id, err := a.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
 		if err != nil {
-			return false, fmt.Errorf("error getting user from db err: %v", err)
+			return nil, fmt.Errorf("could not decode hash id")
+		}
+
+		u := user.User{}
+		err = a.ModelHandler.Get("user", primaryKey(issuer, sub), &u)
+		if err != nil {
+			return false, fmt.Errorf("error getting user from db err: %w", err)
 		}
 		key := u.PublicKey
 		if key == nil {
 			return nil, fmt.Errorf("cannot find user %v public key", issuer)
 		}
-		topicMan := a.getTopicMan(topic)
-		if ok := u.CheckTopicAllowance(topicMan, user.Issuer(issuer), sub, topic, accessType); !ok {
-			return nil, fmt.Errorf("issuer %v with sub %v is not allowed to %v on topic %v", issuer, sub, accessType, topic)
+		ok := a.ValidateTopicBySender(topic, issuerToAudience(issuer), id)
+		if !ok {
+			return nil, fmt.Errorf("provided topic %v is not valid", topic)
+		}
+
+		if ok := u.CheckTopicAllowance(topic.GetType(), accessType); !ok {
+			return nil, fmt.Errorf("issuer %v with sub %s is not allowed to %v on topic %v", issuer, sub, accessType, topic)
 		}
 		return key, nil
 	})
@@ -92,9 +102,9 @@ func (a Authenticator) Acl(accessType user.AccessType, tokenString, topic string
 }
 
 // Token function issues JWT token by taking client credentials
-func (a Authenticator) Token(accessType user.AccessType, username, secret string) (tokenString string, err error) {
-	if accessType == user.ClientCredentials {
-		accessType = user.Sub
+func (a Authenticator) Token(accessType acl.AccessType, username, secret string) (tokenString string, err error) {
+	if accessType == acl.ClientCredentials {
+		accessType = acl.Sub
 	}
 	u := user.User{}
 	err = a.ModelHandler.Get("user", username, &u)
@@ -150,7 +160,7 @@ func (a Authenticator) EndpointIPAuth(username string, ip string, endpoint strin
 	return true, nil
 }
 
-func (a Authenticator) validateAccessType(accessType user.AccessType) bool {
+func (a Authenticator) validateAccessType(accessType acl.AccessType) bool {
 	for _, allowedAccessType := range a.AllowedAccessTypes {
 		if allowedAccessType == accessType {
 			return true
@@ -160,33 +170,32 @@ func (a Authenticator) validateAccessType(accessType user.AccessType) bool {
 }
 
 func primaryKey(issuer user.Issuer, sub string) string {
-	if issuer == user.Passenger || issuer == user.Driver {
-		return issuerToUsername(string(issuer))
+	if issuer == user.Passenger {
+		return "passenger"
+	}
+	if issuer == user.Driver {
+		return "driver"
 	}
 	return sub
 }
 
-func (a Authenticator) getTopicMan(topic string) user.TopicMan {
-	matched, _ := regexp.Match(`(\w+)-event-[a-zA-Z0-9]+`, []byte(topic))
-	if matched {
-		return func(issuer user.Issuer, sub string) string {
-			id, _ := a.HashIDSManager.DecodeHashID(sub, toAudience(issuer))
-			ch, _ := a.EMQTopicManager.CreateCabEventTopic(id, toAudience(issuer))
-			return string(ch)
-		}
+func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappids.Audience, id int) bool {
+	var ch snappids.Topic
+	switch topic.GetType() {
+	case topics.CabEvent:
+		ch, _ = a.EMQTopicManager.CreateCabEventTopic(id, audience)
+	case topics.DriverLocation:
+		ch, _ = a.EMQTopicManager.CreateLocationTopic(id, audience)
+	case topics.SuperappEvent:
+		ch, _ = a.EMQTopicManager.CreateSuperAppEventTopic(id, audience)
 	}
-	matched, _ = regexp.Match(`snapp/driver/[a-zA-Z0-9]+/location`, []byte(topic))
-	if matched {
-		return func(issuer user.Issuer, sub string) string {
-			id, _ := a.HashIDSManager.DecodeHashID(sub, toAudience(issuer))
-			ch, _ := a.EMQTopicManager.CreateLocationTopic(id, toAudience(issuer))
-			return string(ch)
-		}
+	if string(ch) != string(topic) {
+		return false
 	}
-	return nil
+	return true
 }
 
-func toAudience(issuer user.Issuer) snappids.Audience {
+func issuerToAudience(issuer user.Issuer) snappids.Audience {
 	switch issuer {
 	case user.Passenger:
 		return snappids.PassengerAudience
@@ -197,14 +206,4 @@ func toAudience(issuer user.Issuer) snappids.Audience {
 	default:
 		return -1
 	}
-}
-
-func issuerToUsername(issuer string) string {
-	switch issuer {
-	case string(user.Passenger):
-		return "passenger"
-	case string(user.Driver):
-		return "driver"
-	}
-	return ""
 }

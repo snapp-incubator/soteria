@@ -4,7 +4,8 @@ import (
 	"crypto/rsa"
 	"github.com/google/uuid"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
-	"regexp"
+	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"time"
 )
 
@@ -26,17 +27,6 @@ const (
 	ThirdParty        = "100"
 )
 
-// Access Types
-type AccessType string
-
-const (
-	Sub    AccessType = "1"
-	Pub               = "2"
-	PubSub            = "3"
-
-	ClientCredentials = "client_credentials"
-)
-
 // TopicMan is a function that takes issuer and subject as inputs and generates topic name
 type TopicMan func(issuer Issuer, sub string) string
 
@@ -55,10 +45,10 @@ type User struct {
 
 // Rule tells about a access to a specific topic or endpoint
 type Rule struct {
-	UUID         uuid.UUID  `json:"uuid"`
-	Endpoint     string     `json:"endpoint"`
-	TopicPattern string     `json:"topic_pattern"`
-	AccessType   AccessType `json:"access_type"`
+	UUID       uuid.UUID      `json:"uuid"`
+	Endpoint   string         `json:"endpoint"`
+	Topic      topics.Type    `json:"topic"`
+	AccessType acl.AccessType `json:"access_type"`
 }
 
 // GetMetadata is for getting metadata of a user model such as date created
@@ -72,10 +62,9 @@ func (u User) GetPrimaryKey() string {
 }
 
 // CheckTopicAllowance checks whether the user is allowed to pub/sub/pubsub to a topic or not
-func (u User) CheckTopicAllowance(topicMan TopicMan, issuer Issuer, sub string, topic string, accessType AccessType) bool {
+func (u User) CheckTopicAllowance(topic topics.Type, accessType acl.AccessType) bool {
 	for _, rule := range u.Rules {
-		matched, _ := regexp.Match(rule.TopicPattern, []byte(topic))
-		if rule.AccessType == accessType && matched && topicMan(issuer, sub) == topic {
+		if rule.Topic == topic && rule.AccessType == accessType {
 			return true
 		}
 	}
@@ -85,7 +74,7 @@ func (u User) CheckTopicAllowance(topicMan TopicMan, issuer Issuer, sub string, 
 // CheckEndpointAllowance checks whether the user is allowed to use a Herald endpoint or not
 func (u User) CheckEndpointAllowance(endpoint string) bool {
 	for _, rule := range u.Rules {
-		if rule.Endpoint == endpoint && rule.AccessType == Pub {
+		if rule.Endpoint == endpoint && rule.AccessType == acl.Pub {
 			return true
 		}
 	}
