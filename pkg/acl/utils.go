@@ -2,6 +2,17 @@ package acl
 
 import "net"
 
+// Access Types
+type AccessType string
+
+const (
+	Sub    AccessType = "1"
+	Pub               = "2"
+	PubSub            = "3"
+
+	ClientCredentials = "client_credentials"
+)
+
 // ValidateEndpoint takes authorizedEndpoints and unauthorizedEndpoints and tell whether a endpoint is authorized or not
 func ValidateEndpoint(endpoint string, authorizedEndpoints, unauthorizedEndpoints []string) bool {
 	if len(authorizedEndpoints) == 0 && len(unauthorizedEndpoints) == 0 {
