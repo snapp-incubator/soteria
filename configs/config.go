@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kelseyhightower/envconfig"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"io/ioutil"
 	"time"
@@ -96,8 +97,8 @@ func (a *AppConfig) ReadPrivateKey(u string) (*rsa.PrivateKey, error) {
 }
 
 // GetAllowedAccessTypes will return all allowed access types in Soteria
-func (a *AppConfig) GetAllowedAccessTypes() ([]user.AccessType, error) {
-	var allowedAccessTypes []user.AccessType
+func (a *AppConfig) GetAllowedAccessTypes() ([]acl.AccessType, error) {
+	var allowedAccessTypes []acl.AccessType
 	for _, a := range a.AllowedAccessTypes {
 		at, err := toUserAccessType(a)
 		if err != nil {
@@ -109,14 +110,14 @@ func (a *AppConfig) GetAllowedAccessTypes() ([]user.AccessType, error) {
 }
 
 // toUserAccessType will convert string access type to it's own type
-func toUserAccessType(i string) (user.AccessType, error) {
+func toUserAccessType(i string) (acl.AccessType, error) {
 	switch i {
 	case "pub":
-		return user.Pub, nil
+		return acl.Pub, nil
 	case "sub":
-		return user.Sub, nil
+		return acl.Sub, nil
 	case "pubsub":
-		return user.PubSub, nil
+		return acl.PubSub, nil
 	}
 	return "", fmt.Errorf("%v is a invalid acces type", i)
 }

@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
@@ -63,7 +65,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		ModelHandler: MockModelHandler{},
 	}
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
-		tokenString, err := authenticator.Token(user.ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
+		tokenString, err := authenticator.Token(acl.ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return pk, nil
@@ -74,7 +76,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		assert.Equal(t, "100", claims["iss"].(string))
 	})
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
-		tokenString, err := authenticator.Token(user.ClientCredentials, "snappbox", "invalid secret")
+		tokenString, err := authenticator.Token(acl.ClientCredentials, "snappbox", "invalid secret")
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return pk, nil
 		})
@@ -110,47 +112,71 @@ func TestAuthenticator_Acl(t *testing.T) {
 		PrivateKeys: map[string]*rsa.PrivateKey{
 			user.ThirdParty: key,
 		},
-		AllowedAccessTypes: []user.AccessType{user.Pub, user.Sub},
+		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		ModelHandler:       MockModelHandler{},
 		EMQTopicManager:    snappids.NewEMQManager(hid),
 		HashIDSManager:     hid,
 	}
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.Acl(user.PubSub, tokenString, "test")
+		ok, err := authenticator.Acl(acl.PubSub, tokenString, "test")
 		assert.Error(t, err)
 		assert.False(t, ok)
 		assert.Equal(t, "requested access type 3 is invalid", err.Error())
 	})
 	t.Run("testing acl with invalid token", func(t *testing.T) {
-		ok, err := authenticator.Acl(user.Pub, invalidTokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(acl.Pub, invalidTokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
 		assert.False(t, ok)
 		assert.Error(t, err)
 		assert.Equal(t, "illegal base64 data at input byte 37", err.Error())
 	})
 	t.Run("testing acl with valid inputs", func(t *testing.T) {
-		ok, err := authenticator.Acl(user.Sub, tokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(acl.Sub, tokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 	t.Run("testing acl with invalid topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(user.Sub, tokenString, "driver-event-5ab8f6e552c4423fc8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(acl.Sub, tokenString, "driver-event-5ab8f6e552c4423fc8d38f9f38ca4e2b")
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.Acl(user.Pub, tokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(acl.Pub, tokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 }
 
+func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
+	hid := &snappids.HashIDSManager{
+		Salts: map[snappids.Audience]string{
+			snappids.DriverAudience: "secret",
+		},
+		Lengths: map[snappids.Audience]int{
+			snappids.DriverAudience: 15,
+		},
+	}
+
+	authenticator := Authenticator{
+		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
+		ModelHandler:       MockModelHandler{},
+		EMQTopicManager:    snappids.NewEMQManager(hid),
+		HashIDSManager:     hid,
+	}
+
+	t.Run("testing valid driver cab event", func(t *testing.T) {
+		ok := authenticator.ValidateTopicBySender("driver-event-152384980615c2bd16143cff29038b67", snappids.DriverAudience, 123)
+		assert.True(t, ok)
+	})
+
+}
+
 func TestAuthenticator_validateAccessType(t *testing.T) {
 	type fields struct {
-		AllowedAccessTypes []user.AccessType
+		AllowedAccessTypes []acl.AccessType
 	}
 	type args struct {
-		accessType user.AccessType
+		accessType acl.AccessType
 	}
 	tests := []struct {
 		name   string
@@ -160,56 +186,56 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 	}{
 		{
 			name:   "#1 testing with no allowed access type",
-			fields: fields{AllowedAccessTypes: []user.AccessType{}},
-			args:   args{accessType: user.Sub},
+			fields: fields{AllowedAccessTypes: []acl.AccessType{}},
+			args:   args{accessType: acl.Sub},
 			want:   false,
 		},
 		{
 			name:   "#2 testing with no allowed access type",
-			fields: fields{AllowedAccessTypes: []user.AccessType{}},
-			args:   args{accessType: user.Pub},
+			fields: fields{AllowedAccessTypes: []acl.AccessType{}},
+			args:   args{accessType: acl.Pub},
 			want:   false,
 		},
 		{
 			name:   "#3 testing with no allowed access type",
-			fields: fields{AllowedAccessTypes: []user.AccessType{}},
-			args:   args{accessType: user.PubSub},
+			fields: fields{AllowedAccessTypes: []acl.AccessType{}},
+			args:   args{accessType: acl.PubSub},
 			want:   false,
 		},
 		{
 			name:   "#4 testing with one allowed access type",
-			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub}},
-			args:   args{accessType: user.Pub},
+			fields: fields{AllowedAccessTypes: []acl.AccessType{acl.Pub}},
+			args:   args{accessType: acl.Pub},
 			want:   true,
 		},
 		{
 			name:   "#5 testing with one allowed access type",
-			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub}},
-			args:   args{accessType: user.Sub},
+			fields: fields{AllowedAccessTypes: []acl.AccessType{acl.Pub}},
+			args:   args{accessType: acl.Sub},
 			want:   false,
 		},
 		{
 			name:   "#6 testing with two allowed access type",
-			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub, user.Sub}},
-			args:   args{accessType: user.Sub},
+			fields: fields{AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub}},
+			args:   args{accessType: acl.Sub},
 			want:   true,
 		},
 		{
 			name:   "#7 testing with two allowed access type",
-			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub, user.Sub}},
-			args:   args{accessType: user.Pub},
+			fields: fields{AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub}},
+			args:   args{accessType: acl.Pub},
 			want:   true,
 		},
 		{
 			name:   "#8 testing with two allowed access type",
-			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub, user.Sub}},
-			args:   args{accessType: user.PubSub},
+			fields: fields{AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub}},
+			args:   args{accessType: acl.PubSub},
 			want:   false,
 		},
 		{
 			name:   "#9 testing with three allowed access type",
-			fields: fields{AllowedAccessTypes: []user.AccessType{user.Pub, user.Sub, user.PubSub}},
-			args:   args{accessType: user.PubSub},
+			fields: fields{AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub}},
+			args:   args{accessType: acl.PubSub},
 			want:   true,
 		},
 	}
@@ -254,10 +280,15 @@ func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
 			Type:      user.EMQUser,
 			PublicKey: key0,
 			Rules: []user.Rule{{
-				UUID:         uuid.Nil,
-				Endpoint:     "",
-				TopicPattern: `(\w+)-event-(\w*\d*|\d*\w*)`,
-				AccessType:   user.Sub,
+				UUID:       uuid.Nil,
+				Endpoint:   "",
+				Topic:      topics.DriverLocation,
+				AccessType: acl.Pub,
+			}, {
+				UUID:       uuid.Nil,
+				Endpoint:   "",
+				Topic:      topics.CabEvent,
+				AccessType: acl.Sub,
 			}},
 		}
 	case "snappbox":
