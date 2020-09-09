@@ -27,9 +27,6 @@ const (
 	ThirdParty Issuer = "100"
 )
 
-// TopicMan is a function that takes issuer and subject as inputs and generates topic name
-type TopicMan func(issuer Issuer, sub string) string
-
 // User is Soteria's users db model
 type User struct {
 	MetaData                db.MetaData    `json:"meta_data"`
