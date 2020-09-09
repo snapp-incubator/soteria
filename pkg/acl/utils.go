@@ -7,8 +7,8 @@ type AccessType string
 
 const (
 	Sub    AccessType = "1"
-	Pub               = "2"
-	PubSub            = "3"
+	Pub    AccessType = "2"
+	PubSub AccessType = "3"
 
 	ClientCredentials = "client_credentials"
 )
