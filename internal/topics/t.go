@@ -8,8 +8,8 @@ type Type string
 
 const (
 	CabEvent       Type = "cab_event"
-	DriverLocation      = "driver_location"
-	SuperappEvent       = "superapp_event"
+	DriverLocation Type = "driver_location"
+	SuperappEvent  Type = "superapp_event"
 )
 
 func (t Topic) GetType() Type {

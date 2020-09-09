@@ -87,7 +87,7 @@ func servePreRun(cmd *cobra.Command, args []string) {
 		zap.L().Fatal("error while getting allowed access types", zap.Error(err))
 	}
 	app.GetInstance().SetAuthenticator(&authenticator.Authenticator{
-		PrivateKeys: map[string]*rsa.PrivateKey{
+		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: pk,
 		},
 		AllowedAccessTypes: allowedAccessTypes,
