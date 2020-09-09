@@ -16,7 +16,7 @@ import (
 
 // Authenticator is responsible for Acl/Auth/Token of users
 type Authenticator struct {
-	PrivateKeys        map[string]*rsa.PrivateKey
+	PrivateKeys        map[user.Issuer]*rsa.PrivateKey
 	AllowedAccessTypes []acl.AccessType
 	ModelHandler       db.ModelHandler
 	EMQTopicManager    *snappids.EMQTopicManager
@@ -117,7 +117,7 @@ func (a Authenticator) Token(accessType acl.AccessType, username, secret string)
 
 	claims := jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(u.TokenExpirationDuration).Unix(),
-		Issuer:    user.ThirdParty,
+		Issuer:    string(user.ThirdParty),
 		Subject:   username,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)

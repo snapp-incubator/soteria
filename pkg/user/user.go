@@ -14,8 +14,8 @@ type UserType string
 
 const (
 	HeraldUser UserType = "HeraldUser"
-	EMQUser             = "EMQUser"
-	Staff               = "Staff"
+	EMQUser    UserType = "EMQUser"
+	Staff      UserType = "Staff"
 )
 
 // Issuers
@@ -23,8 +23,8 @@ type Issuer string
 
 const (
 	Driver     Issuer = "0"
-	Passenger         = "1"
-	ThirdParty        = "100"
+	Passenger  Issuer = "1"
+	ThirdParty Issuer = "100"
 )
 
 // TopicMan is a function that takes issuer and subject as inputs and generates topic name
