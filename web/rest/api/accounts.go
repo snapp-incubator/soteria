@@ -2,10 +2,16 @@ package api
 
 import (
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
+	"io/ioutil"
+	"time"
 )
 
 // Response is the response structure of the REST API
@@ -63,15 +69,16 @@ func ReadAccount(ctx *gin.Context) {
 
 // updateAccountPayload is the body payload structure of update account endpoint
 type updateAccountPayload struct {
-	NewPassword string   `json:"new_password" form:"new_password"`
-	Secret      string   `json:"secret" form:"secret"`
-	IPs         []string `json:"ips" form:"ips"`
+	NewPassword     string        `json:"new_password" form:"new_password"`
+	IPs             []string      `json:"ips" form:"ips"`
+	Secret          string        `json:"secret" form:"secret"`
+	Type            user.UserType `json:"type" form:"type"`
+	TokenExpiration time.Duration `json:"token_expiration" form:"token_expiration"`
 }
 
 // UpdateAccount is the handler of the update account endpoint
 func UpdateAccount(ctx *gin.Context) {
 	username := ctx.MustGet("username").(string)
-	password := ctx.MustGet("password").(string)
 
 	var p updateAccountPayload
 	if err := ctx.ShouldBind(&p); err != nil {
@@ -79,8 +86,7 @@ func UpdateAccount(ctx *gin.Context) {
 		return
 	}
 
-	err := app.GetInstance().AccountsService.Update(username, password, p.NewPassword, p.Secret, p.IPs)
-	if err != nil {
+	if err := app.GetInstance().AccountsService.Update(username, p.NewPassword, p.Type, p.IPs, p.Secret, p.TokenExpiration); err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
 	}
@@ -91,10 +97,157 @@ func UpdateAccount(ctx *gin.Context) {
 // DeleteAccount is the handler of the delete account endpoint
 func DeleteAccount(ctx *gin.Context) {
 	username := ctx.MustGet("username").(string)
-	password := ctx.MustGet("password").(string)
 
-	err := app.GetInstance().AccountsService.Delete(username, password)
+	if err := app.GetInstance().AccountsService.Delete(username); err != nil {
+		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
+		return
+	}
+
+	ctx.JSON(CreateResponse(accountsInfo.SuccessfulOperation, nil))
+}
+
+// UpdatePublicKey is the handler of the update account's public key endpoint
+func UpdatePublicKey(ctx *gin.Context) {
+	username := ctx.MustGet("username").(string)
+
+	file, err := ctx.FormFile("public_key")
 	if err != nil {
+		ctx.JSON(CreateResponse(accountsInfo.PublicKeyReadFormFailure, nil, err.Error()))
+		return
+	}
+
+	keyFile, err := file.Open()
+	if err != nil {
+		ctx.JSON(CreateResponse(accountsInfo.PublicKeyOpenFailure, nil, err.Error()))
+		return
+	}
+	defer keyFile.Close()
+
+	b, err := ioutil.ReadAll(keyFile)
+	if err != nil {
+		ctx.JSON(CreateResponse(accountsInfo.PublicKeyReadFileFailure, nil, err.Error()))
+		return
+	}
+
+	key, err := jwt.ParseRSAPublicKeyFromPEM(b)
+	if err != nil {
+		ctx.JSON(CreateResponse(accountsInfo.PublicKeyParseFailure, nil, err.Error()))
+		return
+	}
+
+	if err := app.GetInstance().AccountsService.UpdatePublicKey(username, key); err != nil {
+		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
+		return
+	}
+
+	ctx.JSON(CreateResponse(accountsInfo.SuccessfulOperation, nil))
+}
+
+// createAccountRulePayload is the body payload structure of create account rule endpoint
+type createAccountRulePayload struct {
+	Endpoint   string         `json:"endpoint" form:"endpoint"`
+	Topic      topics.Type    `json:"topic" form:"topic"`
+	AccessType acl.AccessType `json:"access_type" form:"access_type"`
+}
+
+// CreateAccountRule is the handler of the create account rule endpoint
+func CreateAccountRule(ctx *gin.Context) {
+	username := ctx.MustGet("username").(string)
+
+	var p createAccountRulePayload
+	if err := ctx.ShouldBind(&p); err != nil {
+		ctx.JSON(CreateResponse(accountsInfo.BadRequestPayload, nil, err.Error()))
+		return
+	}
+
+	r, err := app.GetInstance().AccountsService.CreateRule(username, p.Endpoint, p.Topic, p.AccessType)
+	if err != nil {
+		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
+		return
+	}
+
+	ctx.JSON(CreateResponse(accountsInfo.SuccessfulOperation, r))
+}
+
+// ReadAccountRule is the handler of the read account rule endpoint
+func ReadAccountRule(ctx *gin.Context) {
+	username := ctx.MustGet("username").(string)
+
+	plainUUID := ctx.Param("uuid")
+	if plainUUID == "" {
+		ctx.JSON(CreateResponse(accountsInfo.InvalidRuleUUID, nil))
+		return
+	}
+
+	ruleUUID, err := uuid.Parse(plainUUID)
+	if err != nil {
+		ctx.JSON(CreateResponse(accountsInfo.InvalidRuleUUID, nil, err.Error()))
+		return
+	}
+
+	r, rErr := app.GetInstance().AccountsService.GetRule(username, ruleUUID)
+	if rErr != nil {
+		ctx.JSON(CreateResponse(rErr.Code, nil, rErr.Message))
+		return
+	}
+
+	ctx.JSON(CreateResponse(accountsInfo.SuccessfulOperation, r))
+}
+
+// updateAccountRulePayload is the body payload structure of update account rule endpoint
+type updateAccountRulePayload struct {
+	Endpoint   string         `json:"endpoint" form:"endpoint"`
+	Topic      topics.Type    `json:"topic" form:"topic"`
+	AccessType acl.AccessType `json:"access_type" form:"access_type"`
+}
+
+// UpdateAccountRule is the handler of the update account rule endpoint
+func UpdateAccountRule(ctx *gin.Context) {
+	username := ctx.MustGet("username").(string)
+
+	var p updateAccountRulePayload
+	if err := ctx.ShouldBind(&p); err != nil {
+		ctx.JSON(CreateResponse(accountsInfo.BadRequestPayload, nil, err.Error()))
+		return
+	}
+
+	plainUUID := ctx.Param("uuid")
+	if plainUUID == "" {
+		ctx.JSON(CreateResponse(accountsInfo.InvalidRuleUUID, nil))
+		return
+	}
+
+	ruleUUID, err := uuid.Parse(plainUUID)
+	if err != nil {
+		ctx.JSON(CreateResponse(accountsInfo.InvalidRuleUUID, nil, err.Error()))
+		return
+	}
+
+	if err := app.GetInstance().AccountsService.UpdateRule(username, ruleUUID, p.Endpoint, p.Topic, p.AccessType); err != nil {
+		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
+		return
+	}
+
+	ctx.JSON(CreateResponse(accountsInfo.SuccessfulOperation, nil))
+}
+
+// DeleteAccountRule is the handler of the delete account rule endpoint
+func DeleteAccountRule(ctx *gin.Context) {
+	username := ctx.MustGet("username").(string)
+
+	plainUUID := ctx.Param("uuid")
+	if plainUUID == "" {
+		ctx.JSON(CreateResponse(accountsInfo.InvalidRuleUUID, nil))
+		return
+	}
+
+	ruleUUID, err := uuid.Parse(plainUUID)
+	if err != nil {
+		ctx.JSON(CreateResponse(accountsInfo.InvalidRuleUUID, nil, err.Error()))
+		return
+	}
+
+	if err := app.GetInstance().AccountsService.DeleteRule(username, ruleUUID); err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
 	}

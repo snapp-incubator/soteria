@@ -31,7 +31,7 @@ func TestAuthenticator_Auth(t *testing.T) {
 		t.Fatal(err)
 	}
 	authenticator := Authenticator{
-		PrivateKeys: map[string]*rsa.PrivateKey{
+		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: key,
 		},
 		ModelHandler: MockModelHandler{},
@@ -59,7 +59,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		t.Fatal(err)
 	}
 	authenticator := Authenticator{
-		PrivateKeys: map[string]*rsa.PrivateKey{
+		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: key,
 		},
 		ModelHandler: MockModelHandler{},
@@ -109,7 +109,7 @@ func TestAuthenticator_Acl(t *testing.T) {
 	}
 
 	authenticator := Authenticator{
-		PrivateKeys: map[string]*rsa.PrivateKey{
+		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: key,
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
@@ -269,7 +269,7 @@ func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
 	case "passenger":
 		*v.(*user.User) = user.User{
 			MetaData:  db.MetaData{},
-			Username:  user.Passenger,
+			Username:  string(user.Passenger),
 			Type:      user.EMQUser,
 			PublicKey: key1,
 		}
@@ -332,7 +332,7 @@ func getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
 	return publicKey, nil
 }
 
-func getPrivateKey(u string) (*rsa.PrivateKey, error) {
+func getPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
 	var fileName string
 	switch u {
 	case user.ThirdParty:

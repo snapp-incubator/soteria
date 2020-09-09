@@ -7,16 +7,23 @@ type Code string
 
 const (
 	SuccessfulOperation           Code = "successful_operation"
-	BadRequestPayload                  = "bad_request_payload"
-	SignUpUserFailure                  = "sign_up_user_failure"
-	WrongUsernameOrPassword            = "wrong_username_or_password"
-	DatabaseSaveFailure                = "database_save_failure"
-	DatabaseGetFailure                 = "database_get_failure"
-	DatabaseUpdateFailure              = "database_update_failure"
-	DatabaseDeleteFailure              = "database_delete_failure"
-	PasswordHashGenerationFailure      = "password_hash_generation_failure"
-	UsernameMismatch                   = "username_mismatch"
-	IPMisMatch                         = "ip_mismatch"
+	BadRequestPayload             Code = "bad_request_payload"
+	SignUpUserFailure             Code = "sign_up_user_failure"
+	WrongUsernameOrPassword       Code = "wrong_username_or_password"
+	DatabaseSaveFailure           Code = "database_save_failure"
+	DatabaseGetFailure            Code = "database_get_failure"
+	DatabaseUpdateFailure         Code = "database_update_failure"
+	DatabaseDeleteFailure         Code = "database_delete_failure"
+	PasswordHashGenerationFailure Code = "password_hash_generation_failure"
+	UsernameMismatch              Code = "username_mismatch"
+	IPMisMatch                    Code = "ip_mismatch"
+	PublicKeyReadFormFailure      Code = "public_key_read_form_failure"
+	PublicKeyOpenFailure          Code = "public_key_open_failure"
+	PublicKeyReadFileFailure      Code = "public_key_read_file_failure"
+	PublicKeyParseFailure         Code = "public_key_parse_failure"
+	InvalidRuleUUID               Code = "invalid_rule_uuid"
+	RuleNotFound                  Code = "rule_not_found"
+	InvalidRule                   Code = "invalid_rule"
 )
 
 // Message will return detailed error information
@@ -44,6 +51,20 @@ func (e Code) Message() string {
 		return "provided username does not match with username in path"
 	case IPMisMatch:
 		return "ip is not authorized"
+	case PublicKeyReadFormFailure:
+		return "cloud not read public key file from form"
+	case PublicKeyOpenFailure:
+		return "could not open public key file"
+	case PublicKeyReadFileFailure:
+		return "could not read from opened public key file"
+	case PublicKeyParseFailure:
+		return "could not parse public key"
+	case InvalidRuleUUID:
+		return "provided rule UUID is not valid"
+	case RuleNotFound:
+		return "account has no rule with provided UUID"
+	case InvalidRule:
+		return "provided rule is not valid"
 	default:
 		return ""
 	}
@@ -74,6 +95,20 @@ func (e Code) HttpStatusCode() int {
 		return http.StatusUnauthorized
 	case IPMisMatch:
 		return http.StatusUnauthorized
+	case PublicKeyReadFormFailure:
+		return http.StatusBadRequest
+	case PublicKeyOpenFailure:
+		return http.StatusBadRequest
+	case PublicKeyReadFileFailure:
+		return http.StatusInternalServerError
+	case PublicKeyParseFailure:
+		return http.StatusBadRequest
+	case InvalidRuleUUID:
+		return http.StatusBadRequest
+	case RuleNotFound:
+		return http.StatusNotFound
+	case InvalidRule:
+		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError
 	}

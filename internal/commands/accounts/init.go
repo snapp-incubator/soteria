@@ -9,6 +9,7 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db/redis"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
+	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 )
 
@@ -52,6 +53,12 @@ func initRun(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, u := range users {
+		hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return fmt.Errorf("failed to generate hash for %s, %w", u.Username, err)
+		}
+		u.Password = string(hash)
+
 		if err := app.GetInstance().AccountsService.Handler.Save(u); err != nil {
 			return fmt.Errorf("failed to import user %s: %w", u.Username, err)
 		}
