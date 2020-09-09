@@ -517,7 +517,7 @@ func TestUpdateAccountRule(t *testing.T) {
 		assert.Equal(t, createdRule.UUID, u.Rules[0].UUID)
 		assert.Equal(t, "", u.Rules[0].Endpoint)
 		assert.Equal(t, topics.CabEvent, u.Rules[0].Topic)
-		assert.Equal(t, acl.Pub, string(u.Rules[0].AccessType))
+		assert.Equal(t, acl.Pub, u.Rules[0].AccessType)
 	})
 }
 

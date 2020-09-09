@@ -10,6 +10,7 @@ const (
 	CabEvent       Type = "cab_event"
 	DriverLocation Type = "driver_location"
 	SuperappEvent  Type = "superapp_event"
+	BoxEvent       Type = "box_event"
 )
 
 func (t Topic) GetType() Type {
@@ -24,6 +25,9 @@ func (t Topic) GetType() Type {
 	matched, _ = regexp.Match(`snapp/(\w+)/[a-zA-Z0-9]+/superapp`, []byte(t))
 	if matched {
 		return SuperappEvent
+	}
+	if t == "bucks" {
+		return BoxEvent
 	}
 	return ""
 }
