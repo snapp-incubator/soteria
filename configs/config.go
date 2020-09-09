@@ -77,7 +77,7 @@ func InitConfig() AppConfig {
 }
 
 // ReadPrivateKey will read and return private key that is used for JWT encryption
-func (a *AppConfig) ReadPrivateKey(u string) (*rsa.PrivateKey, error) {
+func (a *AppConfig) ReadPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
 	var fileName string
 	switch u {
 	case user.ThirdParty:
