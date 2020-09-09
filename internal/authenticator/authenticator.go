@@ -188,6 +188,8 @@ func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappi
 		ch, _ = a.EMQTopicManager.CreateLocationTopic(id, audience)
 	case topics.SuperappEvent:
 		ch, _ = a.EMQTopicManager.CreateSuperAppEventTopic(id, audience)
+	case topics.BoxEvent:
+		return true
 	}
 	if string(ch) != string(topic) {
 		return false
