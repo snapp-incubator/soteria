@@ -31,7 +31,7 @@ objects:
         spec:
           containers:
           - name: ${SERVICE_NAME}-app
-            image: docker-registry.default.svc:5000/mozart/${SERVICE_NAME}:${SERVICE_IMAGE_TAG}
+            image: docker-registry.default.svc:5000/mozart/${SERVICE_NAME}:master
             imagePullPolicy: Always
             ports:
             - containerPort: 9999
