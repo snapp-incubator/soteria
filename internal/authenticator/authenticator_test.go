@@ -18,11 +18,15 @@ import (
 )
 
 func TestAuthenticator_Auth(t *testing.T) {
-	validToken, err := getSampleToken(true)
+	driverToken, err := getSampleToken(user.Driver,true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	invalidToken, err := getSampleToken(false)
+	passengerToken, err := getSampleToken(user.Passenger, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	invalidToken, err := getSampleToken(user.Passenger, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,16 +40,22 @@ func TestAuthenticator_Auth(t *testing.T) {
 		},
 		ModelHandler: MockModelHandler{},
 	}
-	t.Run("testing invalid token", func(t *testing.T) {
+	t.Run("testing driver token auth", func(t *testing.T) {
+		ok, err := authenticator.Auth(driverToken)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing passenger token auth", func(t *testing.T) {
+		ok, err := authenticator.Auth(passengerToken)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing invalid token auth", func(t *testing.T) {
 		ok, err := authenticator.Auth(invalidToken)
 		assert.Error(t, err)
 		assert.False(t, ok)
-	})
-
-	t.Run("testing valid auth", func(t *testing.T) {
-		ok, err := authenticator.Auth(validToken)
-		assert.NoError(t, err)
-		assert.True(t, ok)
 	})
 }
 
@@ -90,21 +100,21 @@ func TestAuthenticator_Acl(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tokenString, err := getSampleToken(true)
+	tokenString, err := getSampleToken(user.Passenger, true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	invalidTokenString, err := getSampleToken(false)
+	invalidTokenString, err := getSampleToken(user.Passenger,false)
 	if err != nil {
 		t.Fatal(t, err)
 	}
 
 	hid := &snappids.HashIDSManager{
 		Salts: map[snappids.Audience]string{
-			snappids.DriverAudience: "12345678901234567890123456789012",
+			snappids.PassengerAudience: "secret",
 		},
 		Lengths: map[snappids.Audience]int{
-			snappids.DriverAudience: 15,
+			snappids.PassengerAudience: 15,
 		},
 	}
 
@@ -124,23 +134,23 @@ func TestAuthenticator_Acl(t *testing.T) {
 		assert.Equal(t, "requested access type 3 is invalid", err.Error())
 	})
 	t.Run("testing acl with invalid token", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Pub, invalidTokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(acl.Pub, invalidTokenString, "passenger-event-37de61ff70597cc18d452367ecd9135b")
 		assert.False(t, ok)
 		assert.Error(t, err)
 		assert.Equal(t, "illegal base64 data at input byte 37", err.Error())
 	})
 	t.Run("testing acl with valid inputs", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Sub, tokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(acl.Sub, tokenString, "passenger-event-37de61ff70597cc18d452367ecd9135b")
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 	t.Run("testing acl with invalid topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Sub, tokenString, "driver-event-5ab8f6e552c4423fc8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(acl.Sub, tokenString, "passenger-event-37de61ff70597cc19d452367ecd9135b")
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Pub, tokenString, "driver-event-5ab8f6e552c445d0c8d38f9f38ca4e2b")
+		ok, err := authenticator.Acl(acl.Pub, tokenString, "passenger-event-37de61ff70597cc18d452367ecd9135b")
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
@@ -272,6 +282,13 @@ func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
 			Username:  string(user.Passenger),
 			Type:      user.EMQUser,
 			PublicKey: key1,
+			Rules: []user.Rule{
+				user.Rule{
+					UUID:       uuid.New(),
+					Topic:      topics.CabEvent,
+					AccessType: acl.Sub,
+				},
+			},
 		}
 	case "driver":
 		*v.(*user.User) = user.User{
@@ -315,7 +332,7 @@ func getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
 	case user.Passenger:
 		fileName = "../../test/1.pem"
 	case user.Driver:
-		fileName = "../../test/1.pem"
+		fileName = "../../test/0.pem"
 	case user.ThirdParty:
 		fileName = "../../test/100.pem"
 	default:
@@ -351,11 +368,19 @@ func getPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func getSampleToken(isValid bool) (string, error) {
+func getSampleToken(issuer user.Issuer, isValid bool) (string, error) {
 	var fileName string
-	if isValid {
-		fileName = "../../test/token.valid.sample"
-	} else {
+	switch issuer {
+	case user.Driver:
+		if isValid {
+			fileName = "../../test/token.driver.valid.sample"
+		}
+	case user.Passenger:
+		if isValid {
+			fileName = "../../test/token.passenger.valid.sample"
+		}
+	}
+	if !isValid {
 		fileName = "../../test/token.invalid.sample"
 	}
 	token, err := ioutil.ReadFile(fileName)
