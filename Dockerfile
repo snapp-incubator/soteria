@@ -9,7 +9,7 @@ RUN apk --no-cache --update add ca-certificates
 RUN mkdir /app
 
 COPY ./soteria /app
-COPY ./test/db.json /app
+COPY ./db.json /app
 WORKDIR /app
 ENV PRIVENT_BUILD_DATE=${BUILD_DATE}
 ENV PRIVENT_VCS_REF=${VCS_REF}
