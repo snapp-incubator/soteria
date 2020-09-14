@@ -5,6 +5,7 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/web/grpc/contracts"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"net/http"
 )
@@ -18,6 +19,12 @@ func (s *Server) Auth(ctx context.Context, in *contracts.AuthContract) (*contrac
 	password := in.GetPassword()
 	endpoint := in.GetEndpoint()
 	ip := in.GetIPAddress()
+	zap.L().Debug("grpc auth call",
+		zap.String("username", username),
+		zap.String("password", password),
+		zap.String("endpoint", endpoint),
+		zap.String("ip", ip),
+	)
 	statusCode := http.StatusUnauthorized
 	ok := false
 	var err error
@@ -29,6 +36,7 @@ func (s *Server) Auth(ctx context.Context, in *contracts.AuthContract) (*contrac
 	if ok {
 		statusCode = http.StatusOK
 	}
+	zap.L().Debug("grpc auth returned", zap.Int("code", statusCode), zap.Error(err))
 	return &contracts.ServiceResponse{Code: int32(statusCode)}, err
 }
 
