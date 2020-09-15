@@ -33,15 +33,20 @@ func (a Authenticator) Auth(tokenString string) (bool, error) {
 		if claims["iss"] == nil {
 			return nil, fmt.Errorf("could not found iss in token claims")
 		}
+		if claims["sub"] == nil {
+			return nil, fmt.Errorf("could not find sub in token claims")
+		}
 		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
+		sub := fmt.Sprintf("%v", claims["sub"])
+		pk := primaryKey(issuer, sub)
 		u := user.User{}
-		err = a.ModelHandler.Get("user", primaryKey(issuer, ""), &u)
+		err = a.ModelHandler.Get("user", pk, &u)
 		if err != nil {
-			return false, fmt.Errorf("error getting issuer %v from db err: %w", issuer, err)
+			return false, fmt.Errorf("error getting user %s from db err: %w", pk, err)
 		}
 		key := u.PublicKey
 		if key == nil {
-			return nil, fmt.Errorf("cannot find issuer %v public key", issuer)
+			return nil, fmt.Errorf("cannot find user %s public key", pk)
 		}
 		return key, nil
 	})
@@ -69,15 +74,10 @@ func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic 
 		}
 
 		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
-
 		sub := fmt.Sprintf("%v", claims["sub"])
-		id, err := a.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
-		if err != nil {
-			return nil, fmt.Errorf("could not decode hash id")
-		}
 
 		u := user.User{}
-		err = a.ModelHandler.Get("user", primaryKey(issuer, sub), &u)
+		err := a.ModelHandler.Get("user", primaryKey(issuer, sub), &u)
 		if err != nil {
 			return false, fmt.Errorf("error getting user from db err: %w", err)
 		}
@@ -85,9 +85,16 @@ func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic 
 		if key == nil {
 			return nil, fmt.Errorf("cannot find user %v public key", issuer)
 		}
-		ok := a.ValidateTopicBySender(topic, issuerToAudience(issuer), id)
-		if !ok {
-			return nil, fmt.Errorf("provided topic %v is not valid", topic)
+
+		if issuer != user.ThirdParty {
+			id, err := a.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
+			if err != nil {
+				return nil, fmt.Errorf("could not decode hash id")
+			}
+			ok := a.ValidateTopicBySender(topic, issuerToAudience(issuer), id)
+			if !ok {
+				return nil, fmt.Errorf("provided topic %v is not valid", topic)
+			}
 		}
 
 		if ok := u.CheckTopicAllowance(topic.GetType(), accessType); !ok {
