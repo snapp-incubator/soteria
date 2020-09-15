@@ -75,11 +75,11 @@ func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic 
 
 		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
 		sub := fmt.Sprintf("%v", claims["sub"])
-
+		pk := primaryKey(issuer, sub)
 		u := user.User{}
-		err := a.ModelHandler.Get("user", primaryKey(issuer, sub), &u)
+		err := a.ModelHandler.Get("user", pk, &u)
 		if err != nil {
-			return false, fmt.Errorf("error getting user from db err: %w", err)
+			return false, fmt.Errorf("error getting user %s from db err: %w", pk, err)
 		}
 		key := u.PublicKey
 		if key == nil {
@@ -116,7 +116,7 @@ func (a Authenticator) Token(accessType acl.AccessType, username, secret string)
 	u := user.User{}
 	err = a.ModelHandler.Get("user", username, &u)
 	if err != nil {
-		return "", fmt.Errorf("could not get user. err: %v", err)
+		return "", fmt.Errorf("could not get user %s. err: %v", username, err)
 	}
 	if u.Secret != secret {
 		return "", fmt.Errorf("invlaid secret %v", secret)
