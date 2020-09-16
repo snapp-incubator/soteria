@@ -35,6 +35,8 @@ const (
 	invalidDriverSuperappEventTopic = "snapp/driver/0596923be632d673560af9adadd2f78a/superapp"
 )
 
+
+
 func TestAuthenticator_Auth(t *testing.T) {
 	driverToken, err := getSampleToken(user.Driver)
 	if err != nil {
@@ -48,13 +50,30 @@ func TestAuthenticator_Auth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	key, err := getPrivateKey(user.ThirdParty)
+	pkey0, err := getPublicKey(user.Driver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkey1, err := getPublicKey(user.Passenger)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkey100, err := getPublicKey(user.ThirdParty)
+	if err != nil {
+		t.Fatal(err)
+	}
+	key100, err := getPrivateKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
 	authenticator := Authenticator{
 		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
-			user.ThirdParty: key,
+			user.ThirdParty: key100,
+		},
+		PublicKeys: map[user.Issuer]*rsa.PublicKey{
+			user.Driver:     pkey0,
+			user.Passenger:  pkey1,
+			user.ThirdParty: pkey100,
 		},
 		ModelHandler: MockModelHandler{},
 	}
@@ -120,7 +139,19 @@ func TestAuthenticator_Token(t *testing.T) {
 }
 
 func TestAuthenticator_Acl(t *testing.T) {
-	key, err := getPrivateKey(user.ThirdParty)
+	pkey0, err := getPublicKey(user.Driver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkey1, err := getPublicKey(user.Passenger)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkey100, err := getPublicKey(user.ThirdParty)
+	if err != nil {
+		t.Fatal(err)
+	}
+	key100, err := getPrivateKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,7 +183,12 @@ func TestAuthenticator_Acl(t *testing.T) {
 
 	authenticator := Authenticator{
 		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
-			user.ThirdParty: key,
+			user.ThirdParty: key100,
+		},
+		PublicKeys: map[user.Issuer]*rsa.PublicKey{
+			user.Driver:     pkey0,
+			user.Passenger:  pkey1,
+			user.ThirdParty: pkey100,
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		ModelHandler:       MockModelHandler{},
@@ -351,16 +387,12 @@ func (rmh MockModelHandler) Delete(modelName, pk string) error {
 }
 
 func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
-	key0, _ := getPublicKey(user.Driver)
-	key1, _ := getPublicKey(user.Passenger)
-	key100, _ := getPublicKey(user.ThirdParty)
 	switch pk {
 	case "passenger":
 		*v.(*user.User) = user.User{
-			MetaData:  db.MetaData{},
-			Username:  string(user.Passenger),
-			Type:      user.EMQUser,
-			PublicKey: key1,
+			MetaData: db.MetaData{},
+			Username: string(user.Passenger),
+			Type:     user.EMQUser,
 			Rules: []user.Rule{
 				user.Rule{
 					UUID:       uuid.New(),
@@ -376,10 +408,9 @@ func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
 		}
 	case "driver":
 		*v.(*user.User) = user.User{
-			MetaData:  db.MetaData{},
-			Username:  string(user.Driver),
-			Type:      user.EMQUser,
-			PublicKey: key0,
+			MetaData: db.MetaData{},
+			Username: string(user.Driver),
+			Type:     user.EMQUser,
 			Rules: []user.Rule{{
 				UUID:       uuid.Nil,
 				Endpoint:   "",
@@ -404,7 +435,6 @@ func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
 			Username:                "snapp-box",
 			Password:                getSamplePassword(),
 			Type:                    user.HeraldUser,
-			PublicKey:               key100,
 			Secret:                  "KJIikjIKbIYVGj)YihYUGIB&",
 			TokenExpirationDuration: time.Hour * 72,
 		}
@@ -415,7 +445,6 @@ func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
 			Password:                "password",
 			Type:                    user.EMQUser,
 			Secret:                  "secret",
-			PublicKey:               key100,
 			TokenExpirationDuration: 0,
 			Rules: []user.Rule{
 				user.Rule{

@@ -83,13 +83,37 @@ func (a *AppConfig) ReadPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
 	case user.ThirdParty:
 		fileName = fmt.Sprintf("%s%s", a.Jwt.KeysPath, "100.private.pem")
 	default:
-		return nil, fmt.Errorf("invalid user, private key not found")
+		return nil, fmt.Errorf("invalid issuer, private key not found")
 	}
 	pem, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
 	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(pem)
+	if err != nil {
+		return nil, err
+	}
+	return privateKey, nil
+}
+
+// ReadPrivateKey will read and return private key that is used for JWT encryption
+func (a *AppConfig) ReadPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
+	var fileName string
+	switch u {
+	case user.Driver:
+		fileName = fmt.Sprintf("%s%s", a.Jwt.KeysPath, "0.pem")
+	case user.Passenger:
+		fileName = fmt.Sprintf("%s%s", a.Jwt.KeysPath, "1.pem")
+	case user.ThirdParty:
+		fileName = fmt.Sprintf("%s%s", a.Jwt.KeysPath, "100.pem")
+	default:
+		return nil, fmt.Errorf("invalid issuer, public key not found")
+	}
+	pem, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return nil, err
+	}
+	privateKey, err := jwt.ParseRSAPublicKeyFromPEM(pem)
 	if err != nil {
 		return nil, err
 	}

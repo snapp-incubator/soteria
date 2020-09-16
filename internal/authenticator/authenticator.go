@@ -17,6 +17,7 @@ import (
 // Authenticator is responsible for Acl/Auth/Token of users
 type Authenticator struct {
 	PrivateKeys        map[user.Issuer]*rsa.PrivateKey
+	PublicKeys         map[user.Issuer]*rsa.PublicKey
 	AllowedAccessTypes []acl.AccessType
 	ModelHandler       db.ModelHandler
 	EMQTopicManager    *snappids.EMQTopicManager
@@ -33,20 +34,10 @@ func (a Authenticator) Auth(tokenString string) (bool, error) {
 		if claims["iss"] == nil {
 			return nil, fmt.Errorf("could not found iss in token claims")
 		}
-		if claims["sub"] == nil {
-			return nil, fmt.Errorf("could not find sub in token claims")
-		}
 		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
-		sub := fmt.Sprintf("%v", claims["sub"])
-		pk := primaryKey(issuer, sub)
-		u := user.User{}
-		err = a.ModelHandler.Get("user", pk, &u)
-		if err != nil {
-			return false, fmt.Errorf("error getting user %s from db err: %w", pk, err)
-		}
-		key := u.PublicKey
+		key := a.PublicKeys[issuer]
 		if key == nil {
-			return nil, fmt.Errorf("cannot find user %s public key", pk)
+			return nil, fmt.Errorf("cannot find issuer %s public key", issuer)
 		}
 		return key, nil
 	})
@@ -81,7 +72,7 @@ func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic 
 		if err != nil {
 			return false, fmt.Errorf("error getting user %s from db err: %w", pk, err)
 		}
-		key := u.PublicKey
+		key := a.PublicKeys[issuer]
 		if key == nil {
 			return nil, fmt.Errorf("cannot find user %v public key", issuer)
 		}
