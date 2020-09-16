@@ -18,18 +18,7 @@ import (
 func main() {
 	password := "password"
 	secret := "secret"
-	driverPublicKey, err := getPublicKey(user.Driver)
-	if err != nil {
-		panic(err)
-	}
-	passengerPublicKey, err := getPublicKey(user.Passenger)
-	if err != nil {
-		panic(err)
-	}
-	thirdPartyPublicKey, err := getPublicKey(user.ThirdParty)
-	if err != nil {
-		panic(err)
-	}
+
 	var users []user.User
 	driver := user.User{
 		MetaData: db.MetaData{
@@ -41,7 +30,6 @@ func main() {
 		Password:                string(password),
 		Type:                    user.EMQUser,
 		Secret:                  string(secret),
-		PublicKey:               driverPublicKey,
 		TokenExpirationDuration: time.Hour * 30 * 24,
 		Rules: []user.Rule{
 			user.Rule{
@@ -72,7 +60,6 @@ func main() {
 		Password:                string(password),
 		Type:                    user.EMQUser,
 		Secret:                  string(secret),
-		PublicKey:               passengerPublicKey,
 		TokenExpirationDuration: time.Hour * 30 * 24,
 		Rules: []user.Rule{
 			user.Rule{
@@ -97,7 +84,6 @@ func main() {
 		Password:                string(password),
 		Type:                    user.EMQUser,
 		Secret:                  string(secret),
-		PublicKey:               thirdPartyPublicKey,
 		TokenExpirationDuration: time.Hour * 30 * 24,
 		Rules: []user.Rule{
 			user.Rule{
@@ -118,7 +104,6 @@ func main() {
 		Password:                string(password),
 		Type:                    user.EMQUser,
 		Secret:                  string(secret),
-		PublicKey:               thirdPartyPublicKey,
 		TokenExpirationDuration: time.Hour * 30 * 24,
 		Rules: []user.Rule{
 			user.Rule{
@@ -139,7 +124,6 @@ func main() {
 		Password:                string(password),
 		Type:                    user.HeraldUser,
 		Secret:                  string(secret),
-		PublicKey:               thirdPartyPublicKey,
 		TokenExpirationDuration: time.Hour * 30 * 24,
 		Rules: []user.Rule{
 			user.Rule{
@@ -160,7 +144,6 @@ func main() {
 		Password:                string(password),
 		Type:                    user.HeraldUser,
 		Secret:                  string(secret),
-		PublicKey:               thirdPartyPublicKey,
 		TokenExpirationDuration: time.Hour * 30 * 24,
 		Rules: []user.Rule{
 			user.Rule{
@@ -181,7 +164,6 @@ func main() {
 		Password:                string(password),
 		Type:                    user.HeraldUser,
 		Secret:                  string(secret),
-		PublicKey:               thirdPartyPublicKey,
 		TokenExpirationDuration: time.Hour * 30 * 24,
 		Rules: []user.Rule{
 			user.Rule{
@@ -202,7 +184,6 @@ func main() {
 		Password:                string(password),
 		Type:                    user.HeraldUser,
 		Secret:                  string(secret),
-		PublicKey:               thirdPartyPublicKey,
 		TokenExpirationDuration: time.Hour * 30 * 24,
 		Rules: []user.Rule{
 			user.Rule{
@@ -223,7 +204,6 @@ func main() {
 		Password:                string(password),
 		Type:                    user.HeraldUser,
 		Secret:                  string(secret),
-		PublicKey:               thirdPartyPublicKey,
 		TokenExpirationDuration: time.Hour * 30 * 24,
 		Rules: []user.Rule{
 			user.Rule{
@@ -244,7 +224,6 @@ func main() {
 		Password:                string(password),
 		Type:                    user.HeraldUser,
 		Secret:                  string(secret),
-		PublicKey:               thirdPartyPublicKey,
 		TokenExpirationDuration: time.Hour * 30 * 24,
 		Rules: []user.Rule{
 			user.Rule{

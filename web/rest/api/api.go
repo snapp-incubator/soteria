@@ -25,8 +25,6 @@ func setupRouter() *gin.Engine {
 			authorizedRoutes.PUT("/:username", UpdateAccount)
 			authorizedRoutes.DELETE("/:username", DeleteAccount)
 
-			authorizedRoutes.POST("/:username/key", UpdatePublicKey)
-
 			authorizedRoutes.POST("/:username/rules", CreateAccountRule)
 			authorizedRoutes.GET("/:username/rules/:uuid", ReadAccountRule)
 			authorizedRoutes.PUT("/:username/rules/:uuid", UpdateAccountRule)

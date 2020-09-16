@@ -15,7 +15,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -177,112 +176,6 @@ func TestDeleteAccount(t *testing.T) {
 
 		_, err = app.GetInstance().AccountsService.Info("user", "password2")
 		assert.NotNil(t, err)
-	})
-}
-
-func TestUpdatePublicKey(t *testing.T) {
-	router := setupRouter()
-
-	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
-
-	t.Run("testing with an invalid public key", func(t *testing.T) {
-		w := httptest.NewRecorder()
-
-		file, err := ioutil.ReadFile("../../../test/token.invalid.sample")
-		assert.NoError(t, err)
-
-		body := new(bytes.Buffer)
-		writer := multipart.NewWriter(body)
-		part, err := writer.CreateFormFile("public_key", "token.invalid.sample")
-		assert.NoError(t, err)
-		part.Write(file)
-		err = writer.Close()
-		assert.NoError(t, err)
-		req, _ := http.NewRequest(http.MethodPost, "/accounts/user/key", body)
-
-		req.SetBasicAuth("user", "password")
-		req.Header.Set("Content-Type", writer.FormDataContentType())
-
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-
-		resBody, err := ioutil.ReadAll(w.Body)
-		assert.NoError(t, err)
-
-		var actualResponse Response
-		err = json.Unmarshal(resBody, &actualResponse)
-		assert.NoError(t, err)
-
-		assert.Equal(t, errors.PublicKeyParseFailure, actualResponse.Code)
-	})
-
-	t.Run("testing with an invalid form key", func(t *testing.T) {
-		w := httptest.NewRecorder()
-
-		file, err := ioutil.ReadFile("../../../test/0.pem")
-		assert.NoError(t, err)
-
-		body := new(bytes.Buffer)
-		writer := multipart.NewWriter(body)
-		part, err := writer.CreateFormFile("key", "0.pem")
-		assert.NoError(t, err)
-		part.Write(file)
-		err = writer.Close()
-		assert.NoError(t, err)
-		req, _ := http.NewRequest(http.MethodPost, "/accounts/user/key", body)
-
-		req.SetBasicAuth("user", "password")
-		req.Header.Set("Content-Type", writer.FormDataContentType())
-
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-
-		resBody, err := ioutil.ReadAll(w.Body)
-		assert.NoError(t, err)
-
-		var actualResponse Response
-		err = json.Unmarshal(resBody, &actualResponse)
-		assert.NoError(t, err)
-
-		assert.Equal(t, errors.PublicKeyReadFormFailure, actualResponse.Code)
-	})
-
-	t.Run("testing successful request", func(t *testing.T) {
-		w := httptest.NewRecorder()
-
-		file, err := ioutil.ReadFile("../../../test/0.pem")
-		assert.NoError(t, err)
-
-		body := new(bytes.Buffer)
-		writer := multipart.NewWriter(body)
-		part, err := writer.CreateFormFile("public_key", "0.pem")
-		assert.NoError(t, err)
-		part.Write(file)
-		err = writer.Close()
-		assert.NoError(t, err)
-		req, _ := http.NewRequest(http.MethodPost, "/accounts/user/key", body)
-
-		req.SetBasicAuth("user", "password")
-		req.Header.Set("Content-Type", writer.FormDataContentType())
-
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-
-		resBody, err := ioutil.ReadAll(w.Body)
-		assert.NoError(t, err)
-
-		var actualResponse Response
-		err = json.Unmarshal(resBody, &actualResponse)
-		assert.NoError(t, err)
-
-		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
-
-		u, err := app.GetInstance().AccountsService.Info("user", "password")
-		assert.Nil(t, err)
-		assert.NotNil(t, u.PublicKey)
 	})
 }
 

@@ -32,3 +32,5 @@ down:
 	docker-compose down
 	docker-compose stop
 	docker rmi soteria
+
+.PHONY: all test clean

@@ -18,6 +18,10 @@ objects:
           port: 9999
           protocol: TCP
           targetPort: 9999
+        - name: 50051-tcp
+          port: 50051
+          protocol: TCP
+          targetPort: 50051
       selector:
         deploymentconfig: ${SERVICE_NAME}
 parameters:

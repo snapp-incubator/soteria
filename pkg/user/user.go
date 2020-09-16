@@ -1,7 +1,6 @@
 package user
 
 import (
-	"crypto/rsa"
 	"github.com/google/uuid"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
@@ -35,7 +34,6 @@ type User struct {
 	Type                    UserType       `json:"type"`
 	IPs                     []string       `json:"ips"`
 	Secret                  string         `json:"secret"`
-	PublicKey               *rsa.PublicKey `json:"public_key"`
 	TokenExpirationDuration time.Duration  `json:"token_expiration_duration"`
 	Rules                   []Rule         `json:"rules"`
 }
