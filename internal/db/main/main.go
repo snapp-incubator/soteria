@@ -54,9 +54,13 @@ func main() {
 				Topic:      topics.DriverLocation,
 				AccessType: acl.Pub,
 			},
+			user.Rule{
+				UUID:       uuid.New(),
+				Topic:      topics.SuperappEvent,
+				AccessType: acl.Sub,
+			},
 		},
 	}
-
 
 	passenger := user.User{
 		MetaData: db.MetaData{
@@ -74,6 +78,11 @@ func main() {
 			user.Rule{
 				UUID:       uuid.New(),
 				Topic:      topics.CabEvent,
+				AccessType: acl.Sub,
+			},
+			user.Rule{
+				UUID:       uuid.New(),
+				Topic:      topics.SuperappEvent,
 				AccessType: acl.Sub,
 			},
 		},
