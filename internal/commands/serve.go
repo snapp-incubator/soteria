@@ -48,9 +48,21 @@ func servePreRun(cmd *cobra.Command, args []string) {
 		zap.String("jwt_keys_path", cfg.Jwt.KeysPath),
 		zap.String("allowed_access_types", fmt.Sprintf("%v", cfg.AllowedAccessTypes)))
 
-	pk, err := cfg.ReadPrivateKey(user.ThirdParty)
+	privateKey100, err := cfg.ReadPrivateKey(user.ThirdParty)
 	if err != nil {
 		zap.L().Fatal("could not read third party private key")
+	}
+	publicKey100, err := cfg.ReadPublicKey(user.ThirdParty)
+	if err != nil {
+		zap.L().Fatal("could not read third party public key")
+	}
+	publicKey0, err := cfg.ReadPublicKey(user.Driver)
+	if err != nil {
+		zap.L().Fatal("could not read driver public key")
+	}
+	publicKey1, err := cfg.ReadPublicKey(user.Passenger)
+	if err != nil {
+		zap.L().Fatal("could not read passenger public key")
 	}
 
 	hid := &snappids.HashIDSManager{
@@ -88,7 +100,12 @@ func servePreRun(cmd *cobra.Command, args []string) {
 	}
 	app.GetInstance().SetAuthenticator(&authenticator.Authenticator{
 		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
-			user.ThirdParty: pk,
+			user.ThirdParty: privateKey100,
+		},
+		PublicKeys: map[user.Issuer]*rsa.PublicKey{
+			user.Driver:     publicKey0,
+			user.Passenger:  publicKey1,
+			user.ThirdParty: publicKey100,
 		},
 		AllowedAccessTypes: allowedAccessTypes,
 		ModelHandler:       modelHandler,

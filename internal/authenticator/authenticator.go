@@ -17,6 +17,7 @@ import (
 // Authenticator is responsible for Acl/Auth/Token of users
 type Authenticator struct {
 	PrivateKeys        map[user.Issuer]*rsa.PrivateKey
+	PublicKeys         map[user.Issuer]*rsa.PublicKey
 	AllowedAccessTypes []acl.AccessType
 	ModelHandler       db.ModelHandler
 	EMQTopicManager    *snappids.EMQTopicManager
@@ -34,14 +35,9 @@ func (a Authenticator) Auth(tokenString string) (bool, error) {
 			return nil, fmt.Errorf("could not found iss in token claims")
 		}
 		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
-		u := user.User{}
-		err = a.ModelHandler.Get("user", primaryKey(issuer, ""), &u)
-		if err != nil {
-			return false, fmt.Errorf("error getting issuer %v from db err: %w", issuer, err)
-		}
-		key := u.PublicKey
+		key := a.PublicKeys[issuer]
 		if key == nil {
-			return nil, fmt.Errorf("cannot find issuer %v public key", issuer)
+			return nil, fmt.Errorf("cannot find issuer %s public key", issuer)
 		}
 		return key, nil
 	})
@@ -69,25 +65,27 @@ func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic 
 		}
 
 		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
-
 		sub := fmt.Sprintf("%v", claims["sub"])
-		id, err := a.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
-		if err != nil {
-			return nil, fmt.Errorf("could not decode hash id")
-		}
-
+		pk := primaryKey(issuer, sub)
 		u := user.User{}
-		err = a.ModelHandler.Get("user", primaryKey(issuer, sub), &u)
+		err := a.ModelHandler.Get("user", pk, &u)
 		if err != nil {
-			return false, fmt.Errorf("error getting user from db err: %w", err)
+			return false, fmt.Errorf("error getting user %s from db err: %w", pk, err)
 		}
-		key := u.PublicKey
+		key := a.PublicKeys[issuer]
 		if key == nil {
 			return nil, fmt.Errorf("cannot find user %v public key", issuer)
 		}
-		ok := a.ValidateTopicBySender(topic, issuerToAudience(issuer), id)
-		if !ok {
-			return nil, fmt.Errorf("provided topic %v is not valid", topic)
+
+		if issuer != user.ThirdParty {
+			id, err := a.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
+			if err != nil {
+				return nil, fmt.Errorf("could not decode hash id")
+			}
+			ok := a.ValidateTopicBySender(topic, issuerToAudience(issuer), id)
+			if !ok {
+				return nil, fmt.Errorf("provided topic %v is not valid", topic)
+			}
 		}
 
 		if ok := u.CheckTopicAllowance(topic.GetType(), accessType); !ok {
@@ -109,7 +107,7 @@ func (a Authenticator) Token(accessType acl.AccessType, username, secret string)
 	u := user.User{}
 	err = a.ModelHandler.Get("user", username, &u)
 	if err != nil {
-		return "", fmt.Errorf("could not get user. err: %v", err)
+		return "", fmt.Errorf("could not get user %s. err: %v", username, err)
 	}
 	if u.Secret != secret {
 		return "", fmt.Errorf("invlaid secret %v", secret)
