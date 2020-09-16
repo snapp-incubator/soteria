@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
@@ -10,7 +9,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
-	"io/ioutil"
 	"time"
 )
 
@@ -99,43 +97,6 @@ func DeleteAccount(ctx *gin.Context) {
 	username := ctx.MustGet("username").(string)
 
 	if err := app.GetInstance().AccountsService.Delete(username); err != nil {
-		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
-		return
-	}
-
-	ctx.JSON(CreateResponse(accountsInfo.SuccessfulOperation, nil))
-}
-
-// UpdatePublicKey is the handler of the update account's public key endpoint
-func UpdatePublicKey(ctx *gin.Context) {
-	username := ctx.MustGet("username").(string)
-
-	file, err := ctx.FormFile("public_key")
-	if err != nil {
-		ctx.JSON(CreateResponse(accountsInfo.PublicKeyReadFormFailure, nil, err.Error()))
-		return
-	}
-
-	keyFile, err := file.Open()
-	if err != nil {
-		ctx.JSON(CreateResponse(accountsInfo.PublicKeyOpenFailure, nil, err.Error()))
-		return
-	}
-	defer keyFile.Close()
-
-	b, err := ioutil.ReadAll(keyFile)
-	if err != nil {
-		ctx.JSON(CreateResponse(accountsInfo.PublicKeyReadFileFailure, nil, err.Error()))
-		return
-	}
-
-	key, err := jwt.ParseRSAPublicKeyFromPEM(b)
-	if err != nil {
-		ctx.JSON(CreateResponse(accountsInfo.PublicKeyParseFailure, nil, err.Error()))
-		return
-	}
-
-	if err := app.GetInstance().AccountsService.UpdatePublicKey(username, key); err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
 	}
