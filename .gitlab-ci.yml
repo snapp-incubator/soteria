@@ -163,15 +163,15 @@ release:production:teh-1:
   only:
     - tags
 
-release:production:teh-2:
-  <<: *release_job_definition
-  variables:
-    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH2_REGISTRY"
-    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH2_REGISTRY/$PROJECT_PRODUCTION_TEH2/$CI_PROJECT_NAME"
-    CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
-    CONTAINER_REGISTRY_PASSWORD: "$OKD_PRODUCTION_TOKEN_TEH2"
-  only:
-    - tags
+#release:production:teh-2:
+#  <<: *release_job_definition
+#  variables:
+#    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH2_REGISTRY"
+#    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH2_REGISTRY/$PROJECT_PRODUCTION_TEH2/$CI_PROJECT_NAME"
+#    CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+#    CONTAINER_REGISTRY_PASSWORD: "$OKD_PRODUCTION_TOKEN_TEH2"
+#  only:
+#    - tags
 
 
 
