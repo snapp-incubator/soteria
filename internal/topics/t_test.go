@@ -29,14 +29,14 @@ func TestTopic_GetType(t1 *testing.T) {
 			want: DriverLocation,
 		},
 		{
-			name:   "#5 testing invalid location",
-			arg: "snapp/passenger/sfhsdkifs475sfhs/location",
-			want:   "",
+			name: "#5 testing invalid location",
+			arg:  "snapp/passenger/sfhsdkifs475sfhs/location",
+			want: "",
 		},
 		{
-			name:   "#6 testing superapp event",
-			arg: "snapp/passenger/fhdyfuiksdf5456456adljada/superapp",
-			want:   SuperappEvent,
+			name: "#6 testing superapp event",
+			arg:  "snapp/passenger/fhdyfuiksdf5456456adljada/superapp",
+			want: SuperappEvent,
 		},
 	}
 	for _, tt := range tests {

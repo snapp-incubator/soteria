@@ -12,7 +12,6 @@ type ModelHandler struct {
 	Client redis.Cmdable
 }
 
-
 // Save saves a model in redis
 func (rmh ModelHandler) Save(model db.Model) error {
 	md := model.GetMetadata()

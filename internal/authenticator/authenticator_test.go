@@ -35,8 +35,6 @@ const (
 	invalidDriverSuperappEventTopic = "snapp/driver/0596923be632d673560af9adadd2f78a/superapp"
 )
 
-
-
 func TestAuthenticator_Auth(t *testing.T) {
 	driverToken, err := getSampleToken(user.Driver)
 	if err != nil {

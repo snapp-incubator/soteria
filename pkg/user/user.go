@@ -28,14 +28,14 @@ const (
 
 // User is Soteria's users db model
 type User struct {
-	MetaData                db.MetaData    `json:"meta_data"`
-	Username                string         `json:"username"`
-	Password                string         `json:"password"`
-	Type                    UserType       `json:"type"`
-	IPs                     []string       `json:"ips"`
-	Secret                  string         `json:"secret"`
-	TokenExpirationDuration time.Duration  `json:"token_expiration_duration"`
-	Rules                   []Rule         `json:"rules"`
+	MetaData                db.MetaData   `json:"meta_data"`
+	Username                string        `json:"username"`
+	Password                string        `json:"password"`
+	Type                    UserType      `json:"type"`
+	IPs                     []string      `json:"ips"`
+	Secret                  string        `json:"secret"`
+	TokenExpirationDuration time.Duration `json:"token_expiration_duration"`
+	Rules                   []Rule        `json:"rules"`
 }
 
 // Rule tells about a access to a specific topic or endpoint
