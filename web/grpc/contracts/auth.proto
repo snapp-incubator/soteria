@@ -1,0 +1,32 @@
+syntax = "proto3";
+package contracts;
+
+message AuthContract {
+  string ServiceName = 1;
+  string IPAddress = 2;
+  string Endpoint = 3;
+  string Username = 4;
+  string Password = 5;
+  string Token = 6;
+  string Topic = 7;
+}
+
+message ServiceResponse {
+  int32 Code = 1;
+}
+
+message GetTokenContract {
+  string GrantType    = 1;
+  string ClientID     = 2;
+  string ClientSecret = 3;
+}
+
+message GetTokenResponse {
+  int32  Code  = 1;
+  string Token = 2;
+}
+
+service Auth {
+  rpc Auth(AuthContract) returns (ServiceResponse) {}
+  rpc GetToken(GetTokenContract) returns (GetTokenResponse) {}
+}
