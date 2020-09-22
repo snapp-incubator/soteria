@@ -85,7 +85,7 @@ func servePreRun(cmd *cobra.Command, args []string) {
 	var modelHandler db.ModelHandler
 
 	if cfg.Cache.Enabled {
-		modelHandler = cachedredis.NewCachedRedisModelHandler(redisModelHandler, cache.New(cache.NoExpiration, cache.NoExpiration))
+		modelHandler = cachedredis.NewCachedRedisModelHandler(redisModelHandler, cache.New(cfg.Cache.Expiration, cache.NoExpiration))
 	} else {
 		modelHandler = redisModelHandler
 	}
