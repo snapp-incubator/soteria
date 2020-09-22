@@ -22,7 +22,7 @@ variables:
   PROJECT_VERSION: "${CI_COMMIT_SHA}" 
 
 
-.code-generator:
+code-generator:
   stage: pre-compile
   image:
     name: namely/protoc-all
@@ -45,7 +45,7 @@ variables:
     - chmod 0600 /root/.ssh/id_rsa
     - go env -w GOPRIVATE="gitlab.snapp.ir/dispatching","gitlab.snapp.ir/snapp-sdks"
 
-.compile:
+compile:
   <<: *git
   image: registry.snapp.tech/docker/golang:1.13.5-alpine3.10
   stage: compile
@@ -69,7 +69,7 @@ variables:
     expire_in: 1 week
 
 
-.unit_tests:
+unit_tests:
   <<: *git
   stage: test
   image: registry.snapp.tech/docker/golang:1.13.5-alpine3.10
@@ -92,7 +92,7 @@ variables:
     - compile
 
     
-.build:
+build:
   image: docker:latest
   stage: build
   variables:
@@ -128,7 +128,7 @@ variables:
     - build
 
 
-.release:staging:
+release:staging:
   <<: *release_job_definition
   variables:
     CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
@@ -140,7 +140,7 @@ variables:
     - tags
     - branches
 
-.release:mozart:
+release:mozart:
   <<: *release_job_definition
   variables:
     CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
@@ -153,7 +153,7 @@ variables:
     - branches
   when: manual
 
-.release:production:teh-1:
+release:production:teh-1:
   <<: *release_job_definition
   variables:
     CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
