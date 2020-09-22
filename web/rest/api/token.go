@@ -13,8 +13,8 @@ import (
 // TokenRequest is the body payload structure of the token endpoint
 type TokenRequest struct {
 	GrantType    acl.AccessType `json:"grant_type" form:"grant_type" query:"grant_type"`
-	ClientID     string          `json:"client_id" form:"client_id" query:"client_id"`
-	ClientSecret string          `json:"client_secret" form:"client_secret" query:"client_secret"`
+	ClientID     string         `json:"client_id" form:"client_id" query:"client_id"`
+	ClientSecret string         `json:"client_secret" form:"client_secret" query:"client_secret"`
 }
 
 // Token is the handler responsible for Token requests
