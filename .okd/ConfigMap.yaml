@@ -45,7 +45,7 @@ parameters:
 - name: REDIS_ADDR
   required: true
 - name: REDIS_PASS
-  required: true
+  required: false
 - name: MANAGED_BY
   displayName: Managed by
   required: true
