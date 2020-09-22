@@ -4,6 +4,7 @@ import (
 	"fmt"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"net/http"
 	"time"
@@ -35,6 +36,8 @@ func setupRouter() *gin.Engine {
 	router.POST("/auth", Auth)
 	router.POST("/acl", ACL)
 	router.POST("/token", Token)
+
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	return router
 }
