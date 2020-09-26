@@ -2,6 +2,7 @@ package authenticator
 
 import (
 	"crypto/rsa"
+	errs "errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
@@ -13,6 +14,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )
+
+var TopicNotAllowed = errs.New("topic is not allowed")
 
 // Authenticator is responsible for Acl/Auth/Token of users
 type Authenticator struct {
@@ -52,7 +55,7 @@ func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic 
 	if !a.validateAccessType(accessType) {
 		return false, fmt.Errorf("requested access type %s is invalid", accessType)
 	}
-	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("token is not valid, signing method is not RSA")
 		}
@@ -65,36 +68,39 @@ func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic 
 		}
 
 		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
-		sub := fmt.Sprintf("%v", claims["sub"])
-		pk := primaryKey(issuer, sub)
-		u := user.User{}
-		err := a.ModelHandler.Get("user", pk, &u)
-		if err != nil {
-			return false, fmt.Errorf("error getting user %s from db err: %w", pk, err)
-		}
 		key := a.PublicKeys[issuer]
 		if key == nil {
 			return nil, fmt.Errorf("cannot find user %v public key", issuer)
 		}
-
-		if issuer != user.ThirdParty {
-			id, err := a.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
-			if err != nil {
-				return nil, fmt.Errorf("could not decode hash id")
-			}
-			ok := a.ValidateTopicBySender(topic, issuerToAudience(issuer), id)
-			if !ok {
-				return nil, fmt.Errorf("provided topic %v is not valid", topic)
-			}
-		}
-
-		if ok := u.CheckTopicAllowance(topic.GetType(), accessType); !ok {
-			return nil, fmt.Errorf("issuer %v with sub %s is not allowed to %v on topic %v", issuer, sub, accessType, topic)
-		}
 		return key, nil
 	})
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("token is invalid. err: %w", err)
+	}
+
+	claims := token.Claims.(jwt.MapClaims)
+	issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
+	sub := fmt.Sprintf("%v", claims["sub"])
+	pk := primaryKey(issuer, sub)
+	u := user.User{}
+	err = a.ModelHandler.Get("user", pk, &u)
+	if err != nil {
+		return false, fmt.Errorf("error getting user %s from db err: %w", pk, err)
+	}
+	if issuer != user.ThirdParty {
+		id, err := a.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
+		if err != nil {
+			return false, fmt.Errorf("could not decode hash id")
+		}
+		ok := a.ValidateTopicBySender(topic, issuerToAudience(issuer), id)
+		if !ok {
+			return false, fmt.Errorf("provided topic %v is not valid", topic)
+		}
+	}
+
+	if ok := u.CheckTopicAllowance(topic.GetType(), accessType); !ok {
+		return false,
+		fmt.Errorf("%w. issuer %s with sub %s is not allowed to %s on topic %s", TopicNotAllowed, issuer, sub, accessType, topic)
 	}
 	return true, nil
 }
