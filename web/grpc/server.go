@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/web/grpc/contracts"
@@ -25,19 +26,24 @@ func (s *Server) Auth(ctx context.Context, in *contracts.AuthContract) (*contrac
 		zap.String("endpoint", endpoint),
 		zap.String("ip", ip),
 	)
-	statusCode := http.StatusUnauthorized
-	ok := false
+
+	var ok bool
 	var err error
 	if len(password) > 0 {
 		ok, err = app.GetInstance().Authenticator.EndPointBasicAuth(username, password, endpoint)
 	} else if len(ip) > 0 {
 		ok, err = app.GetInstance().Authenticator.EndpointIPAuth(username, ip, endpoint)
+	} else {
+		ok = false
+		err = fmt.Errorf("both password and ip address are empty")
 	}
-	if ok {
-		statusCode = http.StatusOK
+
+	if !ok {
+		zap.L().Error("grpc auth returned", zap.Int("code", http.StatusUnauthorized), zap.Error(err))
+		return &contracts.ServiceResponse{Code: int32(http.StatusUnauthorized)}, err
 	}
-	zap.L().Debug("grpc auth returned", zap.Int("code", statusCode), zap.Error(err))
-	return &contracts.ServiceResponse{Code: int32(statusCode)}, err
+	zap.L().Info("grpc auth returned", zap.Int("code", http.StatusOK))
+	return &contracts.ServiceResponse{Code: int32(http.StatusOK)}, err
 }
 
 func (s *Server) GetToken(ctx context.Context, in *contracts.GetTokenContract) (*contracts.GetTokenResponse, error) {

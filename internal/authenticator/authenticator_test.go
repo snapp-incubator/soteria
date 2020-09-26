@@ -197,13 +197,13 @@ func TestAuthenticator_Acl(t *testing.T) {
 		ok, err := authenticator.Acl(acl.PubSub, passengerToken, "test")
 		assert.Error(t, err)
 		assert.False(t, ok)
-		assert.Equal(t, "requested access type 3 is invalid", err.Error())
+		assert.Equal(t, "requested access type publish-subscribe is invalid", err.Error())
 	})
 	t.Run("testing acl with invalid token", func(t *testing.T) {
 		ok, err := authenticator.Acl(acl.Pub, invalidToken, validDriverCabEventTopic)
 		assert.False(t, ok)
 		assert.Error(t, err)
-		assert.Equal(t, "illegal base64 data at input byte 37", err.Error())
+		assert.Equal(t, "token is invalid. err: illegal base64 data at input byte 37", err.Error())
 	})
 	t.Run("testing acl with valid inputs", func(t *testing.T) {
 		ok, err := authenticator.Acl(acl.Sub, passengerToken, validPassengerCabEventTopic)
