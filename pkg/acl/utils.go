@@ -13,6 +13,18 @@ const (
 	ClientCredentials = "client_credentials"
 )
 
+func (a AccessType) String() string {
+	switch a {
+	case Sub:
+		return "subscribe"
+	case Pub:
+		return "publish"
+	case PubSub:
+		return "publish-subscribe"
+	}
+	return ""
+}
+
 // ValidateEndpoint takes authorizedEndpoints and unauthorizedEndpoints and tell whether a endpoint is authorized or not
 func ValidateEndpoint(endpoint string, authorizedEndpoints, unauthorizedEndpoints []string) bool {
 	if len(authorizedEndpoints) == 0 && len(unauthorizedEndpoints) == 0 {
