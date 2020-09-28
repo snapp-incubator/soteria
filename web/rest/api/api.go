@@ -12,7 +12,8 @@ import (
 
 // setupRouter will attach all routes needed for Soteria to gin's default router
 func setupRouter() *gin.Engine {
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Recovery())
 
 	router.Use(ginzap.Ginzap(zap.L(), time.RFC3339, false))
 	router.Use(ginzap.RecoveryWithZap(zap.L(), true))
