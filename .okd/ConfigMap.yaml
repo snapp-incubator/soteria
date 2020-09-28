@@ -33,6 +33,7 @@ objects:
     SOTERIA_ALLOWED_ACCESS_TYPES: "sub,pub"
     SOTERIA_CACHE_ENABLED: "true"
     SOTERIA_CACHE_EXPIRATION: "3600s"
+    GIN_MODE: "${GIN_MODE}"
     
 parameters:
 - name: SERVICE_NAME
@@ -42,6 +43,8 @@ parameters:
   value: "INFO"
   displayName: Log Level
   description: How much log do you want? (DEBUG|INFO|WARN|ERROR|OFF)
+- name: GIN_MODE 
+  value: "release"
 - name: REDIS_ADDR
   required: true
 - name: REDIS_PASS
