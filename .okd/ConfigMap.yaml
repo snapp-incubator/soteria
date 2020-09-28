@@ -40,7 +40,7 @@ parameters:
   displayName: Service name
   description: The name of the application (should be unique in the namespace)
 - name: LOG_LEVEL
-  value: "INFO"
+  value: "ERROR"
   displayName: Log Level
   description: How much log do you want? (DEBUG|INFO|WARN|ERROR|OFF)
 - name: GIN_MODE 
