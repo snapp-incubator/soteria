@@ -1,9 +1,11 @@
 package api
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"gitlab.snapp.ir/dispatching/soteria/internal"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"go.uber.org/zap"
@@ -64,14 +66,19 @@ func ACL(ctx *gin.Context) {
 	ok, err := app.GetInstance().Authenticator.Acl(request.Access, tokenString, topic)
 	if err != nil || !ok {
 
-		zap.L().
-			Error("acl request is not authorized",
-				zap.Error(err),
-			)
+		if errors.Unwrap(err) == authenticator.TopicNotAllowed {
+			zap.L().
+				Warn("acl request is not authorized",
+					zap.Error(err))
+		} else {
+			zap.L().
+				Error("acl request is not authorized",
+					zap.Error(err))
+		}
 
 		app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Acl, http.StatusUnauthorized)
+		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, string(request.Access), internal.Failure, string(topicType))
 		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Failure, "request is not authorized")
-		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Failure, string(topicType))
 		app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusUnauthorized, "request is not authorized")
 		return
@@ -88,7 +95,7 @@ func ACL(ctx *gin.Context) {
 
 	app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Acl, http.StatusOK)
 	app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Success, "ok")
-	app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Success, string(topicType))
+	app.GetInstance().Metrics.ObserveStatus(internal.Soteria, string(request.Access), internal.Success, string(topicType))
 	app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 	ctx.String(http.StatusOK, "ok")
 }

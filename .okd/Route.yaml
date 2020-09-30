@@ -19,7 +19,6 @@ objects:
       name: ${SERVICE_NAME}
       weight: 100
     wildcardPolicy: None
-
 - apiVersion: v1
   kind: Route
   metadata:
@@ -28,9 +27,9 @@ objects:
     labels:
       app: ${SERVICE_NAME}
       router: "public"
-    name: ${SERVICE_NAME}-public
+    name: "${SERVICE_NAME}-publi"
   spec:
-    host: ${APP_HOST}.apps.public.${DC}.snappcloud.io
+    host: "${APP_HOST}.apps.public.${DC}.snappcloud.io"
     port:
       targetPort: 9999-tcp
     tls:
