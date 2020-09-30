@@ -29,9 +29,25 @@ objects:
             app: ${SERVICE_NAME}
             deploymentconfig: ${SERVICE_NAME}
         spec:
+          initContainers:
+          - name: ${SERVICE_NAME}-app-init
+            image: docker-registry.default.svc:5000/mozart/${SERVICE_NAME}:${SERVICE_IMAGE_TAG}
+            command: ["/app/soteria", "accounts", "init", "db.json"]
+            imagePullPolicy: Always
+            envFrom:
+              - secretRef:
+                  name: ${SERVICE_NAME}-auth-env
+              - configMapRef:
+                  name: "${SERVICE_NAME}-env"
+            volumeMounts:
+              - name: "${SERVICE_NAME}-db"
+                mountPath: "/app/db.json"
+                subPath: db.json
+                readOnly: true
           containers:
           - name: ${SERVICE_NAME}-app
             image: docker-registry.default.svc:5000/mozart/${SERVICE_NAME}:${SERVICE_IMAGE_TAG}
+            command: ["/app/soteria", "serve"]
             imagePullPolicy: Always
             ports:
             - containerPort: 9999
@@ -90,6 +106,9 @@ objects:
             - name: "${SERVICE_NAME}-jwt-keys"
               secret:
                 secretName: "${SERVICE_NAME}-jwt-keys"
+            - name: "${SERVICE_NAME}-db"
+              secret:
+                secretName: "${SERVICE_NAME}-db"
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           terminationGracePeriodSeconds: 30
