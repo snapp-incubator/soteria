@@ -259,6 +259,8 @@ deploy:production:teh_1:
     DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
     DEPLOY_REDIS_ADDR: "soteria-redis-haproxy.realtime-production.svc:6379"
   needs: ["release:production:teh-1"]
+  after_script:
+  - curl --silent -H "Content-Type:application/json" -d "{\"format\":\"html\", \"displayName\":\"LakLak\", \"text\":\"<code>${CI_COMMIT_REF_NAME}</code> tag or branch of <b>${CI_PROJECT_NAME}</b> was deployed by <b>${GITLAB_USER_NAME}</b> on <b>teh-1</b>\"}" https://notify.snapp.tech/laklak
 
 deploy:production:teh_2:
   <<: *deploy_job_definition
@@ -279,3 +281,6 @@ deploy:production:teh_2:
     DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
     DEPLOY_REDIS_ADDR: "soteria-redis-haproxy.realtime-production.svc:6379"
   needs: ["release:production:teh-2"]
+  after_script:
+  - curl --silent -H "Content-Type:application/json" -d "{\"format\":\"html\", \"displayName\":\"LakLak\", \"text\":\"<code>${CI_COMMIT_REF_NAME}</code> tag or branch of <b>${CI_PROJECT_NAME}</b> was deployed by <b>${GITLAB_USER_NAME}</b> on <b>teh-2</b>\"}" https://notify.snapp.tech/laklak
+
