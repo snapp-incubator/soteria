@@ -110,10 +110,6 @@ parameters:
     value: "600m"
   - name: CPU_REQUEST
     value: "600m"
-  - name: LOG_LEVEL
-    value: "INFO"
-    displayName: Log Level
-    description: How much log do you want? (DEBUG|INFO|WARN|ERROR|OFF)
   - name: METRICS_ENABLED
     value: "true"
     displayName: Metrics Endpoint?
