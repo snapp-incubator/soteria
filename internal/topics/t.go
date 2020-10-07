@@ -18,7 +18,7 @@ func (t Topic) GetType() Type {
 	if matched {
 		return CabEvent
 	}
-	matched, _ = regexp.Match(`snapp/driver/[a-zA-Z0-9]+/location`, []byte(t))
+	matched, _ = regexp.Match(`snapp/driver/[a-zA-Z0-9+]+/location`, []byte(t))
 	if matched {
 		return DriverLocation
 	}
