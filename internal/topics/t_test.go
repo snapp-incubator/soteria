@@ -38,6 +38,11 @@ func TestTopic_GetType(t1 *testing.T) {
 			arg:  "snapp/passenger/fhdyfuiksdf5456456adljada/superapp",
 			want: SuperappEvent,
 		},
+		{
+			name: "#7 testing superapp event",
+			arg:  "snapp/driver/+/location",
+			want: DriverLocation,
+		},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
