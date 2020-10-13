@@ -2,8 +2,10 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/web/grpc/contracts"
 	"go.uber.org/zap"
@@ -39,6 +41,11 @@ func (s *Server) Auth(ctx context.Context, in *contracts.AuthContract) (*contrac
 	}
 
 	if !ok {
+		if errors.Is(err, db.ErrDb) {
+			zap.L().Error("grpc auth returned", zap.Int("code", http.StatusInternalServerError), zap.Error(err))
+			return &contracts.ServiceResponse{Code: int32(http.StatusInternalServerError)}, err
+		}
+
 		zap.L().Error("grpc auth returned", zap.Int("code", http.StatusUnauthorized), zap.Error(err))
 		return &contracts.ServiceResponse{Code: int32(http.StatusUnauthorized)}, err
 	}
@@ -49,6 +56,13 @@ func (s *Server) Auth(ctx context.Context, in *contracts.AuthContract) (*contrac
 func (s *Server) GetToken(ctx context.Context, in *contracts.GetTokenContract) (*contracts.GetTokenResponse, error) {
 	tokenString, err := app.GetInstance().Authenticator.Token(acl.AccessType(in.GetGrantType()), in.GetClientID(), in.GetClientSecret())
 	if err != nil {
+		if errors.Is(err, db.ErrDb) {
+			return &contracts.GetTokenResponse{
+				Code:  http.StatusInternalServerError,
+				Token: "",
+			}, err
+		}
+
 		return &contracts.GetTokenResponse{
 			Code:  http.StatusUnauthorized,
 			Token: "",
