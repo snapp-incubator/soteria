@@ -10,4 +10,7 @@ const (
 	CabEvent       = "cab_event"
 	DriverLocation = "driver_location"
 	SuperAppEvent  = "super_app_event"
+
+	HttpApi = "http"
+	GrpcApi = "grpc"
 )
