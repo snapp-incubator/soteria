@@ -4,7 +4,7 @@ const (
 	Soteria        = "soteria"
 	Acl            = "acl"
 	Auth           = "auth"
-	Token          = "auth"
+	Token          = "token"
 	Success        = "success"
 	Failure        = "failure"
 	CabEvent       = "cab_event"
