@@ -1,18 +1,13 @@
 package metrics
 
-// Metrics is the interface for observing metrics.
+// Metrics is an interface used to capture metrics in soteria.
 type Metrics interface {
-	Http
-}
+	// ObserveStatusCode is the method for status code metrics
+	ObserveStatusCode(api, serviceName, function string, code int)
 
-// Http is a interface used to capture metrics related to HTTP.
-type Http interface {
-	// ObserveStatusCode is the method for HTTP status code metrics
-	ObserveStatusCode(serviceName string, function string, code int)
-
-	// ObserveStatus is the method for the status of the done operations.
-	ObserveStatus(serviceName string, function string, status string, info string)
+	// ObserveStatus is the method for the status of the done operations
+	ObserveStatus(api, serviceName, function, status, info string)
 
 	// ObserveResponseTime is the method for times takes by a specific function
-	ObserveResponseTime(serviceName string, function string, time float64)
+	ObserveResponseTime(api, serviceName, function string, time float64)
 }

@@ -122,12 +122,12 @@ func validateRuleInfo(endpoint string, topicPattern topics.Type, accessType acl.
 		return errors.CreateError(errors.InvalidRule, "all rule information is empty")
 	}
 
-	if endpoint != "" && (topicPattern != "" || accessType != "") {
-		return errors.CreateError(errors.InvalidRule, "when endpoint is provided topic pattern and access type should be empty")
+	if accessType == "" {
+		return errors.CreateError(errors.InvalidRule, "access type is necessary")
 	}
 
-	if (topicPattern != "" && accessType == "") || (topicPattern == "" && accessType != "") {
-		return errors.CreateError(errors.InvalidRule, "both topic pattern and access type should be present")
+	if (endpoint != "" && topicPattern != "") || (endpoint == "" && topicPattern == "") {
+		return errors.CreateError(errors.InvalidRule, "either endpoint or topic pattern should be present")
 	}
 
 	return nil
