@@ -21,7 +21,9 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/web/grpc"
 	"gitlab.snapp.ir/dispatching/soteria/web/rest/api"
 	"go.uber.org/zap"
+	grpcLib "google.golang.org/grpc"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 )
@@ -127,13 +129,13 @@ func serveRun(cmd *cobra.Command, args []string) {
 	grpcServer := grpc.GRPCServer()
 
 	go func() {
-		if err := rest.ListenAndServe(); err != nil {
+		if err := rest.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			zap.L().Fatal("failed to run REST HTTP server", zap.Error(err))
 		}
 	}()
 
 	go func() {
-		if err := grpcServer.Serve(gListen); err != nil {
+		if err := grpcServer.Serve(gListen); err != nil && err != grpcLib.ErrServerStopped {
 			zap.L().Fatal("failed to run GRPC server", zap.Error(err))
 		}
 	}()

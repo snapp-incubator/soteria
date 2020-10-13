@@ -33,6 +33,7 @@ type RedisConfig struct {
 	ExpirationTime     int           `default:"30" split_words:"true"`
 	PoolSize           int           `split_words:"true" default:"10"`
 	MaxRetries         int           `split_words:"true" default:"0"`
+	MinIdleConnections int           `split_words:"true" default:"5"`
 	ReadTimeout        time.Duration `split_words:"true" default:"3s"`
 	PoolTimeout        time.Duration `split_words:"true" default:"4s"`
 	MinRetryBackoff    time.Duration `split_words:"true" default:"8ms"`
@@ -44,7 +45,7 @@ type RedisConfig struct {
 // CacheConfig contains configs of in memory cache
 type CacheConfig struct {
 	Enabled    bool          `split_words:"true" default:"true"`
-	Expiration time.Duration `split_words:"true" default:"3600s"`
+	Expiration time.Duration `split_words:"true" default:"600s"`
 }
 
 // JwtConfig contains path of the keys for JWT encryption

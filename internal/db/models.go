@@ -1,8 +1,12 @@
 package db
 
 import (
+	"errors"
 	"time"
 )
+
+// ErrDb is returned when there was an error in database operations
+var ErrDb = errors.New("database error")
 
 type ModelHandler interface {
 	Save(model Model) error
