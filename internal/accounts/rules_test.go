@@ -62,7 +62,7 @@ func TestValidateRuleInfo(t *testing.T) {
 	t.Run("test with with valid rule info", func(t *testing.T) {
 		endpoint := "/notification"
 		topicPattern := topics.Type("")
-		accessType := acl.AccessType("")
+		accessType := acl.Pub
 
 		err := validateRuleInfo(endpoint, topicPattern, accessType)
 		assert.Nil(t, err)

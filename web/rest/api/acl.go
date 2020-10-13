@@ -40,9 +40,9 @@ func ACL(ctx *gin.Context) {
 				zap.String("password", request.Username),
 			)
 
-		app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Acl, http.StatusBadRequest)
-		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Failure, "bad request")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
+		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Acl, http.StatusBadRequest)
+		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Failure, "bad request")
+		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusBadRequest, "bad request")
 		return
 	}
@@ -57,9 +57,9 @@ func ACL(ctx *gin.Context) {
 	topic := topics.Topic(request.Topic)
 	topicType := topic.GetType()
 	if len(topicType) == 0 {
-		app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Acl, http.StatusBadRequest)
-		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Failure, "bad request")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
+		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Acl, http.StatusBadRequest)
+		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Failure, "bad request")
+		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusBadRequest, "bad request")
 		return
 	}
@@ -78,18 +78,18 @@ func ACL(ctx *gin.Context) {
 		}
 
 		if errors.Is(err, db.ErrDb) {
-			app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Acl, http.StatusInternalServerError)
-			app.GetInstance().Metrics.ObserveStatus(internal.Soteria, request.Access.String(), internal.Failure, string(topicType))
-			app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Failure, "database error happened")
-			app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
+			app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Acl, http.StatusInternalServerError)
+			app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, request.Access.String(), internal.Failure, string(topicType))
+			app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Failure, "database error happened")
+			app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 			ctx.String(http.StatusInternalServerError, "internal server error")
 			return
 		}
 
-		app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Acl, http.StatusUnauthorized)
-		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, request.Access.String(), internal.Failure, string(topicType))
-		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Failure, "request is not authorized")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
+		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Acl, http.StatusUnauthorized)
+		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, request.Access.String(), internal.Failure, string(topicType))
+		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Failure, "request is not authorized")
+		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusUnauthorized, "request is not authorized")
 		return
 	}
@@ -103,9 +103,9 @@ func ACL(ctx *gin.Context) {
 			zap.String("password", request.Username),
 		)
 
-	app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Acl, http.StatusOK)
-	app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Success, "ok")
-	app.GetInstance().Metrics.ObserveStatus(internal.Soteria, request.Access.String(), internal.Success, string(topicType))
-	app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
+	app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Acl, http.StatusOK)
+	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Success, "ok")
+	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, request.Access.String(), internal.Success, string(topicType))
+	app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 	ctx.String(http.StatusOK, "ok")
 }

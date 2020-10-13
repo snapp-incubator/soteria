@@ -187,7 +187,7 @@ func TestCreateAccountRule(t *testing.T) {
 	t.Run("testing with invalid rule info", func(t *testing.T) {
 		w := httptest.NewRecorder()
 
-		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":"2"}`)
+		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":""}`)
 		req, _ := http.NewRequest(http.MethodPost, "/accounts/user/rules", bytes.NewBuffer(payload))
 		req.Header.Set("Content-Type", "application/json")
 		req.SetBasicAuth("user", "password")
@@ -213,7 +213,7 @@ func TestCreateAccountRule(t *testing.T) {
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
 
-		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":""}`)
+		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":"2"}`)
 		req, _ := http.NewRequest(http.MethodPost, "/accounts/user/rules", bytes.NewBuffer(payload))
 		req.Header.Set("Content-Type", "application/json")
 		req.SetBasicAuth("user", "password")
@@ -236,7 +236,7 @@ func TestCreateAccountRule(t *testing.T) {
 		assert.Equal(t, 1, len(u.Rules))
 		assert.Equal(t, "/notification", u.Rules[0].Endpoint)
 		assert.Equal(t, topics.Type(""), u.Rules[0].Topic)
-		assert.Equal(t, acl.AccessType(""), u.Rules[0].AccessType)
+		assert.Equal(t, acl.Pub, u.Rules[0].AccessType)
 	})
 }
 
@@ -244,7 +244,7 @@ func TestReadAccountRule(t *testing.T) {
 	router := setupRouter()
 
 	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
-	createdRule, _ := app.GetInstance().AccountsService.CreateRule("user", "/notification", "", "")
+	createdRule, _ := app.GetInstance().AccountsService.CreateRule("user", "/notification", "", "2")
 
 	t.Run("testing with invalid UUID", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -317,7 +317,7 @@ func TestUpdateAccountRule(t *testing.T) {
 	router := setupRouter()
 
 	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
-	createdRule, _ := app.GetInstance().AccountsService.CreateRule("user", "/notification", "", "")
+	createdRule, _ := app.GetInstance().AccountsService.CreateRule("user", "/notification", "", "2")
 
 	t.Run("testing with no payload", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -364,7 +364,7 @@ func TestUpdateAccountRule(t *testing.T) {
 	t.Run("testing with undefined rule", func(t *testing.T) {
 		w := httptest.NewRecorder()
 
-		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":""}`)
+		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":"2"}`)
 		req, _ := http.NewRequest(http.MethodPut, "/accounts/user/rules/b33a0b78-c8a6-4719-a222-9a3883cc4b7c", bytes.NewBuffer(payload))
 		req.SetBasicAuth("user", "password")
 		req.Header.Set("Content-Type", "application/json")
@@ -418,7 +418,7 @@ func TestDeleteAccountRule(t *testing.T) {
 	router := setupRouter()
 
 	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
-	createdRule, _ := app.GetInstance().AccountsService.CreateRule("user", "/notification", "", "")
+	createdRule, _ := app.GetInstance().AccountsService.CreateRule("user", "/notification", "", "2")
 
 	t.Run("testing with invalid UUID", func(t *testing.T) {
 		w := httptest.NewRecorder()
