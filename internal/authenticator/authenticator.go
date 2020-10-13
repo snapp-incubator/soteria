@@ -9,7 +9,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -100,7 +99,7 @@ func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic 
 
 	if ok := u.CheckTopicAllowance(topic.GetType(), accessType); !ok {
 		return false,
-		fmt.Errorf("%w. issuer %s with sub %s is not allowed to %s on topic %s", TopicNotAllowed, issuer, sub, accessType, topic)
+			fmt.Errorf("%w. issuer %s with sub %s is not allowed to %s on topic %s", TopicNotAllowed, issuer, sub, accessType, topic)
 	}
 	return true, nil
 }
@@ -113,7 +112,7 @@ func (a Authenticator) Token(accessType acl.AccessType, username, secret string)
 	u := user.User{}
 	err = a.ModelHandler.Get("user", username, &u)
 	if err != nil {
-		return "", fmt.Errorf("could not get user %s. err: %v", username, err)
+		return "", fmt.Errorf("could not get user %s. err: %w", username, err)
 	}
 	if u.Secret != secret {
 		return "", fmt.Errorf("invlaid secret %v", secret)
@@ -135,11 +134,11 @@ func (a Authenticator) Token(accessType acl.AccessType, username, secret string)
 func (a Authenticator) EndPointBasicAuth(username, password, endpoint string) (bool, error) {
 	var u user.User
 	if err := a.ModelHandler.Get("user", username, &u); err != nil {
-		return false, errors.CreateError(errors.DatabaseGetFailure, err.Error())
+		return false, fmt.Errorf("could not get user from db: %w", err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
-		return false, errors.CreateError(errors.WrongUsernameOrPassword, "wrong password")
+		return false, fmt.Errorf("username or password is worng")
 	}
 	ok := u.CheckEndpointAllowance(endpoint)
 	if !ok {
@@ -151,11 +150,11 @@ func (a Authenticator) EndPointBasicAuth(username, password, endpoint string) (b
 func (a Authenticator) EndpointIPAuth(username string, ip string, endpoint string) (bool, error) {
 	var u user.User
 	if err := a.ModelHandler.Get("user", username, &u); err != nil {
-		return false, errors.CreateError(errors.DatabaseGetFailure, err.Error())
+		return false, fmt.Errorf("could not get user from db: %w", err)
 	}
 	ok := acl.ValidateIP(ip, u.IPs, []string{})
 	if !ok {
-		return false, errors.CreateError(errors.IPMisMatch, "ip mismatch")
+		return false, fmt.Errorf("IP is not valid")
 	}
 	ok = u.CheckEndpointAllowance(endpoint)
 	if !ok {

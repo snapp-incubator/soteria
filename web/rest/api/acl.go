@@ -6,6 +6,7 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"go.uber.org/zap"
@@ -32,7 +33,7 @@ func ACL(ctx *gin.Context) {
 		zap.L().
 			Warn("acl bad request",
 				zap.Error(err),
-				zap.String("access", string(request.Access)),
+				zap.String("access", request.Access.String()),
 				zap.String("topic", request.Topic),
 				zap.String("token", request.Token),
 				zap.String("username", request.Password),
@@ -66,7 +67,7 @@ func ACL(ctx *gin.Context) {
 	ok, err := app.GetInstance().Authenticator.Acl(request.Access, tokenString, topic)
 	if err != nil || !ok {
 
-		if errors.Unwrap(err) == authenticator.TopicNotAllowed {
+		if errors.Is(err, authenticator.TopicNotAllowed) {
 			zap.L().
 				Warn("acl request is not authorized",
 					zap.Error(err))
@@ -76,8 +77,17 @@ func ACL(ctx *gin.Context) {
 					zap.Error(err))
 		}
 
+		if errors.Is(err, db.ErrDb) {
+			app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Acl, http.StatusInternalServerError)
+			app.GetInstance().Metrics.ObserveStatus(internal.Soteria, request.Access.String(), internal.Failure, string(topicType))
+			app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Failure, "database error happened")
+			app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
+			ctx.String(http.StatusInternalServerError, "internal server error")
+			return
+		}
+
 		app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Acl, http.StatusUnauthorized)
-		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, string(request.Access), internal.Failure, string(topicType))
+		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, request.Access.String(), internal.Failure, string(topicType))
 		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Failure, "request is not authorized")
 		app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusUnauthorized, "request is not authorized")
@@ -86,7 +96,7 @@ func ACL(ctx *gin.Context) {
 
 	zap.L().
 		Info("acl ok",
-			zap.String("access", string(request.Access)),
+			zap.String("access", request.Access.String()),
 			zap.String("topic", request.Topic),
 			zap.String("token", request.Token),
 			zap.String("username", request.Password),
@@ -95,7 +105,7 @@ func ACL(ctx *gin.Context) {
 
 	app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Acl, http.StatusOK)
 	app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Acl, internal.Success, "ok")
-	app.GetInstance().Metrics.ObserveStatus(internal.Soteria, string(request.Access), internal.Success, string(topicType))
+	app.GetInstance().Metrics.ObserveStatus(internal.Soteria, request.Access.String(), internal.Success, string(topicType))
 	app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 	ctx.String(http.StatusOK, "ok")
 }
