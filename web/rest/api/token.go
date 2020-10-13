@@ -1,9 +1,11 @@
 package api
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"gitlab.snapp.ir/dispatching/soteria/internal"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"go.uber.org/zap"
 	"net/http"
@@ -43,6 +45,15 @@ func Token(ctx *gin.Context) {
 				zap.String("client id", request.ClientID),
 				zap.String("client secret", request.ClientSecret),
 			)
+
+		if errors.Is(err, db.ErrDb) {
+			app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Token, http.StatusInternalServerError)
+			app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Token, internal.Failure, "database error happened")
+			app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Token, internal.Failure, request.ClientID)
+			app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
+			ctx.String(http.StatusInternalServerError, "internal server error")
+			return
+		}
 
 		app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Token, http.StatusUnauthorized)
 		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Token, internal.Failure, "request is not authorized")

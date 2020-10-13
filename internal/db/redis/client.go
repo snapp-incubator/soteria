@@ -18,6 +18,7 @@ func NewRedisClient(cfg *configs.RedisConfig) (*redis.Client, error) {
 		IdleTimeout:        cfg.IdleTimeout,
 		IdleCheckFrequency: cfg.IdleCheckFrequency,
 		PoolSize:           cfg.PoolSize,
+		MinIdleConns:       cfg.MinIdleConnections,
 	}
 
 	client := redis.NewClient(opts)

@@ -23,7 +23,7 @@ func (rmh ModelHandler) Save(model db.Model) error {
 	}
 
 	if err := rmh.Client.Set(key, string(value), 0).Err(); err != nil {
-		return err
+		return fmt.Errorf("%w: %s", db.ErrDb, err)
 	}
 
 	return nil
@@ -35,7 +35,7 @@ func (rmh ModelHandler) Delete(modelName, pk string) error {
 
 	res, err := rmh.Client.Del(key).Result()
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: %s", db.ErrDb, err)
 	}
 	if res < 1 {
 		return fmt.Errorf("key does not exist")
@@ -48,8 +48,10 @@ func (rmh ModelHandler) Get(modelName, pk string, v interface{}) error {
 	key := GenerateKey(modelName, pk)
 
 	res, err := rmh.Client.Get(key).Result()
-	if err != nil {
-		return err
+	if err != nil && err == redis.Nil {
+		return fmt.Errorf("%s", err)
+	} else if err != nil {
+		return fmt.Errorf("%w: %s", db.ErrDb, err)
 	}
 
 	if err := json.Unmarshal([]byte(res), &v); err != nil {
@@ -75,7 +77,7 @@ func (rmh ModelHandler) Update(model db.Model) error {
 	pipeline.Del(key)
 	pipeline.Set(key, string(value), 0)
 	if _, err := pipeline.Exec(); err != nil {
-		return err
+		return fmt.Errorf("%w: %s", db.ErrDb, err)
 	}
 
 	return nil
