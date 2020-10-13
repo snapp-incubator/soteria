@@ -29,9 +29,9 @@ func Token(ctx *gin.Context) {
 			Warn("bad request",
 				zap.Error(err),
 			)
-		app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Token, http.StatusBadRequest)
-		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Token, internal.Failure, "bad request")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
+		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Token, http.StatusBadRequest)
+		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Failure, "bad request")
+		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusBadRequest, "bad request")
 		return
 	}
@@ -41,38 +41,39 @@ func Token(ctx *gin.Context) {
 		zap.L().
 			Error("token request is not authorized",
 				zap.Error(err),
-				zap.String("grant type", string(request.GrantType)),
-				zap.String("client id", request.ClientID),
-				zap.String("client secret", request.ClientSecret),
+				zap.String("grant_type", request.GrantType.String()),
+				zap.String("client_id", request.ClientID),
+				zap.String("client_secret", request.ClientSecret),
 			)
 
 		if errors.Is(err, db.ErrDb) {
-			app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Token, http.StatusInternalServerError)
-			app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Token, internal.Failure, "database error happened")
-			app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Token, internal.Failure, request.ClientID)
-			app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
+			app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Token, http.StatusInternalServerError)
+			app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Failure, "database error happened")
+			app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Failure, request.ClientID)
+			app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
 			ctx.String(http.StatusInternalServerError, "internal server error")
 			return
 		}
 
-		app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Token, http.StatusUnauthorized)
-		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Token, internal.Failure, "request is not authorized")
-		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Token, internal.Failure, request.ClientID)
-		app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
+		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Token, http.StatusUnauthorized)
+		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Failure, "request is not authorized")
+		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Failure, request.ClientID)
+		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusUnauthorized, "request is not authorized")
 		return
 	}
 
 	zap.L().
 		Info("token request accepted",
-			zap.String("grant type", string(request.GrantType)),
-			zap.String("client id", request.ClientID),
-			zap.String("client secret", request.ClientSecret),
+			zap.String("grant_type", request.GrantType.String()),
+			zap.String("client_id", request.ClientID),
+			zap.String("client_secret", request.ClientSecret),
 		)
 
-	app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Token, http.StatusAccepted)
-	app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Token, internal.Success, "token request accepted")
-	app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Token, internal.Success, request.ClientID)
-	app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
+	app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Token, http.StatusAccepted)
+	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Success, "token request accepted")
+	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Success, request.ClientID)
+	app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
+
 	ctx.String(http.StatusAccepted, tokenString)
 }
