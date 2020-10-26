@@ -1,8 +1,9 @@
 package redis
 
 import (
+	"context"
 	"fmt"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"gitlab.snapp.ir/dispatching/soteria/configs"
 )
 
@@ -22,7 +23,7 @@ func NewRedisClient(cfg *configs.RedisConfig) (*redis.Client, error) {
 	}
 
 	client := redis.NewClient(opts)
-	if err := client.Ping().Err(); err != nil {
+	if err := client.Ping(context.Background()).Err(); err != nil {
 		return nil, fmt.Errorf("could not ping redis: %w", err)
 	}
 

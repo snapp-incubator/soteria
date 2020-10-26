@@ -31,7 +31,7 @@ func accountsBasicAuth() gin.HandlerFunc {
 			return
 		}
 
-		_, err := app.GetInstance().AccountsService.Info(pair[0], pair[1])
+		_, err := app.GetInstance().AccountsService.Info(ctx, pair[0], pair[1])
 		if err != nil {
 			ctx.AbortWithStatusJSON(CreateResponse(err.Code, nil, err.Message))
 			return

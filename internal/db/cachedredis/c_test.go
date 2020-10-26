@@ -1,9 +1,10 @@
 package cachedredis
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/alicebob/miniredis/v2"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/patrickmn/go-cache"
 	"github.com/stretchr/testify/assert"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
@@ -22,24 +23,24 @@ func TestModelHandler_Get(t *testing.T) {
 	expected := MockModel{Name: "test"}
 	v, _ := json.Marshal(expected)
 
-	err := r.Set("mock-test", v, 0).Err()
+	err := r.Set(context.Background(), "mock-test", v, 0).Err()
 	assert.NoError(t, err)
 
 	t.Run("testing first successful get", func(t *testing.T) {
 		var actual MockModel
-		err := s.Get("mock", "test", &actual)
+		err := s.Get(context.Background(), "mock", "test", &actual)
 		assert.Equal(t, expected, actual)
 		assert.NoError(t, err)
 	})
 	t.Run("testing second successful get", func(t *testing.T) {
 		var actual MockModel
-		err := s.Get("mock", "test", &actual)
+		err := s.Get(context.Background(), "mock", "test", &actual)
 		assert.Equal(t, expected, actual)
 		assert.NoError(t, err)
 	})
 	t.Run("testing failed get", func(t *testing.T) {
 		var actual MockModel
-		err := s.Get("mock", "t", &actual)
+		err := s.Get(context.Background(), "mock", "t", &actual)
 		assert.Error(t, err)
 		assert.Equal(t, "redis: nil", err.Error())
 	})
@@ -48,7 +49,7 @@ func TestModelHandler_Get(t *testing.T) {
 	assert.Equal(t, 1, s.GetHit())
 	assert.Equal(t, true, isValid)
 	assert.NoError(t, err)
-	err = r.Del("mock-test").Err()
+	err = r.Del(context.Background(), "mock-test").Err()
 	assert.NoError(t, err)
 }
 
@@ -62,9 +63,9 @@ func TestModelHandler_Save(t *testing.T) {
 
 	t.Run("testing save model", func(t *testing.T) {
 		expected := MockModel{Name: "save-test"}
-		err := s.Save(expected)
+		err := s.Save(context.Background(), expected)
 		assert.NoError(t, err)
-		v := r.Get("mock-save-test").Val()
+		v := r.Get(context.Background(), "mock-save-test").Val()
 		var actual MockModel
 		json.Unmarshal([]byte(v), &actual)
 		assert.Equal(t, expected, actual)
@@ -82,14 +83,14 @@ func TestRedisModelHandler_Delete(t *testing.T) {
 	expected := MockModel{Name: "test"}
 	v, _ := json.Marshal(expected)
 
-	err := r.Set("mock-test", v, 0).Err()
+	err := r.Set(context.Background(), "mock-test", v, 0).Err()
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Run("testing successful delete", func(t *testing.T) {
-		err := s.Delete("mock", "test")
+		err := s.Delete(context.Background(), "mock", "test")
 		assert.NoError(t, err)
-		err = r.Get("mock-test").Err()
+		err = r.Get(context.Background(), "mock-test").Err()
 		assert.Error(t, err)
 		assert.Equal(t, "redis: nil", err.Error())
 		item, ok := s.cache.Get("mock-test")
@@ -99,7 +100,7 @@ func TestRedisModelHandler_Delete(t *testing.T) {
 	})
 	t.Run("testing failed delete", func(t *testing.T) {
 		var actual MockModel
-		err := s.Get("mock", "t", &actual)
+		err := s.Get(context.Background(), "mock", "t", &actual)
 		assert.Error(t, err)
 		assert.Equal(t, "redis: nil", err.Error())
 	})
@@ -116,20 +117,20 @@ func TestRedisModelHandler_Update(t *testing.T) {
 	m := MockModel{Name: "test", Value: "test-1"}
 	v, _ := json.Marshal(m)
 
-	err := r.Set("mock-test", v, 0).Err()
+	err := r.Set(context.Background(), "mock-test", v, 0).Err()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Run("testing successful update", func(t *testing.T) {
 		newModel := MockModel{Name: "test", Value: "test-2"}
-		err = s.Update(newModel)
+		err = s.Update(context.Background(), newModel)
 		assert.NoError(t, err)
 		ok, err := s.IsCacheValid("mock-test")
 		assert.False(t, ok)
 		assert.NoError(t, err)
 		var updatedModel MockModel
-		err = s.Get("mock", "test", &updatedModel)
+		err = s.Get(context.Background(), "mock", "test", &updatedModel)
 		assert.NoError(t, err)
 		assert.Equal(t, newModel, updatedModel)
 		assert.Equal(t, 1, s.GetMiss())

@@ -35,7 +35,7 @@ func Token(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, "bad request")
 		return
 	}
-	tokenString, err := app.GetInstance().Authenticator.Token(request.GrantType, request.ClientID, request.ClientSecret)
+	tokenString, err := app.GetInstance().Authenticator.Token(ctx, request.GrantType, request.ClientID, request.ClientSecret)
 	if err != nil {
 
 		zap.L().
