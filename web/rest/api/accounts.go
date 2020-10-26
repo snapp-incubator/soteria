@@ -43,7 +43,7 @@ func CreateAccount(ctx *gin.Context) {
 		return
 	}
 
-	if err := app.GetInstance().AccountsService.SignUp(p.Username, p.Password, p.UserType); err != nil {
+	if err := app.GetInstance().AccountsService.SignUp(ctx, p.Username, p.Password, p.UserType); err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
 	}
@@ -56,7 +56,7 @@ func ReadAccount(ctx *gin.Context) {
 	username := ctx.MustGet("username").(string)
 	password := ctx.MustGet("password").(string)
 
-	u, err := app.GetInstance().AccountsService.Info(username, password)
+	u, err := app.GetInstance().AccountsService.Info(ctx, username, password)
 	if err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
@@ -84,7 +84,7 @@ func UpdateAccount(ctx *gin.Context) {
 		return
 	}
 
-	if err := app.GetInstance().AccountsService.Update(username, p.NewPassword, p.Type, p.IPs, p.Secret, p.TokenExpiration); err != nil {
+	if err := app.GetInstance().AccountsService.Update(ctx, username, p.NewPassword, p.Type, p.IPs, p.Secret, p.TokenExpiration); err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
 	}
@@ -96,7 +96,7 @@ func UpdateAccount(ctx *gin.Context) {
 func DeleteAccount(ctx *gin.Context) {
 	username := ctx.MustGet("username").(string)
 
-	if err := app.GetInstance().AccountsService.Delete(username); err != nil {
+	if err := app.GetInstance().AccountsService.Delete(ctx, username); err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
 	}
@@ -121,7 +121,7 @@ func CreateAccountRule(ctx *gin.Context) {
 		return
 	}
 
-	r, err := app.GetInstance().AccountsService.CreateRule(username, p.Endpoint, p.Topic, p.AccessType)
+	r, err := app.GetInstance().AccountsService.CreateRule(ctx, username, p.Endpoint, p.Topic, p.AccessType)
 	if err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
@@ -146,7 +146,7 @@ func ReadAccountRule(ctx *gin.Context) {
 		return
 	}
 
-	r, rErr := app.GetInstance().AccountsService.GetRule(username, ruleUUID)
+	r, rErr := app.GetInstance().AccountsService.GetRule(ctx, username, ruleUUID)
 	if rErr != nil {
 		ctx.JSON(CreateResponse(rErr.Code, nil, rErr.Message))
 		return
@@ -184,7 +184,7 @@ func UpdateAccountRule(ctx *gin.Context) {
 		return
 	}
 
-	if err := app.GetInstance().AccountsService.UpdateRule(username, ruleUUID, p.Endpoint, p.Topic, p.AccessType); err != nil {
+	if err := app.GetInstance().AccountsService.UpdateRule(ctx, username, ruleUUID, p.Endpoint, p.Topic, p.AccessType); err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
 	}
@@ -208,7 +208,7 @@ func DeleteAccountRule(ctx *gin.Context) {
 		return
 	}
 
-	if err := app.GetInstance().AccountsService.DeleteRule(username, ruleUUID); err != nil {
+	if err := app.GetInstance().AccountsService.DeleteRule(ctx, username, ruleUUID); err != nil {
 		ctx.JSON(CreateResponse(err.Code, nil, err.Message))
 		return
 	}

@@ -64,7 +64,7 @@ func ACL(ctx *gin.Context) {
 		return
 	}
 
-	ok, err := app.GetInstance().Authenticator.Acl(request.Access, tokenString, topic)
+	ok, err := app.GetInstance().Authenticator.Acl(ctx, request.Access, tokenString, topic)
 	if err != nil || !ok {
 
 		if errors.Is(err, authenticator.TopicNotAllowed) {

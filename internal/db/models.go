@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"errors"
 	"time"
 )
@@ -9,10 +10,10 @@ import (
 var ErrDb = errors.New("database error")
 
 type ModelHandler interface {
-	Save(model Model) error
-	Delete(modelName, pk string) error
-	Get(modelName, pk string, v interface{}) error
-	Update(model Model) error
+	Save(ctx context.Context, model Model) error
+	Delete(ctx context.Context, modelName, pk string) error
+	Get(ctx context.Context, modelName, pk string, v interface{}) error
+	Update(ctx context.Context, model Model) error
 }
 
 type Model interface {

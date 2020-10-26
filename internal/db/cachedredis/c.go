@@ -1,6 +1,7 @@
 package cachedredis
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/patrickmn/go-cache"
@@ -30,19 +31,19 @@ func NewCachedRedisModelHandler(redisModelHandler *redis.ModelHandler, cache *ca
 }
 
 // Save saves a model in redis
-func (mh *ModelHandler) Save(model db.Model) error {
-	return mh.redisModelHandler.Save(model)
+func (mh *ModelHandler) Save(ctx context.Context, model db.Model) error {
+	return mh.redisModelHandler.Save(ctx, model)
 }
 
 // Delete finds and deletes a model from redis and cache
-func (mh *ModelHandler) Delete(modelName, pk string) error {
+func (mh *ModelHandler) Delete(ctx context.Context, modelName, pk string) error {
 	key := redis.GenerateKey(modelName, pk)
 	mh.cache.Delete(key)
-	return mh.redisModelHandler.Delete(modelName, pk)
+	return mh.redisModelHandler.Delete(ctx, modelName, pk)
 }
 
 // Get searches cache at first then returns a model from redis or from cache, if exists
-func (mh *ModelHandler) Get(modelName, pk string, v interface{}) error {
+func (mh *ModelHandler) Get(ctx context.Context, modelName, pk string, v interface{}) error {
 	key := redis.GenerateKey(modelName, pk)
 	valid := mh.validationTable[key]
 	item, found := mh.cache.Get(key)
@@ -54,7 +55,7 @@ func (mh *ModelHandler) Get(modelName, pk string, v interface{}) error {
 		return nil
 	}
 
-	err := mh.redisModelHandler.Get(modelName, pk, v)
+	err := mh.redisModelHandler.Get(ctx, modelName, pk, v)
 	if err != nil {
 		return err
 	}
@@ -70,14 +71,14 @@ func (mh *ModelHandler) Get(modelName, pk string, v interface{}) error {
 }
 
 // Update invalidates cache and then finds and updates a model in redis
-func (mh *ModelHandler) Update(model db.Model) error {
+func (mh *ModelHandler) Update(ctx context.Context, model db.Model) error {
 	key := redis.GenerateKey(model.GetMetadata().ModelName, model.GetPrimaryKey())
 
 	mh.mu.Lock()
 	mh.validationTable[key] = false
 	mh.mu.Unlock()
 
-	return mh.redisModelHandler.Update(model)
+	return mh.redisModelHandler.Update(ctx, model)
 }
 
 func (mh *ModelHandler) GetHit() int {
