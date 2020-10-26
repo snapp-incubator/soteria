@@ -59,7 +59,7 @@ func initRun(cmd *cobra.Command, args []string) error {
 		}
 		u.Password = string(hash)
 
-		if err := app.GetInstance().AccountsService.Handler.Save(u); err != nil {
+		if err := app.GetInstance().AccountsService.Handler.Save(cmd.Context(), u); err != nil {
 			return fmt.Errorf("failed to import user %s: %w", u.Username, err)
 		}
 	}

@@ -1,9 +1,10 @@
 package redis
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 )
 
@@ -13,7 +14,7 @@ type ModelHandler struct {
 }
 
 // Save saves a model in redis
-func (rmh ModelHandler) Save(model db.Model) error {
+func (rmh ModelHandler) Save(ctx context.Context, model db.Model) error {
 	md := model.GetMetadata()
 	pk := model.GetPrimaryKey()
 	key := GenerateKey(md.ModelName, pk)
@@ -22,7 +23,7 @@ func (rmh ModelHandler) Save(model db.Model) error {
 		return err
 	}
 
-	if err := rmh.Client.Set(key, string(value), 0).Err(); err != nil {
+	if err := rmh.Client.Set(ctx, key, string(value), 0).Err(); err != nil {
 		return fmt.Errorf("%w: %s", db.ErrDb, err)
 	}
 
@@ -30,10 +31,10 @@ func (rmh ModelHandler) Save(model db.Model) error {
 }
 
 // Delete finds and deletes a model from redis and cache
-func (rmh ModelHandler) Delete(modelName, pk string) error {
+func (rmh ModelHandler) Delete(ctx context.Context, modelName, pk string) error {
 	key := GenerateKey(modelName, pk)
 
-	res, err := rmh.Client.Del(key).Result()
+	res, err := rmh.Client.Del(ctx, key).Result()
 	if err != nil {
 		return fmt.Errorf("%w: %s", db.ErrDb, err)
 	}
@@ -44,10 +45,10 @@ func (rmh ModelHandler) Delete(modelName, pk string) error {
 }
 
 // Get returns a model from redis or from cache, if exists
-func (rmh ModelHandler) Get(modelName, pk string, v interface{}) error {
+func (rmh ModelHandler) Get(ctx context.Context, modelName, pk string, v interface{}) error {
 	key := GenerateKey(modelName, pk)
 
-	res, err := rmh.Client.Get(key).Result()
+	res, err := rmh.Client.Get(ctx, key).Result()
 	if err != nil && err == redis.Nil {
 		return fmt.Errorf("%s", err)
 	} else if err != nil {
@@ -62,7 +63,7 @@ func (rmh ModelHandler) Get(modelName, pk string, v interface{}) error {
 }
 
 // Update finds and updates a model in redis
-func (rmh ModelHandler) Update(model db.Model) error {
+func (rmh ModelHandler) Update(ctx context.Context, model db.Model) error {
 	md := model.GetMetadata()
 	pk := model.GetPrimaryKey()
 
@@ -74,9 +75,9 @@ func (rmh ModelHandler) Update(model db.Model) error {
 	}
 
 	pipeline := rmh.Client.Pipeline()
-	pipeline.Del(key)
-	pipeline.Set(key, string(value), 0)
-	if _, err := pipeline.Exec(); err != nil {
+	pipeline.Del(ctx, key)
+	pipeline.Set(ctx, key, string(value), 0)
+	if _, err := pipeline.Exec(ctx); err != nil {
 		return fmt.Errorf("%w: %s", db.ErrDb, err)
 	}
 
