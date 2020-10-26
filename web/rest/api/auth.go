@@ -39,7 +39,7 @@ func Auth(ctx *gin.Context) {
 	if len(tokenString) == 0 {
 		tokenString = request.Password
 	}
-	ok, err := app.GetInstance().Authenticator.Auth(tokenString)
+	ok, err := app.GetInstance().Authenticator.Auth(ctx, tokenString)
 	if err != nil || !ok {
 
 		zap.L().

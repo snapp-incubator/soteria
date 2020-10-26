@@ -1,6 +1,7 @@
 package authenticator
 
 import (
+	"context"
 	"crypto/rsa"
 	errs "errors"
 	"fmt"
@@ -27,7 +28,7 @@ type Authenticator struct {
 }
 
 // Auth check user authentication by checking the user's token
-func (a Authenticator) Auth(tokenString string) (bool, error) {
+func (a Authenticator) Auth(ctx context.Context, tokenString string) (bool, error) {
 	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("token is not valid, signing method is not RSA")
@@ -50,7 +51,7 @@ func (a Authenticator) Auth(tokenString string) (bool, error) {
 }
 
 // ACL check a user access to a topic
-func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic topics.Topic) (bool, error) {
+func (a Authenticator) Acl(ctx context.Context, accessType acl.AccessType, tokenString string, topic topics.Topic) (bool, error) {
 	if !a.validateAccessType(accessType) {
 		return false, fmt.Errorf("requested access type %s is invalid", accessType)
 	}
@@ -82,7 +83,7 @@ func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic 
 	sub := fmt.Sprintf("%v", claims["sub"])
 	pk := primaryKey(issuer, sub)
 	u := user.User{}
-	err = a.ModelHandler.Get("user", pk, &u)
+	err = a.ModelHandler.Get(ctx, "user", pk, &u)
 	if err != nil {
 		return false, fmt.Errorf("error getting user %s from db err: %w", pk, err)
 	}
@@ -105,12 +106,12 @@ func (a Authenticator) Acl(accessType acl.AccessType, tokenString string, topic 
 }
 
 // Token function issues JWT token by taking client credentials
-func (a Authenticator) Token(accessType acl.AccessType, username, secret string) (tokenString string, err error) {
+func (a Authenticator) Token(ctx context.Context, accessType acl.AccessType, username, secret string) (tokenString string, err error) {
 	if accessType == acl.ClientCredentials {
 		accessType = acl.Sub
 	}
 	u := user.User{}
-	err = a.ModelHandler.Get("user", username, &u)
+	err = a.ModelHandler.Get(ctx, "user", username, &u)
 	if err != nil {
 		return "", fmt.Errorf("could not get user %s. err: %w", username, err)
 	}
@@ -131,9 +132,9 @@ func (a Authenticator) Token(accessType acl.AccessType, username, secret string)
 	return tokenString, nil
 }
 
-func (a Authenticator) EndPointBasicAuth(username, password, endpoint string) (bool, error) {
+func (a Authenticator) EndPointBasicAuth(ctx context.Context, username, password, endpoint string) (bool, error) {
 	var u user.User
-	if err := a.ModelHandler.Get("user", username, &u); err != nil {
+	if err := a.ModelHandler.Get(ctx, "user", username, &u); err != nil {
 		return false, fmt.Errorf("could not get user from db: %w", err)
 	}
 
@@ -147,9 +148,9 @@ func (a Authenticator) EndPointBasicAuth(username, password, endpoint string) (b
 	return true, nil
 }
 
-func (a Authenticator) EndpointIPAuth(username string, ip string, endpoint string) (bool, error) {
+func (a Authenticator) EndpointIPAuth(ctx context.Context, username string, ip string, endpoint string) (bool, error) {
 	var u user.User
-	if err := a.ModelHandler.Get("user", username, &u); err != nil {
+	if err := a.ModelHandler.Get(ctx, "user", username, &u); err != nil {
 		return false, fmt.Errorf("could not get user from db: %w", err)
 	}
 	ok := acl.ValidateIP(ip, u.IPs, []string{})

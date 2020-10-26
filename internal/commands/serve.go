@@ -127,7 +127,7 @@ func serveRun(cmd *cobra.Command, args []string) {
 		zap.L().Fatal("failed to listen", zap.Int("port", cfg.GrpcPort), zap.Error(err))
 	}
 
-	grpcServer := grpc.GRPCServer()
+	grpcServer := grpc.NewServer()
 
 	go func() {
 		if err := rest.ListenAndServe(); err != nil && err != http.ErrServerClosed {

@@ -1,6 +1,7 @@
 package accounts
 
 import (
+	"context"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
@@ -9,7 +10,7 @@ import (
 )
 
 // SignUp creates a user with the given information in database
-func (s Service) SignUp(username, password string, userType user.UserType) *errors.Error {
+func (s Service) SignUp(ctx context.Context, username, password string, userType user.UserType) *errors.Error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return errors.CreateError(errors.PasswordHashGenerationFailure, err.Error())
@@ -25,7 +26,7 @@ func (s Service) SignUp(username, password string, userType user.UserType) *erro
 		Password: string(hash),
 		Type:     userType,
 	}
-	if err := s.Handler.Save(u); err != nil {
+	if err := s.Handler.Save(context.Background(), u); err != nil {
 		return errors.CreateError(errors.DatabaseSaveFailure, err.Error())
 	}
 

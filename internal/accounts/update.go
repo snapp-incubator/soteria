@@ -1,6 +1,7 @@
 package accounts
 
 import (
+	"context"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"golang.org/x/crypto/bcrypt"
@@ -8,9 +9,17 @@ import (
 )
 
 // Update updates given username with given new data in `newInfo` in database
-func (s Service) Update(username string, newPassword string, newType user.UserType, newIPs []string, newSecret string, newTokenExpiration time.Duration) *errors.Error {
+func (s Service) Update(
+	ctx context.Context,
+	username string,
+	newPassword string,
+	newType user.UserType,
+	newIPs []string,
+	newSecret string,
+	newTokenExpiration time.Duration) *errors.Error {
+
 	var u user.User
-	if err := s.Handler.Get("user", username, &u); err != nil {
+	if err := s.Handler.Get(context.Background(), "user", username, &u); err != nil {
 		return errors.CreateError(errors.DatabaseGetFailure, err.Error())
 	}
 
@@ -40,7 +49,7 @@ func (s Service) Update(username string, newPassword string, newType user.UserTy
 
 	u.MetaData.DateModified = time.Now()
 
-	if err := s.Handler.Update(u); err != nil {
+	if err := s.Handler.Update(context.Background(), u); err != nil {
 		return errors.CreateError(errors.DatabaseUpdateFailure, err.Error())
 	}
 

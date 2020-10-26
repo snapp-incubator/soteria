@@ -36,9 +36,9 @@ func (s *Server) Auth(ctx context.Context, in *contracts.AuthContract) (*contrac
 	var ok bool
 	var err error
 	if len(password) > 0 {
-		ok, err = app.GetInstance().Authenticator.EndPointBasicAuth(username, password, endpoint)
+		ok, err = app.GetInstance().Authenticator.EndPointBasicAuth(ctx, username, password, endpoint)
 	} else if len(ip) > 0 {
-		ok, err = app.GetInstance().Authenticator.EndpointIPAuth(username, ip, endpoint)
+		ok, err = app.GetInstance().Authenticator.EndpointIPAuth(ctx, username, ip, endpoint)
 	} else {
 		ok = false
 		err = fmt.Errorf("both password and ip address are empty")
@@ -51,7 +51,7 @@ func (s *Server) Auth(ctx context.Context, in *contracts.AuthContract) (*contrac
 			app.GetInstance().Metrics.ObserveResponseTime(internal.GrpcApi, internal.Soteria, internal.Auth, float64(time.Since(start).Nanoseconds()))
 
 			zap.L().Error("grpc auth returned", zap.Int("code", http.StatusInternalServerError), zap.Error(err))
-			return &contracts.ServiceResponse{Code: http.StatusInternalServerError}, err
+			return &contracts.ServiceResponse{Code: http.StatusInternalServerError}, fmt.Errorf("internal server error")
 		}
 
 		app.GetInstance().Metrics.ObserveStatusCode(internal.GrpcApi, internal.Soteria, internal.Auth, http.StatusUnauthorized)
@@ -59,7 +59,7 @@ func (s *Server) Auth(ctx context.Context, in *contracts.AuthContract) (*contrac
 		app.GetInstance().Metrics.ObserveResponseTime(internal.GrpcApi, internal.Soteria, internal.Auth, float64(time.Since(start).Nanoseconds()))
 
 		zap.L().Error("grpc auth returned", zap.Int("code", http.StatusUnauthorized), zap.Error(err))
-		return &contracts.ServiceResponse{Code: http.StatusUnauthorized}, err
+		return &contracts.ServiceResponse{Code: http.StatusUnauthorized}, fmt.Errorf("request is unauthorized")
 	}
 
 	zap.L().Info("grpc auth returned", zap.Int("code", http.StatusOK))
@@ -68,7 +68,7 @@ func (s *Server) Auth(ctx context.Context, in *contracts.AuthContract) (*contrac
 	app.GetInstance().Metrics.ObserveStatus(internal.GrpcApi, internal.Soteria, internal.Auth, internal.Success, "ok")
 	app.GetInstance().Metrics.ObserveResponseTime(internal.GrpcApi, internal.Soteria, internal.Auth, float64(time.Since(start).Nanoseconds()))
 
-	return &contracts.ServiceResponse{Code: http.StatusOK}, err
+	return &contracts.ServiceResponse{Code: http.StatusOK}, nil
 }
 
 func (s *Server) GetToken(ctx context.Context, in *contracts.GetTokenContract) (*contracts.GetTokenResponse, error) {
@@ -83,7 +83,7 @@ func (s *Server) GetToken(ctx context.Context, in *contracts.GetTokenContract) (
 		zap.String("client_secret", clientSecret),
 	)
 
-	tokenString, err := app.GetInstance().Authenticator.Token(acl.AccessType(grantType), clientID, clientSecret)
+	tokenString, err := app.GetInstance().Authenticator.Token(ctx, acl.AccessType(grantType), clientID, clientSecret)
 	if err != nil {
 		if errors.Is(err, db.ErrDb) {
 			app.GetInstance().Metrics.ObserveStatusCode(internal.GrpcApi, internal.Soteria, internal.Token, http.StatusInternalServerError)
@@ -94,7 +94,7 @@ func (s *Server) GetToken(ctx context.Context, in *contracts.GetTokenContract) (
 			return &contracts.GetTokenResponse{
 				Code:  http.StatusInternalServerError,
 				Token: "",
-			}, err
+			}, fmt.Errorf("internal server error")
 		}
 
 		app.GetInstance().Metrics.ObserveStatusCode(internal.GrpcApi, internal.Soteria, internal.Token, http.StatusUnauthorized)
@@ -105,7 +105,7 @@ func (s *Server) GetToken(ctx context.Context, in *contracts.GetTokenContract) (
 		return &contracts.GetTokenResponse{
 			Code:  http.StatusUnauthorized,
 			Token: "",
-		}, err
+		}, fmt.Errorf("request is unauthorized")
 	}
 
 	zap.L().
@@ -126,7 +126,7 @@ func (s *Server) GetToken(ctx context.Context, in *contracts.GetTokenContract) (
 	}, nil
 }
 
-func GRPCServer() *grpc.Server {
+func NewServer() *grpc.Server {
 	s := grpc.NewServer()
 	contracts.RegisterAuthServer(s, &Server{})
 	return s

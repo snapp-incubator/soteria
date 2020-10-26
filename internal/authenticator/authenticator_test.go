@@ -1,6 +1,7 @@
 package authenticator
 
 import (
+	"context"
 	"crypto/rsa"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
@@ -76,25 +77,25 @@ func TestAuthenticator_Auth(t *testing.T) {
 		ModelHandler: MockModelHandler{},
 	}
 	t.Run("testing driver token auth", func(t *testing.T) {
-		ok, err := authenticator.Auth(driverToken)
+		ok, err := authenticator.Auth(context.Background(), driverToken)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing passenger token auth", func(t *testing.T) {
-		ok, err := authenticator.Auth(passengerToken)
+		ok, err := authenticator.Auth(context.Background(), passengerToken)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing third party token auth", func(t *testing.T) {
-		ok, err := authenticator.Auth(thirdPartyToken)
+		ok, err := authenticator.Auth(context.Background(), thirdPartyToken)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing invalid token auth", func(t *testing.T) {
-		ok, err := authenticator.Auth(invalidToken)
+		ok, err := authenticator.Auth(context.Background(), invalidToken)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
@@ -116,7 +117,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		ModelHandler: MockModelHandler{},
 	}
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
-		tokenString, err := authenticator.Token(acl.ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
+		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return pk, nil
@@ -127,7 +128,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		assert.Equal(t, "100", claims["iss"].(string))
 	})
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
-		tokenString, err := authenticator.Token(acl.ClientCredentials, "snappbox", "invalid secret")
+		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "invalid secret")
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return pk, nil
 		})
@@ -194,77 +195,77 @@ func TestAuthenticator_Acl(t *testing.T) {
 		HashIDSManager:     hid,
 	}
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.PubSub, passengerToken, "test")
+		ok, err := authenticator.Acl(context.Background(), acl.PubSub, passengerToken, "test")
 		assert.Error(t, err)
 		assert.False(t, ok)
 		assert.Equal(t, "requested access type publish-subscribe is invalid", err.Error())
 	})
 	t.Run("testing acl with invalid token", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Pub, invalidToken, validDriverCabEventTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Pub, invalidToken, validDriverCabEventTopic)
 		assert.False(t, ok)
 		assert.Error(t, err)
 		assert.Equal(t, "token is invalid. err: illegal base64 data at input byte 37", err.Error())
 	})
 	t.Run("testing acl with valid inputs", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Sub, passengerToken, validPassengerCabEventTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, validPassengerCabEventTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 	t.Run("testing acl with invalid topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Sub, passengerToken, invalidPassengerCabEventTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, invalidPassengerCabEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Pub, passengerToken, validPassengerCabEventTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Pub, passengerToken, validPassengerCabEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing acl with third party token", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Sub, thirdPartyToken, validDriverLocationTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, thirdPartyToken, validDriverLocationTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver publish on its location topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Pub, driverToken, validDriverLocationTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Pub, driverToken, validDriverLocationTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver publish on invalid location topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Pub, driverToken, invalidDriverLocationTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Pub, driverToken, invalidDriverLocationTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing driver subscribe on invalid cab event topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Sub, driverToken, invalidDriverCabEventTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, invalidDriverCabEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on valid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Sub, passengerToken, validPassengerSuperappEventTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, validPassengerSuperappEventTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on invalid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Sub, passengerToken, invalidPassengerSuperappEventTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, invalidPassengerSuperappEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing driver subscribe on valid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Sub, driverToken, validDriverSuperappEventTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, validDriverSuperappEventTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver subscribe on invalid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(acl.Sub, driverToken, invalidDriverSuperappEventTopic)
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, invalidDriverSuperappEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
@@ -376,15 +377,15 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 
 type MockModelHandler struct{}
 
-func (rmh MockModelHandler) Save(model db.Model) error {
+func (rmh MockModelHandler) Save(ctx context.Context, model db.Model) error {
 	return nil
 }
 
-func (rmh MockModelHandler) Delete(modelName, pk string) error {
+func (rmh MockModelHandler) Delete(ctx context.Context, modelName, pk string) error {
 	return nil
 }
 
-func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
+func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v interface{}) error {
 	switch pk {
 	case "passenger":
 		*v.(*user.User) = user.User{
@@ -456,7 +457,7 @@ func (rmh MockModelHandler) Get(modelName, pk string, v interface{}) error {
 	return nil
 }
 
-func (rmh MockModelHandler) Update(model db.Model) error {
+func (rmh MockModelHandler) Update(ctx context.Context, model db.Model) error {
 	return nil
 }
 
