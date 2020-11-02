@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
@@ -17,7 +18,7 @@ func TestAccountsBasicAuth(t *testing.T) {
 		return
 	})
 
-	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
+	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
 
 	t.Run("testing successful authentication", func(t *testing.T) {
 		w := httptest.NewRecorder()

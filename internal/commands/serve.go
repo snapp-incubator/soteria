@@ -14,14 +14,16 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db/cachedredis"
 	"gitlab.snapp.ir/dispatching/soteria/internal/db/redis"
-	"gitlab.snapp.ir/dispatching/soteria/internal/factory"
+	"gitlab.snapp.ir/dispatching/soteria/internal/metrics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/log"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"gitlab.snapp.ir/dispatching/soteria/web/grpc"
 	"gitlab.snapp.ir/dispatching/soteria/web/rest/api"
 	"go.uber.org/zap"
+	grpcLib "google.golang.org/grpc"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 )
@@ -113,7 +115,8 @@ func servePreRun(cmd *cobra.Command, args []string) {
 		EMQTopicManager:    snappids.NewEMQManager(hid),
 	})
 
-	app.GetInstance().SetMetrics(factory.GetMetrics("http"))
+	m := metrics.NewMetrics()
+	app.GetInstance().SetMetrics(&m.Handler)
 }
 
 func serveRun(cmd *cobra.Command, args []string) {
@@ -124,16 +127,16 @@ func serveRun(cmd *cobra.Command, args []string) {
 		zap.L().Fatal("failed to listen", zap.Int("port", cfg.GrpcPort), zap.Error(err))
 	}
 
-	grpcServer := grpc.GRPCServer()
+	grpcServer := grpc.NewServer()
 
 	go func() {
-		if err := rest.ListenAndServe(); err != nil {
+		if err := rest.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			zap.L().Fatal("failed to run REST HTTP server", zap.Error(err))
 		}
 	}()
 
 	go func() {
-		if err := grpcServer.Serve(gListen); err != nil {
+		if err := grpcServer.Serve(gListen); err != nil && err != grpcLib.ErrServerStopped {
 			zap.L().Fatal("failed to run GRPC server", zap.Error(err))
 		}
 	}()

@@ -26,9 +26,9 @@ func Auth(ctx *gin.Context) {
 			Warn("bad request",
 				zap.Error(err),
 			)
-		app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Auth, http.StatusBadRequest)
-		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Auth, internal.Failure, "bad request")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
+		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Auth, http.StatusBadRequest)
+		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Failure, "bad request")
+		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusBadRequest, "bad request")
 		return
 	}
@@ -39,7 +39,7 @@ func Auth(ctx *gin.Context) {
 	if len(tokenString) == 0 {
 		tokenString = request.Password
 	}
-	ok, err := app.GetInstance().Authenticator.Auth(tokenString)
+	ok, err := app.GetInstance().Authenticator.Auth(ctx, tokenString)
 	if err != nil || !ok {
 
 		zap.L().
@@ -50,9 +50,9 @@ func Auth(ctx *gin.Context) {
 				zap.String("password", request.Username),
 			)
 
-		app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Auth, http.StatusUnauthorized)
-		app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Auth, internal.Failure, "request is not authorized")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
+		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Auth, http.StatusUnauthorized)
+		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Failure, "request is not authorized")
+		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusUnauthorized, "request is not authorized")
 		return
 	}
@@ -64,8 +64,8 @@ func Auth(ctx *gin.Context) {
 			zap.String("password", request.Username),
 		)
 
-	app.GetInstance().Metrics.ObserveStatusCode(internal.Soteria, internal.Auth, http.StatusOK)
-	app.GetInstance().Metrics.ObserveStatus(internal.Soteria, internal.Auth, internal.Success, "ok")
-	app.GetInstance().Metrics.ObserveResponseTime(internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
+	app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Auth, http.StatusOK)
+	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Success, "ok")
+	app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
 	ctx.String(http.StatusOK, "ok")
 }
