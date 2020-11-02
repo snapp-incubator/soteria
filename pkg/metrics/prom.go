@@ -5,23 +5,25 @@ import (
 	"strconv"
 )
 
-// HttpCall is a implementation of `Http` and `Metrics`
-type HttpCall struct {
+// Handler is a implementation `Metrics`
+type Handler struct {
 	StatusCodeCounterVec *prometheus.CounterVec
 	StatusCounterVec     *prometheus.CounterVec
 	ResponseTimeVec      *prometheus.SummaryVec
 }
 
-func (s *HttpCall) ObserveStatusCode(serviceName string, function string, code int) {
-	s.StatusCodeCounterVec.With(prometheus.Labels{
+func (h *Handler) ObserveStatusCode(api, serviceName, function string, code int) {
+	h.StatusCodeCounterVec.With(prometheus.Labels{
+		"api":      api,
 		"service":  serviceName,
 		"function": function,
 		"code":     strconv.Itoa(code),
 	}).Inc()
 }
 
-func (s *HttpCall) ObserveStatus(serviceName string, function string, status string, info string) {
-	s.StatusCounterVec.With(prometheus.Labels{
+func (h *Handler) ObserveStatus(api, serviceName, function, status, info string) {
+	h.StatusCounterVec.With(prometheus.Labels{
+		"api":      api,
 		"service":  serviceName,
 		"function": function,
 		"status":   status,
@@ -29,8 +31,9 @@ func (s *HttpCall) ObserveStatus(serviceName string, function string, status str
 	}).Inc()
 }
 
-func (s *HttpCall) ObserveResponseTime(serviceName string, function string, time float64) {
-	s.ResponseTimeVec.With(prometheus.Labels{
+func (h *Handler) ObserveResponseTime(api, serviceName, function string, time float64) {
+	h.ResponseTimeVec.With(prometheus.Labels{
+		"api":      api,
 		"service":  serviceName,
 		"function": function,
 	}).Observe(time)

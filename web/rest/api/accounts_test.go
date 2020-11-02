@@ -2,10 +2,11 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/alicebob/miniredis/v2"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
 	"gitlab.snapp.ir/dispatching/soteria/internal/app"
@@ -89,7 +90,7 @@ func TestCreateAccount(t *testing.T) {
 func TestReadAccount(t *testing.T) {
 	router := setupRouter()
 
-	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
+	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
 
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -119,7 +120,7 @@ func TestReadAccount(t *testing.T) {
 func TestUpdateAccount(t *testing.T) {
 	router := setupRouter()
 
-	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
+	_ = app.GetInstance().AccountsService.SignUp(context.Background(),"user", "password", "passenger")
 
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -142,7 +143,7 @@ func TestUpdateAccount(t *testing.T) {
 
 		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
-		u, err := app.GetInstance().AccountsService.Info("user", "password2")
+		u, err := app.GetInstance().AccountsService.Info(context.Background(),"user", "password2")
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(u.IPs))
 		assert.Equal(t, "12345678", u.Secret)
@@ -154,7 +155,7 @@ func TestUpdateAccount(t *testing.T) {
 func TestDeleteAccount(t *testing.T) {
 	router := setupRouter()
 
-	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
+	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
 
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -174,7 +175,7 @@ func TestDeleteAccount(t *testing.T) {
 
 		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
-		_, err = app.GetInstance().AccountsService.Info("user", "password2")
+		_, err = app.GetInstance().AccountsService.Info(context.Background(), "user", "password2")
 		assert.NotNil(t, err)
 	})
 }
@@ -182,12 +183,12 @@ func TestDeleteAccount(t *testing.T) {
 func TestCreateAccountRule(t *testing.T) {
 	router := setupRouter()
 
-	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
+	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
 
 	t.Run("testing with invalid rule info", func(t *testing.T) {
 		w := httptest.NewRecorder()
 
-		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":"2"}`)
+		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":""}`)
 		req, _ := http.NewRequest(http.MethodPost, "/accounts/user/rules", bytes.NewBuffer(payload))
 		req.Header.Set("Content-Type", "application/json")
 		req.SetBasicAuth("user", "password")
@@ -205,7 +206,7 @@ func TestCreateAccountRule(t *testing.T) {
 
 		assert.Equal(t, errors.InvalidRule, actualResponse.Code)
 
-		u, err := app.GetInstance().AccountsService.Info("user", "password")
+		u, err := app.GetInstance().AccountsService.Info(context.Background(), "user", "password")
 		assert.Nil(t, err)
 		assert.Equal(t, 0, len(u.Rules))
 	})
@@ -213,7 +214,7 @@ func TestCreateAccountRule(t *testing.T) {
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
 
-		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":""}`)
+		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":"2"}`)
 		req, _ := http.NewRequest(http.MethodPost, "/accounts/user/rules", bytes.NewBuffer(payload))
 		req.Header.Set("Content-Type", "application/json")
 		req.SetBasicAuth("user", "password")
@@ -231,20 +232,20 @@ func TestCreateAccountRule(t *testing.T) {
 
 		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
-		u, err := app.GetInstance().AccountsService.Info("user", "password")
+		u, err := app.GetInstance().AccountsService.Info(context.Background(), "user", "password")
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(u.Rules))
 		assert.Equal(t, "/notification", u.Rules[0].Endpoint)
 		assert.Equal(t, topics.Type(""), u.Rules[0].Topic)
-		assert.Equal(t, acl.AccessType(""), u.Rules[0].AccessType)
+		assert.Equal(t, acl.Pub, u.Rules[0].AccessType)
 	})
 }
 
 func TestReadAccountRule(t *testing.T) {
 	router := setupRouter()
 
-	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
-	createdRule, _ := app.GetInstance().AccountsService.CreateRule("user", "/notification", "", "")
+	_ = app.GetInstance().AccountsService.SignUp(context.Background(),"user", "password", "passenger")
+	createdRule, _ := app.GetInstance().AccountsService.CreateRule(context.Background(), "user", "/notification", "", "2")
 
 	t.Run("testing with invalid UUID", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -316,8 +317,8 @@ func TestReadAccountRule(t *testing.T) {
 func TestUpdateAccountRule(t *testing.T) {
 	router := setupRouter()
 
-	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
-	createdRule, _ := app.GetInstance().AccountsService.CreateRule("user", "/notification", "", "")
+	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
+	createdRule, _ := app.GetInstance().AccountsService.CreateRule(context.Background(),"user", "/notification", "", "2")
 
 	t.Run("testing with no payload", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -364,7 +365,7 @@ func TestUpdateAccountRule(t *testing.T) {
 	t.Run("testing with undefined rule", func(t *testing.T) {
 		w := httptest.NewRecorder()
 
-		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":""}`)
+		payload := []byte(`{"endpoint":"/notification","topic":"","access_type":"2"}`)
 		req, _ := http.NewRequest(http.MethodPut, "/accounts/user/rules/b33a0b78-c8a6-4719-a222-9a3883cc4b7c", bytes.NewBuffer(payload))
 		req.SetBasicAuth("user", "password")
 		req.Header.Set("Content-Type", "application/json")
@@ -404,7 +405,7 @@ func TestUpdateAccountRule(t *testing.T) {
 
 		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
-		u, err := app.GetInstance().AccountsService.Info("user", "password")
+		u, err := app.GetInstance().AccountsService.Info(context.Background(),"user", "password")
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(u.Rules))
 		assert.Equal(t, createdRule.UUID, u.Rules[0].UUID)
@@ -417,8 +418,8 @@ func TestUpdateAccountRule(t *testing.T) {
 func TestDeleteAccountRule(t *testing.T) {
 	router := setupRouter()
 
-	_ = app.GetInstance().AccountsService.SignUp("user", "password", "passenger")
-	createdRule, _ := app.GetInstance().AccountsService.CreateRule("user", "/notification", "", "")
+	_ = app.GetInstance().AccountsService.SignUp(context.Background(),"user", "password", "passenger")
+	createdRule, _ := app.GetInstance().AccountsService.CreateRule(context.Background(), "user", "/notification", "", "2")
 
 	t.Run("testing with invalid UUID", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -479,7 +480,7 @@ func TestDeleteAccountRule(t *testing.T) {
 
 		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
-		u, err := app.GetInstance().AccountsService.Info("user", "password")
+		u, err := app.GetInstance().AccountsService.Info(context.Background(), "user", "password")
 		assert.Nil(t, err)
 		assert.Equal(t, 0, len(u.Rules))
 	})
