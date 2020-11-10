@@ -107,9 +107,9 @@ parameters:
   - name: MEMORY_REQUEST
     value: "512Mi"
   - name: CPU_LIMIT
-    value: "600m"
+    value: "2"
   - name: CPU_REQUEST
-    value: "600m"
+    value: "1"
   - name: METRICS_ENABLED
     value: "true"
     displayName: Metrics Endpoint?
