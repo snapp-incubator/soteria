@@ -20,6 +20,7 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"gitlab.snapp.ir/dispatching/soteria/web/grpc"
 	"gitlab.snapp.ir/dispatching/soteria/web/rest/api"
+	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 	grpcLib "google.golang.org/grpc"
 	"net"
