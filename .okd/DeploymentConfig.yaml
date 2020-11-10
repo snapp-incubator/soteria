@@ -103,7 +103,7 @@ parameters:
     displayName: Service name
     description: The name of the application (should be unique in the namespace)
   - name: MEMORY_LIMIT
-    value: "512Mi"
+    value: "1024Mi"
   - name: MEMORY_REQUEST
     value: "512Mi"
   - name: CPU_LIMIT
