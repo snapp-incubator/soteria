@@ -249,9 +249,9 @@ deploy:production:teh_1:
 # Extends the global template so it add an after_script step for deployment announcement
   extends: .deployments_after_script
   variables:
-    DEPLOY_MIN_REPLICA: "6"
-    DEPLOY_MAX_REPLICA: "25"
-    DEPLOY_CPU_UTILIZATION: "80"
+    DEPLOY_MIN_REPLICA: "3"
+    DEPLOY_MAX_REPLICA: "20"
+    DEPLOY_CPU_UTILIZATION: "65"
     CONTAINER_REGISTRY_IMAGE: "$PROJECT_PRODUCTION_TEH1/$PROJECT_SERVICE_NAME:$CI_COMMIT_REF_SLUG"
     DEPLOY_ADDRESS: "${OKD_TEH1_CLUSTER_ADDRESS}"
     DEPLOY_PROJECT: "${PROJECT_PRODUCTION_TEH1}"
@@ -273,9 +273,9 @@ deploy:production:teh_2:
 # Extends the global template so it add an after_script step for deployment announcement
   extends: .deployments_after_script
   variables:
-    DEPLOY_MIN_REPLICA: "6"
-    DEPLOY_MAX_REPLICA: "25"
-    DEPLOY_CPU_UTILIZATION: "80"
+    DEPLOY_MIN_REPLICA: "3"
+    DEPLOY_MAX_REPLICA: "20"
+    DEPLOY_CPU_UTILIZATION: "70"
     CONTAINER_REGISTRY_IMAGE: "$PROJECT_PRODUCTION_TEH2/$PROJECT_SERVICE_NAME:$CI_COMMIT_REF_SLUG"
     DEPLOY_ADDRESS: "${OKD_TEH2_CLUSTER_ADDRESS}"
     DEPLOY_PROJECT: "${PROJECT_PRODUCTION_TEH2}"
