@@ -68,7 +68,7 @@ unit_tests:
   stage: test
   coverage: '/total:\s*\(statements\)\s*([\d.]+)%/'
   script:
-    - go test -mod=vendor -gcflags=-l -v -coverprofile .coverage.out.tmp ./...
+    - go test -gcflags=-l -v -coverprofile .coverage.out.tmp ./...
     - cat .coverage.out.tmp | grep -v "mock.go" > .coverage.out
     - rm -rf .coverage.out.tmp
     - go tool cover -func .coverage.out
