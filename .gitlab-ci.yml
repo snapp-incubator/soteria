@@ -24,8 +24,7 @@ variables:
   PROJECT_PRODUCTION_TEH1: 'realtime-production'
   PROJECT_PRODUCTION_TEH2: 'rtc'
   PROJECT_MOZART: 'mozart'
-  PROJECT_VERSION: "${CI_COMMIT_SHA}" 
-
+  PROJECT_VERSION: "${CI_COMMIT_SHA}"
 
 code-generator:
   stage: pre-compile
@@ -38,57 +37,38 @@ code-generator:
     paths:
       - ./web/grpc/contracts
     expire_in: 1 week
-#  cache:
-#    paths:
-#      - ./web/grpc/contracts
 
-
-.git_template: &git
+.go_mod_config: &go_mod
+  image: registry.snapp.tech/docker/golang:1.15-alpine
+  cache:
+    policy: pull
+    paths:
+      - vendor/
   before_script:
-    - git config --global url.git@gitlab.snapp.ir:.insteadOf https://gitlab.snapp.ir/
-    - echo "$GITLAB_CI_INTERNAL_PRIVATE_KEY" > /root/.ssh/id_rsa
-    - chmod 0600 /root/.ssh/id_rsa
-    - go env -w GOPRIVATE="gitlab.snapp.ir/dispatching","gitlab.snapp.ir/snapp-sdks"
+    - go env -w GOPROXY="https://repo.snapp.tech/repository/goproxy/"
 
 compile:
-  <<: *git
-  image: registry.snapp.tech/docker/golang:1.13.5-alpine3.10
+  <<: *go_mod
   stage: compile
   variables:
-    HTTP_PROXY: ${SNAPP_HTTP_PROXY}
-    HTTPS_PROXY: ${SNAPP_HTTPS_PROXY}
-    no_proxy: ${SNAPP_NOPROXY}
     GOOS: "linux"
     GOARCH: "amd64"
     CGO_ENABLED: 0
   script:
     - go mod vendor -v
     - go build -mod vendor -v -o ${BUILD_PATH}/${CI_PROJECT_NAME} cmd/soteria/soteria.go
-#  cache:
-#    paths:
-#      - vendor/
   artifacts:
     name: "$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG"
     paths:
       - ${BUILD_PATH}/${CI_PROJECT_NAME}
     expire_in: 1 week
 
-
 unit_tests:
-  <<: *git
+  <<: *go_mod
   stage: test
-  image: registry.snapp.tech/docker/golang:1.13.5-alpine3.10
   coverage: '/total:\s*\(statements\)\s*([\d.]+)%/'
-  variables:
-    http_proxy: ${SNAPP_HTTP_PROXY}
-    https_proxy: ${SNAPP_HTTP_PROXY}
-    no_proxy: ${SNAPP_NOPROXY}
-#  cache:
-#    policy: pull
-#    paths:
-#      - vendor/
   script:
-    - go test -gcflags=-l -v -coverprofile .coverage.out.tmp ./...
+    - go test -mod=vendor -gcflags=-l -v -coverprofile .coverage.out.tmp ./...
     - cat .coverage.out.tmp | grep -v "mock.go" > .coverage.out
     - rm -rf .coverage.out.tmp
     - go tool cover -func .coverage.out
@@ -96,7 +76,6 @@ unit_tests:
     - code-generator
     - compile
 
-    
 build:
   image: docker:latest
   stage: build
@@ -118,7 +97,6 @@ build:
     - code-generator
     - compile
 
-    
 .release_template: &release_job_definition
   image: docker:latest
   stage: release
@@ -131,7 +109,6 @@ build:
     - docker push ${CONTAINER_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
   dependencies:
     - build
-
 
 release:staging:
   <<: *release_job_definition
@@ -178,8 +155,6 @@ release:production:teh-2:
   only:
     - tags
 
-
-
 .deploy_template: &deploy_job_definition
   image: openshift/origin-cli:v3.10
   stage: deploy
@@ -187,7 +162,7 @@ release:production:teh-2:
     - oc version
     - oc login https://${DEPLOY_ADDRESS} --token=${DEPLOY_TOKEN}
     - oc project ${DEPLOY_PROJECT}
-    -  - oc process -f .okd/DeploymentConfig.yaml --param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
+    - - oc process -f .okd/DeploymentConfig.yaml --param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
     - |
       oc process -f .okd/ConfigMap.yaml \
         --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}" \
@@ -243,10 +218,10 @@ deploy:staging:teh_1:
     - master
     - branches
   needs: ["release:staging"]
- 
+
 deploy:production:teh_1:
   <<: *deploy_job_definition
-# Extends the global template so it add an after_script step for deployment announcement
+  # Extends the global template so it add an after_script step for deployment announcement
   extends: .deployments_after_script
   variables:
     DEPLOY_MIN_REPLICA: "3"
@@ -256,7 +231,7 @@ deploy:production:teh_1:
     DEPLOY_ADDRESS: "${OKD_TEH1_CLUSTER_ADDRESS}"
     DEPLOY_PROJECT: "${PROJECT_PRODUCTION_TEH1}"
     DEPLOY_TOKEN: "${OKD_PRODUCTION_TOKEN_TEH1}"
-    DEPLOY_PASSENGER_SALT: "${PASSENGER_SALT_PRODUCTION}" 
+    DEPLOY_PASSENGER_SALT: "${PASSENGER_SALT_PRODUCTION}"
     DEPLOY_DRIVER_SALT: "${DRIVER_SALT_PRODUCTION}"
     #DEPLOY_SERVICE_NAME: "${PROJECT_SERVICE_NAME}"
     DEPLOY_SERVICE_NAME: "soteria-new"
@@ -270,7 +245,7 @@ deploy:production:teh_1:
 
 deploy:production:teh_2:
   <<: *deploy_job_definition
-# Extends the global template so it add an after_script step for deployment announcement
+  # Extends the global template so it add an after_script step for deployment announcement
   extends: .deployments_after_script
   variables:
     DEPLOY_MIN_REPLICA: "3"
@@ -280,7 +255,7 @@ deploy:production:teh_2:
     DEPLOY_ADDRESS: "${OKD_TEH2_CLUSTER_ADDRESS}"
     DEPLOY_PROJECT: "${PROJECT_PRODUCTION_TEH2}"
     DEPLOY_TOKEN: "${OKD_PRODUCTION_TOKEN_TEH2}"
-    DEPLOY_PASSENGER_SALT: "${PASSENGER_SALT_PRODUCTION}" 
+    DEPLOY_PASSENGER_SALT: "${PASSENGER_SALT_PRODUCTION}"
     DEPLOY_DRIVER_SALT: "${DRIVER_SALT_PRODUCTION}"
     DEPLOY_SERVICE_NAME: "${PROJECT_SERVICE_NAME}"
     DEPLOY_DRIVER_JWT_PUBLIC_KEY: "${DRIVER_JWT_PUBLIC_KEY_PRODUCTION}"
@@ -290,4 +265,3 @@ deploy:production:teh_2:
     DEPLOY_REDIS_ADDR: "soteria-redis-haproxy.realtime-production.svc:6379"
     CI_DEPLOYMENT_INFRA: "teh-2"
   needs: ["release:production:teh-2"]
-
