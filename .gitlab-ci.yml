@@ -26,6 +26,7 @@ variables:
   PROJECT_MOZART: 'mozart'
   PROJECT_VERSION: "${CI_COMMIT_SHA}"
 
+
 code-generator:
   stage: pre-compile
   image:
@@ -37,9 +38,12 @@ code-generator:
     paths:
       - ./web/grpc/contracts
     expire_in: 1 week
+#  cache:
+#    paths:
+#      - ./web/grpc/contracts
 
 .go_mod_config: &go_mod
-  image: registry.snapp.tech/docker/golang:1.15-alpine
+  image: registry.snapp.tech/docker/golang:1.13.5-alpine3.10
   cache:
     policy: pull
     paths:
@@ -76,6 +80,7 @@ unit_tests:
     - code-generator
     - compile
 
+
 build:
   image: docker:latest
   stage: build
@@ -97,6 +102,7 @@ build:
     - code-generator
     - compile
 
+
 .release_template: &release_job_definition
   image: docker:latest
   stage: release
@@ -109,6 +115,7 @@ build:
     - docker push ${CONTAINER_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
   dependencies:
     - build
+
 
 release:staging:
   <<: *release_job_definition
@@ -155,6 +162,8 @@ release:production:teh-2:
   only:
     - tags
 
+
+
 .deploy_template: &deploy_job_definition
   image: openshift/origin-cli:v3.10
   stage: deploy
@@ -162,7 +171,7 @@ release:production:teh-2:
     - oc version
     - oc login https://${DEPLOY_ADDRESS} --token=${DEPLOY_TOKEN}
     - oc project ${DEPLOY_PROJECT}
-    - - oc process -f .okd/DeploymentConfig.yaml --param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
+    -  - oc process -f .okd/DeploymentConfig.yaml --param APP_IMAGE=${CONTAINER_REGISTRY_IMAGE} --param SERVICE_NAME=${DEPLOY_SERVICE_NAME} | oc apply -f -
     - |
       oc process -f .okd/ConfigMap.yaml \
         --param SERVICE_NAME="${DEPLOY_SERVICE_NAME}" \
@@ -221,7 +230,7 @@ deploy:staging:teh_1:
 
 deploy:production:teh_1:
   <<: *deploy_job_definition
-  # Extends the global template so it add an after_script step for deployment announcement
+# Extends the global template so it add an after_script step for deployment announcement
   extends: .deployments_after_script
   variables:
     DEPLOY_MIN_REPLICA: "3"
@@ -245,7 +254,7 @@ deploy:production:teh_1:
 
 deploy:production:teh_2:
   <<: *deploy_job_definition
-  # Extends the global template so it add an after_script step for deployment announcement
+# Extends the global template so it add an after_script step for deployment announcement
   extends: .deployments_after_script
   variables:
     DEPLOY_MIN_REPLICA: "3"
@@ -265,3 +274,4 @@ deploy:production:teh_2:
     DEPLOY_REDIS_ADDR: "soteria-redis-haproxy.realtime-production.svc:6379"
     CI_DEPLOYMENT_INFRA: "teh-2"
   needs: ["release:production:teh-2"]
+
