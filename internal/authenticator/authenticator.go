@@ -11,7 +11,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
-	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
@@ -19,12 +18,13 @@ var TopicNotAllowed = errs.New("topic is not allowed")
 
 // Authenticator is responsible for Acl/Auth/Token of users
 type Authenticator struct {
-	PrivateKeys        map[user.Issuer]*rsa.PrivateKey
-	PublicKeys         map[user.Issuer]*rsa.PublicKey
-	AllowedAccessTypes []acl.AccessType
-	ModelHandler       db.ModelHandler
-	EMQTopicManager    *snappids.EMQTopicManager
-	HashIDSManager     *snappids.HashIDSManager
+	PrivateKeys            map[user.Issuer]*rsa.PrivateKey
+	PublicKeys             map[user.Issuer]*rsa.PublicKey
+	AllowedAccessTypes     []acl.AccessType
+	ModelHandler           db.ModelHandler
+	EMQTopicManager        *snappids.EMQTopicManager
+	HashIDSManager         *snappids.HashIDSManager
+	CompareHashAndPassword func([]byte, []byte) error
 }
 
 // Auth check user authentication by checking the user's token
@@ -138,7 +138,7 @@ func (a Authenticator) EndPointBasicAuth(ctx context.Context, username, password
 		return false, fmt.Errorf("could not get user from db: %w", err)
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
+	if err := a.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
 		return false, fmt.Errorf("username or password is worng")
 	}
 	ok := u.CheckEndpointAllowance(endpoint)
