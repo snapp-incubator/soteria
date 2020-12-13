@@ -17,9 +17,11 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/metrics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/log"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/memoize"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"gitlab.snapp.ir/dispatching/soteria/web/grpc"
 	"gitlab.snapp.ir/dispatching/soteria/web/rest/api"
+	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 	grpcLib "google.golang.org/grpc"
 	"net"
@@ -100,6 +102,7 @@ func servePreRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		zap.L().Fatal("error while getting allowed access types", zap.Error(err))
 	}
+	memoizedCompareHashAndPassword := memoize.MemoizedCompareHashAndPassword()
 	app.GetInstance().SetAuthenticator(&authenticator.Authenticator{
 		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: privateKey100,
@@ -109,10 +112,11 @@ func servePreRun(cmd *cobra.Command, args []string) {
 			user.Passenger:  publicKey1,
 			user.ThirdParty: publicKey100,
 		},
-		AllowedAccessTypes: allowedAccessTypes,
-		ModelHandler:       modelHandler,
-		HashIDSManager:     hid,
-		EMQTopicManager:    snappids.NewEMQManager(hid),
+		AllowedAccessTypes:     allowedAccessTypes,
+		ModelHandler:           modelHandler,
+		HashIDSManager:         hid,
+		EMQTopicManager:        snappids.NewEMQManager(hid),
+		CompareHashAndPassword: memoizedCompareHashAndPassword,
 	})
 
 	m := metrics.NewMetrics()

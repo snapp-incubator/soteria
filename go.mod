@@ -17,9 +17,9 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
 	gitlab.snapp.ir/dispatching/snappids/v2 v2.0.2
+	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
-	golang.org/x/tools v0.0.0-20191112195655-aa38f8e97acc // indirect
 	google.golang.org/grpc v1.27.0
 	google.golang.org/protobuf v1.25.0 // indirect
 )
