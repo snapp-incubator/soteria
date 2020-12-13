@@ -11,6 +11,7 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/memoize"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
@@ -65,6 +66,7 @@ func TestAuthenticator_Auth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	passwordChecker := memoize.MemoizedCompareHashAndPassword()
 	authenticator := Authenticator{
 		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: key100,
@@ -74,7 +76,8 @@ func TestAuthenticator_Auth(t *testing.T) {
 			user.Passenger:  pkey1,
 			user.ThirdParty: pkey100,
 		},
-		ModelHandler: MockModelHandler{},
+		ModelHandler:           MockModelHandler{},
+		CompareHashAndPassword: passwordChecker,
 	}
 	t.Run("testing driver token auth", func(t *testing.T) {
 		ok, err := authenticator.Auth(context.Background(), driverToken)
@@ -110,11 +113,14 @@ func TestAuthenticator_Token(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	passwordChecker := memoize.MemoizedCompareHashAndPassword()
+
 	authenticator := Authenticator{
 		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: key,
 		},
-		ModelHandler: MockModelHandler{},
+		ModelHandler:           MockModelHandler{},
+		CompareHashAndPassword: passwordChecker,
 	}
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
 		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
@@ -180,6 +186,7 @@ func TestAuthenticator_Acl(t *testing.T) {
 		},
 	}
 
+	passwordChecker := memoize.MemoizedCompareHashAndPassword()
 	authenticator := Authenticator{
 		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: key100,
@@ -189,10 +196,11 @@ func TestAuthenticator_Acl(t *testing.T) {
 			user.Passenger:  pkey1,
 			user.ThirdParty: pkey100,
 		},
-		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
-		ModelHandler:       MockModelHandler{},
-		EMQTopicManager:    snappids.NewEMQManager(hid),
-		HashIDSManager:     hid,
+		AllowedAccessTypes:     []acl.AccessType{acl.Pub, acl.Sub},
+		ModelHandler:           MockModelHandler{},
+		EMQTopicManager:        snappids.NewEMQManager(hid),
+		HashIDSManager:         hid,
+		CompareHashAndPassword: passwordChecker,
 	}
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
 		ok, err := authenticator.Acl(context.Background(), acl.PubSub, passengerToken, "test")
@@ -281,11 +289,13 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 		},
 	}
 
+	passwordChecker := memoize.MemoizedCompareHashAndPassword()
 	authenticator := Authenticator{
-		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
-		ModelHandler:       MockModelHandler{},
-		EMQTopicManager:    snappids.NewEMQManager(hid),
-		HashIDSManager:     hid,
+		AllowedAccessTypes:     []acl.AccessType{acl.Pub, acl.Sub},
+		ModelHandler:           MockModelHandler{},
+		EMQTopicManager:        snappids.NewEMQManager(hid),
+		HashIDSManager:         hid,
+		CompareHashAndPassword: passwordChecker,
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {

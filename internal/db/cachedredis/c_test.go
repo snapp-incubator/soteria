@@ -18,7 +18,6 @@ func TestModelHandler_Get(t *testing.T) {
 	s := ModelHandler{
 		redisModelHandler: &redisdb.ModelHandler{Client: r},
 		cache:             cache.New(time.Minute*60, time.Minute*60),
-		validationTable:   make(map[string]bool, 32),
 	}
 	expected := MockModel{Name: "test"}
 	v, _ := json.Marshal(expected)
@@ -31,6 +30,8 @@ func TestModelHandler_Get(t *testing.T) {
 		err := s.Get(context.Background(), "mock", "test", &actual)
 		assert.Equal(t, expected, actual)
 		assert.NoError(t, err)
+
+		s.cache.Get(redisdb.GenerateKey("mock", "test"))
 	})
 	t.Run("testing second successful get", func(t *testing.T) {
 		var actual MockModel
@@ -44,10 +45,6 @@ func TestModelHandler_Get(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, "redis: nil", err.Error())
 	})
-	isValid, err := s.IsCacheValid("mock-test")
-	assert.Equal(t, 1, s.GetMiss())
-	assert.Equal(t, 1, s.GetHit())
-	assert.Equal(t, true, isValid)
 	assert.NoError(t, err)
 	err = r.Del(context.Background(), "mock-test").Err()
 	assert.NoError(t, err)
@@ -58,7 +55,6 @@ func TestModelHandler_Save(t *testing.T) {
 	s := ModelHandler{
 		redisModelHandler: &redisdb.ModelHandler{Client: r},
 		cache:             cache.New(time.Minute*60, time.Minute*60),
-		validationTable:   make(map[string]bool, 32),
 	}
 
 	t.Run("testing save model", func(t *testing.T) {
@@ -77,7 +73,6 @@ func TestRedisModelHandler_Delete(t *testing.T) {
 	s := ModelHandler{
 		redisModelHandler: &redisdb.ModelHandler{Client: r},
 		cache:             cache.New(time.Minute*60, time.Minute*60),
-		validationTable:   make(map[string]bool, 32),
 	}
 
 	expected := MockModel{Name: "test"}
@@ -111,7 +106,6 @@ func TestRedisModelHandler_Update(t *testing.T) {
 	s := ModelHandler{
 		redisModelHandler: &redisdb.ModelHandler{Client: r},
 		cache:             cache.New(time.Minute*60, time.Minute*60),
-		validationTable:   make(map[string]bool, 32),
 	}
 
 	m := MockModel{Name: "test", Value: "test-1"}
@@ -126,15 +120,11 @@ func TestRedisModelHandler_Update(t *testing.T) {
 		newModel := MockModel{Name: "test", Value: "test-2"}
 		err = s.Update(context.Background(), newModel)
 		assert.NoError(t, err)
-		ok, err := s.IsCacheValid("mock-test")
-		assert.False(t, ok)
 		assert.NoError(t, err)
 		var updatedModel MockModel
 		err = s.Get(context.Background(), "mock", "test", &updatedModel)
 		assert.NoError(t, err)
 		assert.Equal(t, newModel, updatedModel)
-		assert.Equal(t, 1, s.GetMiss())
-		assert.Equal(t, 0, s.GetHit())
 	})
 }
 
