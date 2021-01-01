@@ -28,7 +28,6 @@ func (s *Server) Auth(ctx context.Context, in *contracts.AuthContract) (*contrac
 	ip := in.GetIPAddress()
 	zap.L().Debug("grpc auth call",
 		zap.String("username", username),
-		zap.String("password", password),
 		zap.String("endpoint", endpoint),
 		zap.String("ip", ip),
 	)
