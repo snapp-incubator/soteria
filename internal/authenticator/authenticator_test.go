@@ -124,7 +124,6 @@ func TestAuthenticator_Token(t *testing.T) {
 	}
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
 		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
-
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return pk, nil
 		})
@@ -132,6 +131,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		claims := token.Claims.(jwt.MapClaims)
 		assert.Equal(t, "snappbox", claims["sub"].(string))
 		assert.Equal(t, "100", claims["iss"].(string))
+
 	})
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
 		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "invalid secret")
@@ -141,6 +141,68 @@ func TestAuthenticator_Token(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, token)
 	})
+}
+
+func TestAuthenticator_HeraldToken(t *testing.T) {
+	key, err := getPrivateKey(user.ThirdParty)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pk, err := getPublicKey(user.ThirdParty)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	authenticator := Authenticator{
+		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
+			user.ThirdParty: key,
+		},
+	}
+
+	t.Run("testing issuing valid herald token", func(t *testing.T) {
+		allowedTopics := []acl.Topic{
+			{
+				Type: topics.BoxEvent,
+			},
+		}
+
+		allowedEndpoints := []acl.Endpoint{
+			{
+				Name: "event",
+			},
+		}
+
+		tokenString, err := authenticator.HeraldToken(
+			"snappbox", allowedEndpoints, allowedTopics, time.Hour*24)
+		assert.NoError(t, err)
+		token, err := jwt.ParseWithClaims(tokenString, &acl.Claims{}, func(token *jwt.Token) (interface{}, error) {
+			return pk, nil
+		})
+		assert.NoError(t, err)
+		actual := token.Claims.(*acl.Claims)
+
+		expected := acl.Claims{
+			StandardClaims: jwt.StandardClaims{
+				Issuer:  "100",
+				Subject: "snappbox",
+			},
+			Topics: []acl.Topic{
+				{
+					Type: topics.BoxEvent,
+				},
+			},
+			Endpoints: []acl.Endpoint{
+				{
+					Name: "event",
+				},
+			},
+		}
+		assert.Equal(t, expected.StandardClaims.Issuer, actual.StandardClaims.Issuer)
+		assert.Equal(t, expected.StandardClaims.Subject, actual.StandardClaims.Subject)
+		assert.EqualValues(t, expected.Endpoints, actual.Endpoints)
+		assert.EqualValues(t, expected.Topics, actual.Topics)
+	})
+
 }
 
 func TestAuthenticator_Acl(t *testing.T) {
@@ -446,6 +508,18 @@ func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v int
 			Type:                    user.HeraldUser,
 			Secret:                  "KJIikjIKbIYVGj)YihYUGIB&",
 			TokenExpirationDuration: time.Hour * 72,
+			Rules: []user.Rule{
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.BoxEvent,
+					AccessType: acl.Sub,
+				},
+				{
+					UUID:       uuid.New(),
+					Endpoint:   "/notification",
+					AccessType: acl.Pub,
+				},
+			},
 		}
 	case "colony-subscriber":
 		*v.(*user.User) = user.User{
