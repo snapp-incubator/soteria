@@ -13,6 +13,7 @@ func init() {
 
 	accounts.Accounts.AddCommand(accounts.Init)
 	cli.AddCommand(accounts.Accounts)
+	cli.AddCommand(commands.Token)
 }
 
 func main() {

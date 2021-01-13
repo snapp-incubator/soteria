@@ -50,7 +50,7 @@ type CacheConfig struct {
 
 // JwtConfig contains path of the keys for JWT encryption
 type JwtConfig struct {
-	KeysPath string `split_words:"true"`
+	KeysPath string `split_words:"true" default:"test/"`
 }
 
 // LoggerConfig is the config for logging and this kind of stuff
