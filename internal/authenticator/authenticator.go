@@ -118,12 +118,36 @@ func (a Authenticator) Token(ctx context.Context, accessType acl.AccessType, use
 	if u.Secret != secret {
 		return "", fmt.Errorf("invlaid secret %v", secret)
 	}
-
 	claims := jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(u.TokenExpirationDuration).Unix(),
 		Issuer:    string(user.ThirdParty),
 		Subject:   username,
 	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	tokenString, err = token.SignedString(a.PrivateKeys[user.ThirdParty])
+	if err != nil {
+		return "", fmt.Errorf("could not sign the token. err; %v", err)
+	}
+	return tokenString, nil
+}
+
+func (a Authenticator) HeraldToken(
+	username string,
+	endpoints []acl.Endpoint,
+	topics []acl.Topic,
+	duration time.Duration) (tokenString string, err error) {
+
+	claims := acl.Claims{
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(duration).Unix(),
+			Issuer:    string(user.ThirdParty),
+			Subject:   username,
+		},
+		Topics:    topics,
+		Endpoints: endpoints,
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	tokenString, err = token.SignedString(a.PrivateKeys[user.ThirdParty])
 	if err != nil {
