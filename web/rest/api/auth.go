@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.snapp.ir/dispatching/soteria/internal"
-	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"go.uber.org/zap"
 	"net/http"
 	"time"
