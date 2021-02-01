@@ -3,8 +3,8 @@ package api
 import (
 	"encoding/base64"
 	"github.com/gin-gonic/gin"
-	"gitlab.snapp.ir/dispatching/soteria/internal/app"
-	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/errors"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
+	accountsInfo "gitlab.snapp.ir/dispatching/soteria/v3/pkg/errors"
 	"strings"
 )
 

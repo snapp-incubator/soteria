@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kelseyhightower/envconfig"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	"io/ioutil"
 	"time"
 )

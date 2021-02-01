@@ -1,9 +1,9 @@
 package app
 
 import (
-	"gitlab.snapp.ir/dispatching/soteria/internal/accounts"
-	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/metrics"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/accounts"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/metrics"
 	"sync"
 )
 
