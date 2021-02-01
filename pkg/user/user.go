@@ -2,9 +2,9 @@ package user
 
 import (
 	"github.com/google/uuid"
-	"gitlab.snapp.ir/dispatching/soteria/internal/db"
-	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"time"
 )
 

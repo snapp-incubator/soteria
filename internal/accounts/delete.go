@@ -2,7 +2,7 @@ package accounts
 
 import (
 	"context"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/errors"
 )
 
 // Delete removes a user by given username and password from database
