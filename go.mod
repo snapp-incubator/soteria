@@ -1,6 +1,6 @@
-module gitlab.snapp.ir/dispatching/soteria
+module gitlab.snapp.ir/dispatching/soteria/v3
 
-go 1.13
+go 1.15
 
 require (
 	github.com/alicebob/miniredis/v2 v2.13.1

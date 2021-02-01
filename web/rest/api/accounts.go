@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"gitlab.snapp.ir/dispatching/soteria/internal/app"
-	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
-	accountsInfo "gitlab.snapp.ir/dispatching/soteria/pkg/errors"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
+	accountsInfo "gitlab.snapp.ir/dispatching/soteria/v3/pkg/errors"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	"time"
 )
 

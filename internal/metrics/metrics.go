@@ -2,7 +2,7 @@ package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/metrics"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/metrics"
 )
 
 type SoteriaMetrics struct {

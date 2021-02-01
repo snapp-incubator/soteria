@@ -2,9 +2,9 @@ package accounts
 
 import (
 	"context"
-	"gitlab.snapp.ir/dispatching/soteria/internal/db"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/errors"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )

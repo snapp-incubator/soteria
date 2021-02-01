@@ -7,8 +7,8 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/patrickmn/go-cache"
 	"github.com/stretchr/testify/assert"
-	"gitlab.snapp.ir/dispatching/soteria/internal/db"
-	redisdb "gitlab.snapp.ir/dispatching/soteria/internal/db/redis"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
+	redisdb "gitlab.snapp.ir/dispatching/soteria/v3/internal/db/redis"
 	"testing"
 	"time"
 )
