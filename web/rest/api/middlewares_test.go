@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"net/http"
 	"net/http/httptest"
 	"testing"

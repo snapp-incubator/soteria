@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/patrickmn/go-cache"
-	"gitlab.snapp.ir/dispatching/soteria/internal/db"
-	"gitlab.snapp.ir/dispatching/soteria/internal/db/redis"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db/redis"
 )
 
 type ModelHandler struct {

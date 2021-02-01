@@ -6,7 +6,7 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
-	"gitlab.snapp.ir/dispatching/soteria/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"testing"
 	"time"
 )
