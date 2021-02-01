@@ -2,7 +2,7 @@ package acl
 
 import (
 	"github.com/dgrijalva/jwt-go"
-	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 )
 
 type Claims struct {

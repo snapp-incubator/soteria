@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	"gitlab.snapp.ir/dispatching/soteria/configs"
+	"gitlab.snapp.ir/dispatching/soteria/v3/configs"
 )
 
 func NewRedisClient(cfg *configs.RedisConfig) (*redis.Client, error) {

@@ -2,9 +2,9 @@ package accounts
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/errors"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/errors"
 	"testing"
 )
 
