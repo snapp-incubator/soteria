@@ -82,5 +82,3 @@ for production deployments on Cloud (okd).
 - `pkg`: Go packages that their logic is independent of this project and can become handy in other
 projects as well.
 
-
-# Related Links
