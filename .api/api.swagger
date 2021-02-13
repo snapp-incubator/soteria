@@ -154,6 +154,94 @@ paths:
           schema:
             $ref: '#/definitions/response'
   
+  
+  /accounts/:username/rules:
+    post:
+      summary: creates new rule
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      security:
+        - basicAuth: []
+      parameters:
+      - in: body
+        name: request
+        description: Request body
+        schema:
+          $ref: '#/definitions/rule'
+      responses:
+        400:
+          description: Bad input parameter
+          schema:
+            $ref: '#/definitions/response'
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/response'
+            
+  
+  /accounts/:username/rules/:uuid:
+    get:
+      summary: get the rule with uuid
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      security:
+        - basicAuth: []
+      responses:
+        400:
+          description: Bad input parameter
+          schema:
+            $ref: '#/definitions/response'
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/response'
+            
+    put:
+      summary: updates a rule
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      security:
+        - basicAuth: []
+      parameters:
+      - in: body
+        name: request
+        description: Request body
+        schema:
+          $ref: '#/definitions/rule'
+      responses:
+        400:
+          description: Bad input parameter
+          schema:
+            $ref: '#/definitions/response'
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/response'
+  
+    delete:
+      summary: deletes the rule with uuid
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      security:
+        - basicAuth: []
+      responses:
+        400:
+          description: Bad input parameter
+          schema:
+            $ref: '#/definitions/response'
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/response'
+  
 components:
   securitySchemes:
     basicAuth:     # <-- arbitrary name for the security scheme
@@ -267,10 +355,12 @@ definitions:
       data:
         type: object
         
-        
-  
-  
-
-  
-
-  
+  rule:
+    type: object
+    properties:
+      endpoint:
+        type: string
+      topic:
+        type: string
+      access_type:
+        type: string
