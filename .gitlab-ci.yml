@@ -274,7 +274,6 @@ deploy:production:teh_2:
     CI_DEPLOYMENT_INFRA: "teh-2"
   needs: ["release:production:teh-2"]
 
-
 deploy:production:vm:
 # Extends the global template so it add an after_script step for deployment announcement
   extends: .deployments_after_script
@@ -294,9 +293,41 @@ deploy:production:vm:
     - ./.gitlab/ci/scripts/deploy.sh
   needs: ["compile"]
   rules:
+    - if: "$CI_COMMIT_BRANCH && $UPDATE_ENVIRONMENT_VARIABLE == null "
     - if: '$CI_COMMIT_TAG'
       when: manual
 
+deploy:env:
+  image: registry.snapp.tech/docker/deployer:alpine3.11
+  stage: deploy
+  parallel: 5
+  variables:
+    DEPLOYER_PRIVATE_KEY: ${DEPLOYER_PRIVATE_KEY}
+  script:
+    - chmod +x .gitlab/ci/scripts/update-environments.sh
+    - echo  "Update ENV Soteria-0${DEPLOYER_PRIVATE_KEY}"
+    - .gitlab/ci/scripts/update-environments.sh 
+    - chmod +x .gitlab/ci/scripts/notify-eye.sh
+    - echo  "Send notif to Dispatching-alert room ..."
+    - .gitlab/ci/scripts/notify-eye.sh   
+  needs: ['compile']
+  only:
+    - tag
+  when: manual
 
-
-
+update:env:
+  image: registry.snapp.tech/docker/deployer:alpine3.11
+  stage: deploy
+  parallel: 5
+  variables:
+    DEPLOYER_PRIVATE_KEY: ${DEPLOYER_PRIVATE_KEY}
+  script:
+    - chmod +x .gitlab/ci/scripts/update-environments.sh
+    - echo  "Update ENV Soteria-0${DEPLOYER_PRIVATE_KEY}"
+    - .gitlab/ci/scripts/update-environments.sh 
+    - chmod +x .gitlab/ci/scripts/notify-eye.sh
+    - echo  "Send notif to Dispatching-alert room ..."
+    - .gitlab/ci/scripts/notify-eye.sh  
+  rules:
+    - if: '$UPDATE_ENVIRONMENT_VARIABLE == "true"'
+      when: manual
