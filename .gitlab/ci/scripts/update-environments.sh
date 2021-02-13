@@ -3,7 +3,7 @@ set -eu
 
 APP_NAME=soteria
 APP_USERNAME=soteria
-APP_HOSTNAME="emqx-0${DEPLOYER_PRIVATE_KEY}.app.afra.snapp.infra"
+APP_HOSTNAME="emqx-0${CI_NODE_INDEX}.app.afra.snapp.infra"
 APP_HOME_PATH=/var/lib/${APP_USERNAME}
 APP_CONFIG_PATH="/etc/soteria" 
 ENV_DEFAULT_FILE=.gitlab/ci/env/env.conf
