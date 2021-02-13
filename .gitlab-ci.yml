@@ -41,6 +41,9 @@ code-generator:
 #  cache:
 #    paths:
 #      - ./web/grpc/contracts
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
 
 .go_mod_config: &go_mod
   image: registry.snapp.tech/docker/golang:1.13.5-alpine3.10
@@ -66,7 +69,10 @@ compile:
     paths:
       - ${BUILD_PATH}/${CI_PROJECT_NAME}
     expire_in: 1 week
-
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
+      
 unit_tests:
   <<: *go_mod
   stage: test
@@ -79,7 +85,9 @@ unit_tests:
   dependencies:
     - code-generator
     - compile
-
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
 
 build:
   image: docker:latest
@@ -101,7 +109,9 @@ build:
   dependencies:
     - code-generator
     - compile
-
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
 
 .release_template: &release_job_definition
   image: docker:latest
@@ -115,6 +125,9 @@ build:
     - docker push ${CONTAINER_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
   dependencies:
     - build
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
 
 
 release:staging:
@@ -128,6 +141,9 @@ release:staging:
     - master
     - tags
     - branches
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
 
 release:mozart:
   <<: *release_job_definition
@@ -140,6 +156,9 @@ release:mozart:
     - master
     - tags
     - branches
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
   when: manual
 
 release:production:teh-1:
@@ -151,6 +170,9 @@ release:production:teh-1:
     CONTAINER_REGISTRY_PASSWORD: "$OKD_PRODUCTION_TOKEN_TEH1"
   only:
     - tags
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
 
 release:production:teh-2:
   <<: *release_job_definition
@@ -161,7 +183,9 @@ release:production:teh-2:
     CONTAINER_REGISTRY_PASSWORD: "$OKD_PRODUCTION_TOKEN_TEH2"
   only:
     - tags
-
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
 
 
 .deploy_template: &deploy_job_definition
@@ -203,6 +227,9 @@ release:production:teh-2:
     - oc rollout latest dc/${DEPLOY_SERVICE_NAME}
   only:
     - tags
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
   when: manual
 
 deploy:staging:teh_1:
@@ -226,6 +253,9 @@ deploy:staging:teh_1:
   only:
     - master
     - branches
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
   needs: ["release:staging"]
 
 deploy:production:teh_1:
@@ -313,6 +343,9 @@ deploy:env:
   needs: ['compile']
   only:
     - tag
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
   when: manual
 
 update:env:
@@ -331,3 +364,4 @@ update:env:
   rules:
     - if: '$UPDATE_ENVIRONMENT_VARIABLE == "true"'
       when: manual
+
