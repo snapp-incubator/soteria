@@ -49,7 +49,7 @@ helm install soteria --generate-name
 
 ## Production
 
-We deploy `Herald` on two different infrastructures. 
+We deploy `soteria` on two different infrastructures. 
 
 - VM
 - Cloud (okd)
