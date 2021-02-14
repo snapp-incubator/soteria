@@ -81,4 +81,7 @@ for production deployments on Cloud (okd).
 - `internal`: Main application directory for codes
 - `pkg`: Go packages that their logic is independent of this project and can become handy in other
 projects as well.
+- `web`: web interface of application including rest and grpc
+- `test`: test data like jwt keys
+
 
