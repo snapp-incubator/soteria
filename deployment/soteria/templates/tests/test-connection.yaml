@@ -11,9 +11,10 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      {{- range .Values.service.ports }}
+      {{ range .Values.service.ports }}
       {{ if eq .name "http"}}
-      args: ['{{ include "soteria.fullname" . }}:{{ .port }}']
+      args:
+        - {{ include "soteria.fullname" $ }}:{{ .port }}
       {{ end }}
       {{ end }}
   restartPolicy: Never
