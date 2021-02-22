@@ -38,7 +38,7 @@ func init() {
 }
 
 func TestCreateAccount(t *testing.T) {
-	router := setupRouter()
+	router := setupRouter("debug")
 
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -88,7 +88,7 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func TestReadAccount(t *testing.T) {
-	router := setupRouter()
+	router := setupRouter("debug")
 
 	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
 
@@ -118,9 +118,9 @@ func TestReadAccount(t *testing.T) {
 }
 
 func TestUpdateAccount(t *testing.T) {
-	router := setupRouter()
+	router := setupRouter("debug")
 
-	_ = app.GetInstance().AccountsService.SignUp(context.Background(),"user", "password", "passenger")
+	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
 
 	t.Run("testing successful request", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -143,7 +143,7 @@ func TestUpdateAccount(t *testing.T) {
 
 		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
-		u, err := app.GetInstance().AccountsService.Info(context.Background(),"user", "password2")
+		u, err := app.GetInstance().AccountsService.Info(context.Background(), "user", "password2")
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(u.IPs))
 		assert.Equal(t, "12345678", u.Secret)
@@ -153,7 +153,7 @@ func TestUpdateAccount(t *testing.T) {
 }
 
 func TestDeleteAccount(t *testing.T) {
-	router := setupRouter()
+	router := setupRouter("debug")
 
 	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
 
@@ -181,7 +181,7 @@ func TestDeleteAccount(t *testing.T) {
 }
 
 func TestCreateAccountRule(t *testing.T) {
-	router := setupRouter()
+	router := setupRouter("debug")
 
 	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
 
@@ -242,9 +242,9 @@ func TestCreateAccountRule(t *testing.T) {
 }
 
 func TestReadAccountRule(t *testing.T) {
-	router := setupRouter()
+	router := setupRouter("debug")
 
-	_ = app.GetInstance().AccountsService.SignUp(context.Background(),"user", "password", "passenger")
+	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
 	createdRule, _ := app.GetInstance().AccountsService.CreateRule(context.Background(), "user", "/notification", "", "2")
 
 	t.Run("testing with invalid UUID", func(t *testing.T) {
@@ -315,10 +315,10 @@ func TestReadAccountRule(t *testing.T) {
 }
 
 func TestUpdateAccountRule(t *testing.T) {
-	router := setupRouter()
+	router := setupRouter("debug")
 
 	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
-	createdRule, _ := app.GetInstance().AccountsService.CreateRule(context.Background(),"user", "/notification", "", "2")
+	createdRule, _ := app.GetInstance().AccountsService.CreateRule(context.Background(), "user", "/notification", "", "2")
 
 	t.Run("testing with no payload", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -405,7 +405,7 @@ func TestUpdateAccountRule(t *testing.T) {
 
 		assert.Equal(t, errors.SuccessfulOperation, actualResponse.Code)
 
-		u, err := app.GetInstance().AccountsService.Info(context.Background(),"user", "password")
+		u, err := app.GetInstance().AccountsService.Info(context.Background(), "user", "password")
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(u.Rules))
 		assert.Equal(t, createdRule.UUID, u.Rules[0].UUID)
@@ -416,9 +416,9 @@ func TestUpdateAccountRule(t *testing.T) {
 }
 
 func TestDeleteAccountRule(t *testing.T) {
-	router := setupRouter()
+	router := setupRouter("debug")
 
-	_ = app.GetInstance().AccountsService.SignUp(context.Background(),"user", "password", "passenger")
+	_ = app.GetInstance().AccountsService.SignUp(context.Background(), "user", "password", "passenger")
 	createdRule, _ := app.GetInstance().AccountsService.CreateRule(context.Background(), "user", "/notification", "", "2")
 
 	t.Run("testing with invalid UUID", func(t *testing.T) {
