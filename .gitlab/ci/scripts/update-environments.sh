@@ -73,7 +73,7 @@ done < $ENV_DEFAULT_FILE
   fi
 
 ### Green service config file
-sed -i "1s/\(.*\)/\#  Application: $APP_NAME-green /" $ENV_DEFAULT_FILE
+# sed -i "1s/\(.*\)/\#  Application: $APP_NAME-green /" $ENV_DEFAULT_FILE
 sed -i "2s/\(.*\)/\#  Last update: $(date) /" $ENV_DEFAULT_FILE
 sed -i "s/SOTERIA_HTTP_PORT\(\s\)*=\(\s\)*'\(.*\)'/ENV_NAME=\'9998\'/g"  $ENV_DEFAULT_FILE
 rsync -e 'ssh -o "StrictHostKeyChecking=no"' -avz "$ENV_DEFAULT_FILE" "$APP_USERNAME@$APP_HOSTNAME:$APP_CONFIG_PATH/$APP_NAME-green.conf"
