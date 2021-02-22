@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include soteria.fullname . }}-test-connection
+  labels:
+    {{- include "soteria.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      {{- range .Values.service.ports }}
+      {{ if eq .name "http"}}
+      args: ['{{ include "soteria.fullname" . }}:{{ .port }}']
+      {{ end }}
+      {{ end }}
+  restartPolicy: Never
