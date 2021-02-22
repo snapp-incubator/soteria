@@ -79,12 +79,14 @@ done < $ENV_DEFAULT_FILE
 ## JWT keys
 
 ssh -o StrictHostKeyChecking=no "$APP_USERNAME@$APP_HOSTNAME" "
-    echo "${ENV_DRIVER_JWT_PUBLIC_KEY_PRODUCTION}" > "${ENV_SOTERIA_JWT_KEYS_PATH}"/0.pem
-    echo "${ENV_PASSENGER_JWT_PUBLIC_KEY_PRODUCTION}" > "${ENV_SOTERIA_JWT_KEYS_PATH}"/1.pem
-    echo "${ENV_THIRD_PARTY_JWT_PUBLIC_KEY_PRODUCTION}" > "${ENV_SOTERIA_JWT_KEYS_PATH}"/100.pem
-    echo "${ENV_THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}" > "${ENV_SOTERIA_JWT_KEYS_PATH}"/100.private.pem
-  "
 
+
+mkdir jwt 
+echo "${ENV_DRIVER_JWT_PUBLIC_KEY_PRODUCTION}" > "jwt"/0.pem
+echo "${ENV_PASSENGER_JWT_PUBLIC_KEY_PRODUCTION}" > "jwt"/1.pem
+echo "${ENV_THIRD_PARTY_JWT_PUBLIC_KEY_PRODUCTION}" > "jwt"/100.pem
+echo "${ENV_THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}" > "jwt"/100.private.pem
+rsync -e 'ssh -o "StrictHostKeyChecking=no"' -avzr "jwt" "$APP_USERNAME@$APP_HOSTNAME:${ENV_SOTERIA_JWT_KEYS_PATH}"
  
 
 ### Green service config file
