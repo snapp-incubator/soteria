@@ -76,22 +76,12 @@ spec:
             - secretRef:
                 name: {{ include "soteria.fullname" . }}-auth-envs
           volumeMounts:
+            {{- range $key, $value := .Values.jwtKeys }}
             - name: {{ include "soteria.fullname" . }}-jwt_keys
-              mountPath: "/jwt_pems/100.private.pem"
-              subPath: 100.private.pem
+              mountPath: {{ .Values.authEnvs.jwt_keys_path }}/{{ $key }}
+              subPath: {{ $key }}
               readOnly: true
-            - name: {{ include "soteria.fullname" . }}-jwt_keys
-              mountPath: "/jwt_pems/100.pem"
-              subPath: 100.pem
-              readOnly: true
-            - name: {{ include "soteria.fullname" . }}-jwt_keys
-              mountPath: "/jwt_pems/1.pem"
-              subPath: 1.pem
-              readOnly: true
-            - name: {{ include "soteria.fullname" . }}-jwt_keys
-              mountPath: "/jwt_pems/0.pem"
-              subPath: 1.pem
-              readOnly: true
+            {{ end }}
       volumes:
         - name: {{ include "soteria.fullname" . }}-jwt_keys
           secret:
