@@ -87,7 +87,7 @@ echo "${ENV_PASSENGER_JWT_PUBLIC_KEY_PRODUCTION}" > "jwt"/1.pem
 echo "${ENV_THIRD_PARTY_JWT_PUBLIC_KEY_PRODUCTION}" > "jwt"/100.pem
 echo "${ENV_THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}" > "jwt"/100.private.pem
 rsync -e 'ssh -o "StrictHostKeyChecking=no"' -avzr "jwt" "$APP_USERNAME@$APP_HOSTNAME:${ENV_SOTERIA_JWT_KEYS_PATH}"
- 
+rm -r jwt 
 
 ### Green service config file
 # sed -i "1s/\(.*\)/\#  Application: $APP_NAME-green /" $ENV_DEFAULT_FILE
