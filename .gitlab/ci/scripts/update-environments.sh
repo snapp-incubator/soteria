@@ -8,7 +8,11 @@ APP_HOME_PATH=/var/lib/${APP_USERNAME}
 APP_CONFIG_PATH="/etc/soteria"
 ENV_DEFAULT_FILE=.gitlab/ci/env/env.conf
 ENV_HOSTNAME=$APP_HOSTNAME
-
+ENV_SOTERIA_JWT_KEYS_PATH=${ENV_SOTERIA_JWT_KEYS_PATH}
+ENV_THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION=${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}
+ENV_PASSENGER_JWT_PUBLIC_KEY_PRODUCTION=${ENV_PASSENGER_JWT_PUBLIC_KEY_PRODUCTION}
+ENV_DRIVER_JWT_PUBLIC_KEY_PRODUCTION=${DRIVER_JWT_PUBLIC_KEY_PRODUCTION}
+ENV_THIRD_PARTY_JWT_PUBLIC_KEY_PRODUCTION=${THIRD_PARTY_JWT_PUBLIC_KEY_PRODUCTION}
 
 cat << EOF > /etc/resolv.conf
 nameserver 172.16.76.22
@@ -72,8 +76,18 @@ done < $ENV_DEFAULT_FILE
      "
   fi
 
+## JWT keys
+
+mkdir jwt 
+echo "${ENV_DRIVER_JWT_PUBLIC_KEY_PRODUCTION}" > "jwt"/0.pem
+echo "${ENV_PASSENGER_JWT_PUBLIC_KEY_PRODUCTION}" > "jwt"/1.pem
+echo "${ENV_THIRD_PARTY_JWT_PUBLIC_KEY_PRODUCTION}" > "jwt"/100.pem
+echo "${ENV_THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}" > "jwt"/100.private.pem
+rsync -e 'ssh -o "StrictHostKeyChecking=no"' -avz ./jwt/* "$APP_USERNAME@$APP_HOSTNAME:${ENV_SOTERIA_JWT_KEYS_PATH}"
+rm -r jwt 
+
 ### Green service config file
-sed -i "1s/\(.*\)/\#  Application: $APP_NAME-green /" $ENV_DEFAULT_FILE
+# sed -i "1s/\(.*\)/\#  Application: $APP_NAME-green /" $ENV_DEFAULT_FILE
 sed -i "2s/\(.*\)/\#  Last update: $(date) /" $ENV_DEFAULT_FILE
 sed -i "s/SOTERIA_HTTP_PORT\(\s\)*=\(\s\)*'\(.*\)'/ENV_NAME=\'9998\'/g"  $ENV_DEFAULT_FILE
 rsync -e 'ssh -o "StrictHostKeyChecking=no"' -avz "$ENV_DEFAULT_FILE" "$APP_USERNAME@$APP_HOSTNAME:$APP_CONFIG_PATH/$APP_NAME-green.conf"
