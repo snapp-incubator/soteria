@@ -124,7 +124,7 @@ func servePreRun(cmd *cobra.Command, args []string) {
 }
 
 func serveRun(cmd *cobra.Command, args []string) {
-	rest := api.RestServer(cfg.HttpPort)
+	rest := api.RestServer(cfg.Mode, cfg.HttpPort)
 
 	gListen, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GrpcPort))
 	if err != nil {
