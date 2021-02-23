@@ -75,15 +75,15 @@ spec:
           volumeMounts:
             {{- $root := . -}}
             {{- range $key, $value := .Values.jwtKeys }}
-            - name: {{ include "soteria.fullname" $ }}-jwt_keys
+            - name: {{ include "soteria.fullname" $ }}-jwt-keys
               mountPath: "{{ $root.Values.authEnvs.jwt_keys_path }}{{ $key }}"
               subPath: {{ $key }}
               readOnly: true
             {{ end }}
       volumes:
-        - name: {{ include "soteria.fullname" . }}-jwt_keys
+        - name: {{ include "soteria.fullname" . }}-jwt-keys
           secret:
-            secretName: {{ include "soteria.fullname" . }}-jwt_keys
+            secretName: {{ include "soteria.fullname" . }}-jwt-keys
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
