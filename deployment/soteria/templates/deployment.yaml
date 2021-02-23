@@ -20,7 +20,7 @@ spec:
         prometheus.io/path: "/metrics"
         {{ range .Values.service.ports }}
         {{ if eq .name "http"}}
-        prometheus.io/port: {{ .port }}
+        prometheus.io/port: {{ .port | quote }}
         {{ end }}
         {{ end }}
       labels: 
@@ -76,7 +76,7 @@ spec:
             {{- $root := . -}}
             {{- range $key, $value := .Values.jwtKeys }}
             - name: {{ include "soteria.fullname" $ }}-jwt_keys
-              mountPath: {{ $root.Values.authEnvs.jwt_keys_path }}{{ $key }}
+              mountPath: "{{ $root.Values.authEnvs.jwt_keys_path }}{{ $key }}"
               subPath: {{ $key }}
               readOnly: true
             {{ end }}
