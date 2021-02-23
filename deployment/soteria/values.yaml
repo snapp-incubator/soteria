@@ -9,8 +9,8 @@ region: teh-1
 
 image:
   registry: docker-registry.default.svc:5000
-  repository: dispatching-staging/soteria
-  tag: 3-1-0
+  repository: realtime-staging/soteria
+  tag: 6-add-helm-chart
   pullPolicy: Always
 
 service:
@@ -107,7 +107,7 @@ envs:
   http_port: "9999"
   grpc_port: "50051"
   mode: "debug"
-  redis_address: "soteria-redis-haproxy.realtime-production.svc:6379"
+  redis_address: "main-redis-master.dispatching-staging.svc:6379"
   redis_pass: ""
   redis_pool_size: "10"
   redis_max_retries: "0"
