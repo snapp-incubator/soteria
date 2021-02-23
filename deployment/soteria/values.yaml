@@ -38,11 +38,8 @@ autoscaling:
   targetCPUUtilizationPercentage: 65
 
 rollingParams:
-  intervalSeconds: 1
   maxSurge: 5
   maxUnavailable: 0
-  timeoutSeconds: 600
-  updatePeriodSeconds: 10
 
 ingress:
   enabled: false
