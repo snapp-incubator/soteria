@@ -12,9 +12,6 @@ spec:
     rollingUpdate:
       maxSurge: {{ .Values.rollingParams.maxSurge }}
       maxUnavailable: {{ .Values.rollingParams.maxUnavailable }}
-      timeoutSeconds: {{ .Values.rollingParams.timeoutSeconds }}
-      updatePeriodSeconds: {{ .Values.rollingParams.updatePeriodSeconds }}
-      intervalSeconds: {{ .Values.rollingParams.intervalSeconds }}
     type: RollingUpdate
   template:
     metadata:
