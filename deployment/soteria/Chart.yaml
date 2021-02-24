@@ -1,6 +1,6 @@
 apiVersion: v2
 name: soteria
-description: Soteria Hrlm Chart
+description: Soteria Helm Chart
 
 # A chart can be either an 'application' or a 'library' chart.
 #
