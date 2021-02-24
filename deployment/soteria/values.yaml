@@ -10,7 +10,7 @@ region: teh-1
 image:
   registry: docker-registry.default.svc:5000
   repository: realtime-staging/soteria
-  tag: 6-add-helm-chart
+  tag: dev
   pullPolicy: Always
 
 service:
