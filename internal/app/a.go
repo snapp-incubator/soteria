@@ -13,8 +13,8 @@ type app struct {
 	Metrics         metrics.Metrics
 	Authenticator   *authenticator.Authenticator
 	AccountsService *accounts.Service
-	Tracer          *opentracing.Tracer
-	TracerCloser    *io.Closer
+	Tracer          opentracing.Tracer
+	TracerCloser    io.Closer
 }
 
 var singleton *app
@@ -39,7 +39,7 @@ func (a *app) SetAccountsService(service *accounts.Service) {
 	a.AccountsService = service
 }
 
-func (a *app) SetTracer(tracer *opentracing.Tracer, closer *io.Closer) {
+func (a *app) SetTracer(tracer opentracing.Tracer, closer io.Closer) {
 	a.Tracer = tracer
 	a.TracerCloser = closer
 }
