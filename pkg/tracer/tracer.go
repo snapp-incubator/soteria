@@ -9,7 +9,7 @@ import (
 )
 
 // New receives a `configs.TracerConfig` and returns a `opentracing.Tracer` and a `io.Closer` and a `error` if there was one
-func New(cfg *configs.TracerConfig) (opentracing.Tracer, io.Closer, error) {
+func New(cfg *configs.TracerConfig) (*opentracing.Tracer, *io.Closer, error) {
 	trc, cl, err := jaegerConf.Configuration{
 		ServiceName: cfg.ServiceName,
 		Disabled:    !cfg.Enabled,
@@ -27,5 +27,5 @@ func New(cfg *configs.TracerConfig) (opentracing.Tracer, io.Closer, error) {
 		return nil, nil, fmt.Errorf("failed to create new tracer: %w", err)
 	}
 
-	return trc, cl, nil
+	return &trc, &cl, nil
 }
