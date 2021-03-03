@@ -10,7 +10,7 @@ import (
 
 // New receives a `configs.TracerConfig` and returns a `opentracing.Tracer` and a `io.Closer` and a `error` if there was one
 func New(cfg *configs.TracerConfig) (opentracing.Tracer, io.Closer, error) {
-	var trc, cl, err = jaegerConf.Configuration{
+	trc, cl, err := jaegerConf.Configuration{
 		ServiceName: cfg.ServiceName,
 		Disabled:    !cfg.Enabled,
 		Sampler: &jaegerConf.SamplerConfig{
