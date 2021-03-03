@@ -68,11 +68,10 @@ func ACL(ctx *gin.Context) {
 		return
 	}
 
-	aclCheckSpan := app.GetInstance().Tracer.StartSpan("issue token", opentracing.ChildOf(aclSpan.Context()))
+	aclCheckSpan := app.GetInstance().Tracer.StartSpan("acl check", opentracing.ChildOf(aclSpan.Context()))
 
 	ok, err := app.GetInstance().Authenticator.Acl(ctx, request.Access, tokenString, topic)
 	if err != nil || !ok {
-
 		aclCheckSpan.SetTag("success", false)
 		if err != nil {
 			aclCheckSpan.SetTag("error", err.Error())
@@ -125,7 +124,7 @@ func ACL(ctx *gin.Context) {
 	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, request.Access.String(), internal.Success, string(topicType))
 	app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 
-	aclCheckSpan.SetTag("success", true).Finish()
+	aclCheckSpan.SetTag("success", true)
 
 	ctx.String(http.StatusOK, "ok")
 }
