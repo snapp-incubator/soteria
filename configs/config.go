@@ -63,6 +63,16 @@ type LoggerConfig struct {
 	SentryTimeout time.Duration `split_words:"true" default:"100ms"`
 }
 
+// TracerConfig contains all configs needed to create a tracer
+type TracerConfig struct {
+	Enabled      bool    `split_words:"true" default:"true"`
+	ServiceName  string  `default:"soteria" split_words:"true"`
+	SamplerType  string  `default:"const" split_words:"true"`
+	SamplerParam float64 `default:"1" split_words:"true"`
+	Host         string  `default:"localhost" split_words:"true"`
+	Port         int     `default:"6831" split_words:"true"`
+}
+
 // InitConfig tries to initialize app config from env variables.
 func InitConfig() AppConfig {
 	appConfig := &AppConfig{}
