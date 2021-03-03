@@ -54,6 +54,8 @@ func Token(ctx *gin.Context) {
 
 		tokenIssueSpan.SetTag("success", false)
 
+		tokenIssueSpan.SetTag("error", err.Error()).Finish()
+
 		if errors.Is(err, db.ErrDb) {
 			app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Token, http.StatusInternalServerError)
 			app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Failure, "database error happened")
@@ -61,7 +63,7 @@ func Token(ctx *gin.Context) {
 			app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
 			ctx.String(http.StatusInternalServerError, "internal server error")
 
-			tokenIssueSpan.SetTag("error", db.ErrDb.Error()).Finish()
+			tokenIssueSpan.Finish()
 
 			return
 		}
@@ -72,7 +74,7 @@ func Token(ctx *gin.Context) {
 		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusUnauthorized, "request is not authorized")
 
-		tokenIssueSpan.SetTag("error", "request is not authorized").Finish()
+		tokenIssueSpan.Finish()
 
 		return
 	}
@@ -84,12 +86,12 @@ func Token(ctx *gin.Context) {
 			zap.String("client_secret", request.ClientSecret),
 		)
 
-	tokenIssueSpan.SetTag("success", true).Finish()
-
 	app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Token, http.StatusAccepted)
 	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Success, "token request accepted")
 	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Success, request.ClientID)
 	app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
+
+	tokenIssueSpan.SetTag("success", true).Finish()
 
 	ctx.String(http.StatusAccepted, tokenString)
 }
