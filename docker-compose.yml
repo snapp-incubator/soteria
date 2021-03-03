@@ -22,3 +22,9 @@ services:
     container_name: soteria-redis
     ports:
       - 6379:6379
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 16686:16686
+      - "6831:6831/udp"
+      - 14250:14250
