@@ -162,4 +162,8 @@ func serveRun(cmd *cobra.Command, args []string) {
 	}
 
 	grpcServer.Stop()
+
+	if err := app.GetInstance().TracerCloser.Close(); err != nil {
+		zap.L().Error("error happened while closing tracer", zap.Error(err))
+	}
 }
