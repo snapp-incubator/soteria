@@ -91,7 +91,7 @@ func Token(ctx *gin.Context) {
 	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Success, request.ClientID)
 	app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
 
-	tokenIssueSpan.SetTag("success", true).Finish()
+	tokenIssueSpan.SetTag("success", true)
 
 	ctx.String(http.StatusAccepted, tokenString)
 }
