@@ -3,12 +3,13 @@ package configs
 import (
 	"crypto/rsa"
 	"fmt"
+	"io/ioutil"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kelseyhightower/envconfig"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"io/ioutil"
-	"time"
 )
 
 // AppConfig is the main container of Soteria's config
@@ -25,6 +26,7 @@ type AppConfig struct {
 	Mode                string `default:"debug"`
 	HttpPort            int    `default:"9999" split_words:"true"`
 	GrpcPort            int    `default:"50051" split_words:"true"`
+	Tracer              *TracerConfig
 }
 
 // RedisConfig is all configs needed to connect to a Redis server
@@ -80,12 +82,14 @@ func InitConfig() AppConfig {
 	appConfig.Cache = &CacheConfig{}
 	appConfig.Jwt = &JwtConfig{}
 	appConfig.Logger = &LoggerConfig{}
+	appConfig.Tracer = &TracerConfig{}
 
 	envconfig.MustProcess("soteria", appConfig)
 	envconfig.MustProcess("soteria_redis", appConfig.Redis)
 	envconfig.MustProcess("soteria_cache", appConfig.Cache)
 	envconfig.MustProcess("soteria_jwt", appConfig.Jwt)
 	envconfig.MustProcess("soteria_logger", appConfig.Logger)
+	envconfig.MustProcess("soteria_tracer", appConfig.Tracer)
 	return *appConfig
 }
 
