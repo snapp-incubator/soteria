@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/opentracing/opentracing-go"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
@@ -21,6 +22,9 @@ type TokenRequest struct {
 
 // Token is the handler responsible for Token requests
 func Token(ctx *gin.Context) {
+	tokenSpan := app.GetInstance().Tracer.StartSpan("api.rest.token")
+	defer tokenSpan.Finish()
+
 	s := time.Now()
 	request := &TokenRequest{}
 	err := ctx.Bind(request)
@@ -35,9 +39,11 @@ func Token(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, "bad request")
 		return
 	}
+
+	tokenIssueSpan := app.GetInstance().Tracer.StartSpan("issue token", opentracing.ChildOf(tokenSpan.Context()))
+
 	tokenString, err := app.GetInstance().Authenticator.Token(ctx, request.GrantType, request.ClientID, request.ClientSecret)
 	if err != nil {
-
 		zap.L().
 			Error("token request is not authorized",
 				zap.Error(err),
@@ -46,12 +52,17 @@ func Token(ctx *gin.Context) {
 				zap.String("client_secret", request.ClientSecret),
 			)
 
+		tokenIssueSpan.SetTag("success", false)
+
 		if errors.Is(err, db.ErrDb) {
 			app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Token, http.StatusInternalServerError)
 			app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Failure, "database error happened")
 			app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Failure, request.ClientID)
 			app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
 			ctx.String(http.StatusInternalServerError, "internal server error")
+
+			tokenIssueSpan.SetTag("error", db.ErrDb.Error()).Finish()
+
 			return
 		}
 
@@ -60,6 +71,9 @@ func Token(ctx *gin.Context) {
 		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Failure, request.ClientID)
 		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Token, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusUnauthorized, "request is not authorized")
+
+		tokenIssueSpan.SetTag("error", "request is not authorized").Finish()
+
 		return
 	}
 
@@ -69,6 +83,8 @@ func Token(ctx *gin.Context) {
 			zap.String("client_id", request.ClientID),
 			zap.String("client_secret", request.ClientSecret),
 		)
+
+	tokenIssueSpan.SetTag("success", true).Finish()
 
 	app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Token, http.StatusAccepted)
 	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Token, internal.Success, "token request accepted")
