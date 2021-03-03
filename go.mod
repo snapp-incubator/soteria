@@ -12,11 +12,15 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.2
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/opentracing/opentracing-go v1.2.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.7.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
+	github.com/uber/jaeger-client-go v2.25.0+incompatible
+	github.com/uber/jaeger-lib v2.4.0+incompatible // indirect
 	gitlab.snapp.ir/dispatching/snappids/v2 v2.0.2
+	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
