@@ -67,7 +67,7 @@ type LoggerConfig struct {
 
 // TracerConfig contains all configs needed to create a tracer
 type TracerConfig struct {
-	Enabled      bool    `split_words:"true" default:"true"`
+	Enabled      bool    `split_words:"false" default:"true"`
 	ServiceName  string  `default:"soteria" split_words:"true"`
 	SamplerType  string  `default:"const" split_words:"true"`
 	SamplerParam float64 `default:"1" split_words:"true"`
