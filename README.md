@@ -5,35 +5,28 @@
 Soteria is responsible for Authentication and Authorization of every request sent to EMQ and Herald.
 
 # How to compile?
--  [Install Golang](https://golang.org/doc/install)
+
+- [Install Golang](https://golang.org/doc/install)
 
 - Set `snapp goproxy`
 
-``
-go env -w GOPROXY="https://repo.snapp.tech/repository/goproxy/"
-``
+`go env -w GOPROXY="https://repo.snapp.tech/repository/goproxy/"`
 
 - Run the following command to compile the application
 
-``
-make compile
-``
+`make compile`
 
 # How to run it locally?
 
 By executing the following command Herald will be up with EMQX and RabbitMQ brokers.
 
-``
-make up
-``
+`make up`
 
 # How to test?
 
 ## Unit testing
 
-``
-make test
-``
+`make test`
 
 # Deployment
 
@@ -49,27 +42,25 @@ helm install soteria --generate-name
 
 ## Production
 
-We deploy `soteria` on two different infrastructures. 
+We deploy `soteria` on two different infrastructures.
 
 - VM
 - Cloud (okd)
 
 ### VM
 
-For VM deployments following 2 steps are required. 
+For VM deployments following 2 steps are required.
 
-- Preparing VMs which is done by `ansible playbooks`. You can find `herald`'s 
-`ansible playbooks` in the following link
- [bravo/new-ansible-playbook](https://gitlab.snapp.ir/bravo/new-ansible-playbook)
+- Preparing VMs which is done by `ansible playbooks`. You can find `herald`'s
+  `ansible playbooks` in the following link
+  [bravo/new-ansible-playbook](https://gitlab.snapp.ir/bravo/new-ansible-playbook)
 
 - Deploying `soteria` with CI/CD pipelines.
 
-
 ### Cloud (okd)
 
-[dispatching/ignite](https://gitlab.snapp.ir/dispatching/ignite) is responsible 
+[dispatching/ignite](https://gitlab.snapp.ir/dispatching/ignite) is responsible
 for production deployments on Cloud (okd).
-
 
 # Folder Structure
 
@@ -79,9 +70,6 @@ for production deployments on Cloud (okd).
 - `configs`: Config files
 - `deployments`: Helm Charts
 - `internal`: Main application directory for codes
-- `pkg`: Go packages that their logic is independent of this project and can become handy in other
-projects as well.
+- `pkg`: Go packages that their logic is independent of this project and can become handy in other projects as well.
 - `web`: web interface of application including rest and grpc
 - `test`: test data like jwt keys
-
-
