@@ -1,4 +1,5 @@
 syntax = "proto3";
+go_package contracts;
 package contracts;
 
 message AuthContract {
