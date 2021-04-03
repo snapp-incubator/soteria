@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "soteria.fullname" . }}
+  labels:
+    {{- include "soteria.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    {{ range .Values.service.ports }}
+    - name: {{ .name }}-{{ .port }}
+      protocol: {{ .protocol | upper }}
+      port: {{ .port }}
+      targetPort: {{ .port }}
+    {{ end }}
+  selector:
+    {{- include "soteria.selectorLabels" . | nindent 4 }}
