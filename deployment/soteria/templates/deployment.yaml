@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "soteria.fullname" . }}
+  labels: {{- include "soteria.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "soteria.selectorLabels" . | nindent 6 }}
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ .Values.rollingParams.maxSurge }}
+      maxUnavailable: {{ .Values.rollingParams.maxUnavailable }}
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        {{ range .Values.service.ports }}
+        {{ if eq .name "http"}}
+        prometheus.io/port: {{ .port | quote }}
+        {{ end }}
+        {{ end }}
+      labels: 
+      {{- include "soteria.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: app
+          image:
+            "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            {{ range .Values.service.ports }}
+            - containerPort: {{ .port }}
+              protocol: {{ .protocol | upper }}
+            {{ end }}
+          resources:
+            limits:
+              memory: {{ .Values.resources.limits.memory }}
+              cpu: {{ .Values.resources.limits.cpu }}
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+          livenessProbe:
+            tcpSocket:
+              {{ range .Values.service.ports }}
+              {{ if eq .name "http" }}
+              port: {{ .port }}
+              {{ end }}
+              {{ end }}
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 29
+            successThreshold: 1
+            timeoutSeconds: 2
+          readinessProbe:
+            tcpSocket:
+              {{ range .Values.service.ports }}
+              {{ if eq .name "http" }}
+              port: {{ .port }}
+              {{ end }}
+              {{ end }}
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 23
+            successThreshold: 1
+            timeoutSeconds: 2
+          envFrom:
+            - configMapRef:
+                name: {{ include "soteria.fullname" . }}
+            - secretRef:
+                name: {{ include "soteria.fullname" . }}-auth-envs
+          volumeMounts:
+            {{- $root := . -}}
+            {{- range $key, $value := .Values.jwtKeys }}
+            - name: {{ include "soteria.fullname" $ }}-jwt-keys
+              mountPath: "{{ $root.Values.authEnvs.jwt_keys_path }}{{ $key }}"
+              subPath: {{ $key }}
+              readOnly: true
+            {{ end }}
+      volumes:
+        - name: {{ include "soteria.fullname" . }}-jwt-keys
+          secret:
+            secretName: {{ include "soteria.fullname" . }}-jwt-keys
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

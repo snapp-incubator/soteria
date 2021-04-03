@@ -43,6 +43,26 @@ func TestTopic_GetType(t1 *testing.T) {
 			arg:  "snapp/driver/+/location",
 			want: DriverLocation,
 		},
+		{
+			name: "#8 testing daghigh sys",
+			arg:  "$SYS/brokers/+/clients/+/disconnected",
+			want: DaghighSys,
+		},
+		{
+			name: "#9 testing daghigh sys",
+			arg:  "$SYS/brokers/+/clients/+/connected",
+			want: DaghighSys,
+		},
+		{
+			name: "#10 testing daghigh sys",
+			arg:  "$share/hello/$SYS/brokers/+/clients/+/connected",
+			want: DaghighSys,
+		},
+		{
+			name: "#11 testing gossiper location",
+			arg:  "snapp/passenger/py9kdjLYB35RP4q/driver-location",
+			want: GossiperLocation,
+		},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
