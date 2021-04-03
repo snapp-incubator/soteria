@@ -322,10 +322,12 @@ deploy:production:vm:
     - echo  "Deploy Soteria-0${CI_NODE_INDEX}"
     - ./.gitlab/ci/scripts/deploy.sh
   needs: ["compile"]
-  rules:
-    - if: "$UPDATE_ENVIRONMENT_VARIABLE == null "
-    - if: '$CI_COMMIT_TAG'
-      when: manual
+  only:
+    - tag
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
+  when: manual
 
 deploy:env:
   image: registry.snapp.tech/docker/deployer:alpine3.11
