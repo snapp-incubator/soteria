@@ -7,27 +7,39 @@ type Topic string
 type Type string
 
 const (
-	CabEvent       Type = "cab_event"
-	DriverLocation Type = "driver_location"
-	SuperappEvent  Type = "superapp_event"
-	BoxEvent       Type = "box_event"
+	CabEvent         Type = "cab_event"
+	DriverLocation   Type = "driver_location"
+	SuperappEvent    Type = "superapp_event"
+	BoxEvent         Type = "box_event"
+	DaghighSys       Type = "daghigh_sys"
+	GossiperLocation Type = "gossiper_location"
+)
+
+var (
+	CabEventRegexp         = regexp.MustCompile(`(\w+)-event-[a-zA-Z0-9]+`)
+	DriverLocationRegexp   = regexp.MustCompile(`snapp/driver/[a-zA-Z0-9+]+/location`)
+	SuperappEventRegexp    = regexp.MustCompile(`snapp/(\w+)/[a-zA-Z0-9]+/superapp`)
+	GossiperLocationRegexp = regexp.MustCompile(`snapp/passenger/[a-zA-Z0-9]+/driver-location`)
+	DaghighSysRegexp       = regexp.MustCompile(`\$SYS/brokers/\+/clients/\+/(connected|disconnected)`)
 )
 
 func (t Topic) GetType() Type {
-	matched, _ := regexp.Match(`(\w+)-event-[a-zA-Z0-9]+`, []byte(t))
-	if matched {
+	topic := string(t)
+
+	switch {
+	case CabEventRegexp.MatchString(topic):
 		return CabEvent
-	}
-	matched, _ = regexp.Match(`snapp/driver/[a-zA-Z0-9+]+/location`, []byte(t))
-	if matched {
+	case DriverLocationRegexp.MatchString(topic):
 		return DriverLocation
-	}
-	matched, _ = regexp.Match(`snapp/(\w+)/[a-zA-Z0-9]+/superapp`, []byte(t))
-	if matched {
+	case SuperappEventRegexp.MatchString(topic):
 		return SuperappEvent
-	}
-	if t == "bucks" {
+	case topic == "bucks":
 		return BoxEvent
+	case GossiperLocationRegexp.MatchString(topic):
+		return GossiperLocation
+	case DaghighSysRegexp.MatchString(topic):
+		return DaghighSys
 	}
+
 	return ""
 }
