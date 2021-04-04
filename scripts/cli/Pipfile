@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 requests = "*"
+click = "*"
+requests-toolbelt = "*"
+dacite = "*"
 
 [dev-packages]
 
