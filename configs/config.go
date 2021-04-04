@@ -3,12 +3,13 @@ package configs
 import (
 	"crypto/rsa"
 	"fmt"
+	"io/ioutil"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kelseyhightower/envconfig"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"io/ioutil"
-	"time"
 )
 
 // AppConfig is the main container of Soteria's config
@@ -25,6 +26,7 @@ type AppConfig struct {
 	Mode                string `default:"debug"`
 	HttpPort            int    `default:"9999" split_words:"true"`
 	GrpcPort            int    `default:"50051" split_words:"true"`
+	Tracer              *TracerConfig
 }
 
 // RedisConfig is all configs needed to connect to a Redis server
@@ -63,6 +65,16 @@ type LoggerConfig struct {
 	SentryTimeout time.Duration `split_words:"true" default:"100ms"`
 }
 
+// TracerConfig contains all configs needed to create a tracer
+type TracerConfig struct {
+	Enabled      bool    `split_words:"false" default:"true"`
+	ServiceName  string  `default:"soteria" split_words:"true"`
+	SamplerType  string  `default:"const" split_words:"true"`
+	SamplerParam float64 `default:"1" split_words:"true"`
+	Host         string  `default:"localhost" split_words:"true"`
+	Port         int     `default:"6831" split_words:"true"`
+}
+
 // InitConfig tries to initialize app config from env variables.
 func InitConfig() AppConfig {
 	appConfig := &AppConfig{}
@@ -70,12 +82,14 @@ func InitConfig() AppConfig {
 	appConfig.Cache = &CacheConfig{}
 	appConfig.Jwt = &JwtConfig{}
 	appConfig.Logger = &LoggerConfig{}
+	appConfig.Tracer = &TracerConfig{}
 
 	envconfig.MustProcess("soteria", appConfig)
 	envconfig.MustProcess("soteria_redis", appConfig.Redis)
 	envconfig.MustProcess("soteria_cache", appConfig.Cache)
 	envconfig.MustProcess("soteria_jwt", appConfig.Jwt)
 	envconfig.MustProcess("soteria_logger", appConfig.Logger)
+	envconfig.MustProcess("soteria_tracer", appConfig.Tracer)
 	return *appConfig
 }
 

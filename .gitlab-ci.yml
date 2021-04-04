@@ -202,6 +202,8 @@ release:production:teh-2:
         --param APP_VERSION="${PROJECT_VERSION}" \
         --param REDIS_ADDR="${DEPLOY_REDIS_ADDR}" \
         --param REDIS_PASS="${DEPLOY_REDIS_PASS}" \
+        --param TRACER_ENABLED=${DEPLOY_TRACER_ENABLED} \
+        --param TRACER_HOST=${DEPLOY_TRACER_HOST} \
         --param CI_COMMIT_REF_SLUG="${CI_COMMIT_REF_SLUG}" | oc apply -f -
     - |
       oc process -f .okd/Secret.yaml \
@@ -250,6 +252,9 @@ deploy:staging:teh_1:
     DEPLOY_THIRD_PARTY_JWT_PUBLIC_KEY: "${THIRD_PARTY_JWT_PUBLIC_KEY_MOZART}"
     DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_MOZART}"
     DEPLOY_REDIS_ADDR: "soteria-redis-haproxy:6379"
+    DEPLOY_TRACER_ENABLED: "false"
+    DEPLOY_TRACER_HOST: "localhost"
+
   only:
     - master
     - branches
@@ -279,6 +284,8 @@ deploy:production:teh_1:
     DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
     DEPLOY_REDIS_ADDR: "soteria-redis-haproxy.realtime-production.svc:6379"
     CI_DEPLOYMENT_INFRA: "teh-1"
+    DEPLOY_TRACER_ENABLED: "false"
+    DEPLOY_TRACER_HOST: "localhost"
   needs: ["release:production:teh-1"]
 
 deploy:production:teh_2:
@@ -302,6 +309,8 @@ deploy:production:teh_2:
     DEPLOY_THIRD_PARTY_JWT_PRIVATE_KEY: "${THIRD_PARTY_JWT_PRIVATE_KEY_PRODUCTION}"
     DEPLOY_REDIS_ADDR: "soteria-redis-haproxy.realtime-production.svc:6379"
     CI_DEPLOYMENT_INFRA: "teh-2"
+    DEPLOY_TRACER_ENABLED: "false"
+    DEPLOY_TRACER_HOST: "localhost"
   needs: ["release:production:teh-2"]
 
 deploy:production:vm:
