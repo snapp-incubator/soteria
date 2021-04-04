@@ -18,6 +18,7 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/log"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/memoize"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/tracer"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	"gitlab.snapp.ir/dispatching/soteria/v3/web/grpc"
 	"gitlab.snapp.ir/dispatching/soteria/v3/web/rest/api"
@@ -79,6 +80,13 @@ func servePreRun(cmd *cobra.Command, args []string) {
 			snappids.PassengerAudience: cfg.PassengerHashLength,
 		},
 	}
+
+	trc, cl, err := tracer.New(cfg.Tracer)
+	if err != nil {
+		zap.L().Fatal("could not create tracer", zap.Error(err))
+	}
+
+	app.GetInstance().SetTracer(trc, cl)
 
 	rClient, err := redis.NewRedisClient(cfg.Redis)
 	if err != nil {
@@ -154,4 +162,8 @@ func serveRun(cmd *cobra.Command, args []string) {
 	}
 
 	grpcServer.Stop()
+
+	if err := app.GetInstance().TracerCloser.Close(); err != nil {
+		zap.L().Error("error happened while closing tracer", zap.Error(err))
+	}
 }
