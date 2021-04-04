@@ -73,3 +73,37 @@ for production deployments on Cloud (okd).
 - `pkg`: Go packages that their logic is independent of this project and can become handy in other projects as well.
 - `web`: web interface of application including rest and grpc
 - `test`: test data like jwt keys
+
+# Accounting
+
+## EMQ
+
+1. First create an emq account
+
+```sh
+python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" new -u gossiper -p password -t emq
+```
+
+2. Add rule for accessing the requested topic
+
+```sh
+python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" rules-add --username gossiper --password password --topic gossiper_location --access-type sub
+```
+
+3. Set account secret
+
+```sh
+python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" set-secret --username gossiper --password password --secret secret
+```
+
+4. Checkout the created user
+
+```sh
+python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" show --username gossiper --password password
+```
+
+5. Generate token and have fun with mqtt
+
+```sh
+python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" token --username gossiper --secret secret --grant-type sub
+```
