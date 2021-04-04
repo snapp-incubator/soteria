@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/opentracing/opentracing-go"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
@@ -25,6 +26,9 @@ type aclRequest struct {
 
 // ACL is the handler responsible for ACL requests
 func ACL(ctx *gin.Context) {
+	aclSpan := app.GetInstance().Tracer.StartSpan("api.rest.acl")
+	defer aclSpan.Finish()
+
 	s := time.Now()
 	request := &aclRequest{}
 	err := ctx.ShouldBind(request)
@@ -64,8 +68,14 @@ func ACL(ctx *gin.Context) {
 		return
 	}
 
+	aclCheckSpan := app.GetInstance().Tracer.StartSpan("acl check", opentracing.ChildOf(aclSpan.Context()))
+
 	ok, err := app.GetInstance().Authenticator.Acl(ctx, request.Access, tokenString, topic)
 	if err != nil || !ok {
+		aclCheckSpan.SetTag("success", false)
+		if err != nil {
+			aclCheckSpan.SetTag("error", err.Error())
+		}
 
 		if errors.Is(err, authenticator.TopicNotAllowed) {
 			zap.L().
@@ -83,6 +93,9 @@ func ACL(ctx *gin.Context) {
 			app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Failure, "database error happened")
 			app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 			ctx.String(http.StatusInternalServerError, "internal server error")
+
+			aclCheckSpan.Finish()
+
 			return
 		}
 
@@ -91,6 +104,9 @@ func ACL(ctx *gin.Context) {
 		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Failure, "request is not authorized")
 		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusUnauthorized, "request is not authorized")
+
+		aclCheckSpan.Finish()
+
 		return
 	}
 
@@ -107,5 +123,8 @@ func ACL(ctx *gin.Context) {
 	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Success, "ok")
 	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, request.Access.String(), internal.Success, string(topicType))
 	app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
+
+	aclCheckSpan.SetTag("success", true)
+
 	ctx.String(http.StatusOK, "ok")
 }
