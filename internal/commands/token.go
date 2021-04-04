@@ -4,15 +4,16 @@ import (
 	"bufio"
 	"crypto/rsa"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/spf13/cobra"
-	"gitlab.snapp.ir/dispatching/soteria/v3/configs"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"os"
-	"time"
 )
 
 var Token = &cobra.Command{
@@ -23,7 +24,7 @@ var Token = &cobra.Command{
 }
 
 func tokenPreRun(cmd *cobra.Command, args []string) error {
-	config := configs.InitConfig()
+	config := config.InitConfig()
 
 	pk100, err := config.ReadPrivateKey(user.ThirdParty)
 	if err != nil {
@@ -107,7 +108,7 @@ func tokenRun(cmd *cobra.Command, args []string) error {
 					"\t3. Publish-Subscribe")
 				fmt.Print(">>> ")
 				r.Scan()
-				at, ok  := accessTypes[r.Text()]
+				at, ok := accessTypes[r.Text()]
 				if !ok {
 					return fmt.Errorf("invalid input. selected access type does not exist")
 				}
@@ -127,7 +128,7 @@ func tokenRun(cmd *cobra.Command, args []string) error {
 				if !ok {
 					return fmt.Errorf("invalid input. selected endpoint does not exist")
 				}
-				e := acl.Endpoint{Name:endpoint}
+				e := acl.Endpoint{Name: endpoint}
 				allowedEndpoints = append(allowedEndpoints, e)
 			default:
 				return fmt.Errorf("invalid input")
