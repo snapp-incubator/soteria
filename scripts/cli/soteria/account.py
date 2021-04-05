@@ -10,3 +10,4 @@ class Account:
     secret: str
     type: str
     username: str
+    token_expiration_duration: int

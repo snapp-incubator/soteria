@@ -67,11 +67,11 @@ class AccountManager:
         )
         return res.json()
 
-    def set_expiration(self, username: str, password: str, expiration: str):
+    def set_expiration(self, username: str, password: str, expiration: int):
         res = self.session.put(
             f"accounts/{username}",
             json={
-                "token_expiration_duration": expiration,
+                "token_expiration": expiration,
             },
             auth=(username, password),
         )

@@ -129,15 +129,15 @@ def rules_add(ctx, username: str, password: str, access_type: str, topic: str):
     "--expire",
     "-e",
     required=True,
-    type=str,
-    help="token expiration time, e.g. 1h",
+    type=int,
+    help="token expiration time in nanoseconds",
 )
 @click.pass_context
 def set_expire(
     ctx,
     username: str,
     password: str,
-    expire: str,
+    expire: int,
 ):
     account_manager = soteria.AccountManager(ctx.obj["BASE"])
     try:
