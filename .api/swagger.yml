@@ -314,7 +314,7 @@ definitions:
         type: array
         items:
           type: string
-      token_expiration_duration:
+      token_expiration:
         type: string
       secret:
         type: string
