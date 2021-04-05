@@ -78,6 +78,13 @@ for production deployments on Cloud (okd).
 
 ## EMQ
 
+0. Install [pipenv](https://pipenv.pypa.io/en/latest/).
+
+```sh
+pipenv install
+pipenv shell
+```
+
 1. First create an emq account
 
 ```sh
