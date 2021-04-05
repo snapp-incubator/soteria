@@ -48,7 +48,7 @@ class AccountManager:
             f"accounts/{username}/rules",
             json={
                 "topic": topic,
-                "access_type": access_type,
+                "access_type": self.grant_types[access_type],
             },
             auth=(username, password),
         ).json()
