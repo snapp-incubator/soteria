@@ -67,6 +67,16 @@ class AccountManager:
         )
         return res.json()
 
+    def set_expiration(self, username: str, password: str, expiration: str):
+        res = self.session.put(
+            f"accounts/{username}",
+            json={
+                "token_expiration_duration": expiration,
+            },
+            auth=(username, password),
+        )
+        return res.json()
+
     def token(self, username: str, secret: str, grant_type: str) -> bytes:
         """
         Generates a token from soteria.

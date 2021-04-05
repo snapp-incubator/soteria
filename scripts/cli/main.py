@@ -126,6 +126,43 @@ def rules_add(ctx, username: str, password: str, access_type: str, topic: str):
     help="account password e.g. password",
 )
 @click.option(
+    "--expire",
+    "-e",
+    required=True,
+    type=str,
+    help="token expiration time, e.g. 1h",
+)
+@click.pass_context
+def set_expire(
+    ctx,
+    username: str,
+    password: str,
+    expire: str,
+):
+    account_manager = soteria.AccountManager(ctx.obj["BASE"])
+    try:
+        resp = account_manager.set_expiration(username, password, expire)
+        click.echo(pp.pformat(resp))
+    except Exception as exep:
+        raise click.ClickException(str(exep))
+
+
+@cli.command()
+@click.option(
+    "--username",
+    "-u",
+    required=True,
+    type=str,
+    help="account username e.g. driver",
+)
+@click.option(
+    "--password",
+    "-p",
+    required=True,
+    type=str,
+    help="account password e.g. password",
+)
+@click.option(
     "--secret",
     "-s",
     required=True,
