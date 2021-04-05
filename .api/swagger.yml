@@ -343,7 +343,7 @@ definitions:
           example:
             uuid: "1"
             endpoint: "/event"
-            access_type: "pub"
+            access_type: "2"
 
   response:
     type: object
@@ -364,4 +364,4 @@ definitions:
         type: string
       access_type:
         type: string
-        enum: ["pub", "sub", "pubsub"]
+        enum: ["2", "1", "3"]
