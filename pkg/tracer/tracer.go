@@ -2,14 +2,15 @@ package tracer
 
 import (
 	"fmt"
+	"io"
+
 	"github.com/opentracing/opentracing-go"
 	jaegerConf "github.com/uber/jaeger-client-go/config"
-	"gitlab.snapp.ir/dispatching/soteria/v3/configs"
-	"io"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 )
 
 // New receives a `configs.TracerConfig` and returns a `opentracing.Tracer` and a `io.Closer` and a `error` if there was one
-func New(cfg *configs.TracerConfig) (opentracing.Tracer, io.Closer, error) {
+func New(cfg *config.TracerConfig) (opentracing.Tracer, io.Closer, error) {
 	trc, cl, err := jaegerConf.Configuration{
 		ServiceName: cfg.ServiceName,
 		Disabled:    !cfg.Enabled,

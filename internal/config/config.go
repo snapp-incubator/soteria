@@ -1,4 +1,4 @@
-package configs
+package config
 
 import (
 	"crypto/rsa"
@@ -12,7 +12,7 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
 
-// AppConfig is the main container of Soteria's config
+// AppConfig is the main container of Soteria's config.
 type AppConfig struct {
 	AllowedAccessTypes  []string `default:"sub,pub" split_words:"true"`
 	PassengerHashLength int      `split_words:"true"`
@@ -29,7 +29,7 @@ type AppConfig struct {
 	Tracer              *TracerConfig
 }
 
-// RedisConfig is all configs needed to connect to a Redis server
+// RedisConfig is all configs needed to connect to a Redis server.
 type RedisConfig struct {
 	Address            string        `split_words:"true"`
 	Password           string        `default:"" split_words:"true"`
@@ -45,18 +45,18 @@ type RedisConfig struct {
 	IdleCheckFrequency time.Duration `split_words:"true" default:"60s"`
 }
 
-// CacheConfig contains configs of in memory cache
+// CacheConfig contains configs of in memory cache.
 type CacheConfig struct {
 	Enabled    bool          `split_words:"true" default:"true"`
 	Expiration time.Duration `split_words:"true" default:"600s"`
 }
 
-// JwtConfig contains path of the keys for JWT encryption
+// JwtConfig contains path of the keys for JWT encryption.
 type JwtConfig struct {
 	KeysPath string `split_words:"true" default:"test/"`
 }
 
-// LoggerConfig is the config for logging and this kind of stuff
+// LoggerConfig is the config for logging and this kind of stuff.
 type LoggerConfig struct {
 	Level string `default:"warn" split_words:"true"`
 
