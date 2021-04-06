@@ -4,31 +4,32 @@ import (
 	"context"
 	"crypto/rsa"
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+
 	"github.com/patrickmn/go-cache"
 	"github.com/spf13/cobra"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
-	"gitlab.snapp.ir/dispatching/soteria/v3/configs"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/accounts"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db/cachedredis"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db/redis"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/metrics"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/web/grpc"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/web/rest/api"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/log"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/memoize"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/tracer"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"gitlab.snapp.ir/dispatching/soteria/v3/web/grpc"
-	"gitlab.snapp.ir/dispatching/soteria/v3/web/rest/api"
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 	grpcLib "google.golang.org/grpc"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
 )
 
 var Serve = &cobra.Command{
@@ -39,10 +40,10 @@ var Serve = &cobra.Command{
 	Run:    serveRun,
 }
 
-var cfg configs.AppConfig
+var cfg config.AppConfig
 
 func servePreRun(cmd *cobra.Command, args []string) {
-	cfg = configs.InitConfig()
+	cfg = config.InitConfig()
 	log.InitLogger()
 	log.SetLevel(cfg.Logger.Level)
 

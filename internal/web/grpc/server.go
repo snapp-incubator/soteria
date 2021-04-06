@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/web/grpc/contracts"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
-	"gitlab.snapp.ir/dispatching/soteria/v3/web/grpc/contracts"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"net/http"
-	"time"
 )
 
 type Server struct {
