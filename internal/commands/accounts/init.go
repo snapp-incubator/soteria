@@ -3,14 +3,15 @@ package accounts
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+
 	"github.com/spf13/cobra"
-	"gitlab.snapp.ir/dispatching/soteria/v3/configs"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/accounts"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db/redis"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	"golang.org/x/crypto/bcrypt"
-	"io/ioutil"
 )
 
 var Init = &cobra.Command{
@@ -23,7 +24,7 @@ var Init = &cobra.Command{
 }
 
 func initPreRun(cmd *cobra.Command, args []string) error {
-	cfg := configs.InitConfig()
+	cfg := config.InitConfig()
 
 	rClient, err := redis.NewRedisClient(cfg.Redis)
 	if err != nil {

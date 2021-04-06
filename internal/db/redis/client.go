@@ -3,11 +3,12 @@ package redis
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-redis/redis/v8"
-	"gitlab.snapp.ir/dispatching/soteria/v3/configs"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 )
 
-func NewRedisClient(cfg *configs.RedisConfig) (*redis.Client, error) {
+func NewRedisClient(cfg *config.RedisConfig) (*redis.Client, error) {
 	opts := &redis.Options{
 		Addr:               cfg.Address,
 		Password:           cfg.Password,

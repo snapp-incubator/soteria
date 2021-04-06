@@ -33,7 +33,7 @@ code-generator:
     name: namely/protoc-all
     entrypoint: [""]
   script:
-    - entrypoint.sh -d ./web/grpc/contracts -l go -o ./web/grpc/contracts --with-gateway
+    - entrypoint.sh -d ./internal/web/grpc/contracts -l go -o ./internal/web/grpc/contracts --with-gateway
   artifacts:
     paths:
       - ./web/grpc/contracts
@@ -72,7 +72,7 @@ compile:
   except:
     variables:
       - $UPDATE_ENVIRONMENT_VARIABLE
-      
+
 unit_tests:
   <<: *go_mod
   stage: test
@@ -347,10 +347,10 @@ deploy:env:
   script:
     - chmod +x .gitlab/ci/scripts/update-environments.sh
     - echo  "Update ENV Soteria-0${CI_NODE_INDEX}"
-    - .gitlab/ci/scripts/update-environments.sh 
+    - .gitlab/ci/scripts/update-environments.sh
     - chmod +x .gitlab/ci/scripts/notify-eye.sh
     - echo  "Send notif to Dispatching-alert room ..."
-    - .gitlab/ci/scripts/notify-eye.sh   
+    - .gitlab/ci/scripts/notify-eye.sh
   needs: ['compile']
   only:
     - tag
@@ -368,11 +368,10 @@ update:env:
   script:
     - chmod +x .gitlab/ci/scripts/update-environments.sh
     - echo  "Update ENV Soteria-0${CI_NODE_INDEX}"
-    - .gitlab/ci/scripts/update-environments.sh 
+    - .gitlab/ci/scripts/update-environments.sh
     - chmod +x .gitlab/ci/scripts/notify-eye.sh
     - echo  "Send notif to Dispatching-alert room ..."
-    - .gitlab/ci/scripts/notify-eye.sh  
+    - .gitlab/ci/scripts/notify-eye.sh
   rules:
     - if: '$UPDATE_ENVIRONMENT_VARIABLE == "true"'
       when: manual
-
