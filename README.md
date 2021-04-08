@@ -85,7 +85,7 @@ pipenv install
 pipenv shell
 ```
 
-1. First create an emq account
+1. First create an `emq` account
 
 ```sh
 python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" new -u gossiper -p password -t emq
@@ -103,13 +103,19 @@ python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.
 python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" set-secret --username gossiper --password password --secret secret
 ```
 
-4. Checkout the created user
+4. Set token timeout in nanoseconds
+
+```sh
+python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" set-expire --username gossiper --password password -e $(( 356 * 24 * 60 * 60 * 1000 * 1000 * 1000))
+```
+
+5. Checkout the created user
 
 ```sh
 python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" show --username gossiper --password password
 ```
 
-5. Generate token and have fun with mqtt
+6. Generate token and have fun with `emq`
 
 ```sh
 python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" token --username gossiper --secret secret --grant-type sub
