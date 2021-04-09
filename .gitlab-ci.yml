@@ -36,7 +36,7 @@ code-generator:
     - entrypoint.sh -d ./internal/web/grpc/contracts -l go -o ./internal/web/grpc/contracts --with-gateway
   artifacts:
     paths:
-      - ./web/grpc/contracts
+      - ./internal/web/grpc/contracts
     expire_in: 1 week
 #  cache:
 #    paths:
