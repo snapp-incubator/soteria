@@ -33,7 +33,7 @@ code-generator:
     name: namely/protoc-all
     entrypoint: [""]
   script:
-    - entrypoint.sh -d ./internal/web/grpc/contracts -l go -o ./internal/web/grpc/contracts --with-gateway
+    - entrypoint.sh -d ./internal/web/grpc/contracts -l go -o ./internal/web/grpc/contracts --with-gateway --go-source-relative
   artifacts:
     paths:
       - ./internal/web/grpc/contracts
