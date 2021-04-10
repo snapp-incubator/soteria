@@ -94,7 +94,7 @@ python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.
 2. Add rule for accessing the requested topic
 
 ```sh
-python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" rules-add --username gossiper --password password --topic gossiper_location --access-type sub
+python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" rules-add --username gossiper --password password --topic gossiper_location --access-type pub
 ```
 
 3. Set account secret
@@ -118,5 +118,5 @@ python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.
 6. Generate token and have fun with `emq`
 
 ```sh
-python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" token --username gossiper --secret secret --grant-type sub
+python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" token --username gossiper --secret secret --grant-type pub
 ```
