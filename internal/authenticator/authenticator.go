@@ -5,13 +5,14 @@ import (
 	"crypto/rsa"
 	errs "errors"
 	"fmt"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"time"
 )
 
 var TopicNotAllowed = errs.New("topic is not allowed")
@@ -216,6 +217,8 @@ func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappi
 		ch, _ = a.EMQTopicManager.CreateLocationTopic(id, audience)
 	case topics.SuperappEvent:
 		ch, _ = a.EMQTopicManager.CreateSuperAppEventTopic(id, audience)
+	case topics.GossiperLocation:
+		ch, _ = a.EMQTopicManager.CreateGossiperTopic(id, audience)
 	case topics.BoxEvent:
 		return true
 	}
