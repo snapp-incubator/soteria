@@ -70,6 +70,7 @@ func Auth(ctx *gin.Context) {
 	}
 
 	if superuser == true {
+		authCheckSpan.SetTag("success", false)
 		authCheckSpan.SetTag("ignored", true)
 
 		zap.L().
