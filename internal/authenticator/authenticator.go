@@ -28,8 +28,9 @@ type Authenticator struct {
 }
 
 // Auth check user authentication by checking the user's token
-func (a Authenticator) Auth(ctx context.Context, tokenString string) (bool, error) {
-	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, err error) {
+// isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
+func (a Authenticator) Auth(ctx context.Context, tokenString string) (isSuperuser bool, err error) {
+	_, err = jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("token is not valid, signing method is not RSA")
 		}
@@ -37,6 +38,7 @@ func (a Authenticator) Auth(ctx context.Context, tokenString string) (bool, erro
 		if claims["iss"] == nil {
 			return nil, fmt.Errorf("could not found iss in token claims")
 		}
+		_, isSuperuser = claims["is_superuser"]
 		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
 		key := a.PublicKeys[issuer]
 		if key == nil {
@@ -47,7 +49,7 @@ func (a Authenticator) Auth(ctx context.Context, tokenString string) (bool, erro
 	if err != nil {
 		return false, fmt.Errorf("token is invalid err: %w", err)
 	}
-	return true, nil
+	return isSuperuser, nil
 }
 
 // ACL check a user access to a topic
