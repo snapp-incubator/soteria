@@ -212,7 +212,43 @@ func TestAuthenticator_HeraldToken(t *testing.T) {
 		assert.EqualValues(t, expected.Endpoints, actual.Endpoints)
 		assert.EqualValues(t, expected.Topics, actual.Topics)
 	})
+}
 
+func TestAuthenticator_SuperuserToken(t *testing.T) {
+	key, err := getPrivateKey(user.ThirdParty)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pk, err := getPublicKey(user.ThirdParty)
+	if err != nil {
+		t.Fatal(err)
+	}
+	authenticator := Authenticator{
+		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
+			user.ThirdParty: key,
+		},
+	}
+
+	tokenString, err := authenticator.SuperuserToken("herald", time.Hour*24)
+	assert.NoError(t, err)
+
+	token, err := jwt.ParseWithClaims(tokenString, &acl.SuperuserClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return pk, nil
+	})
+	assert.NoError(t, err)
+
+	actual := token.Claims.(*acl.SuperuserClaims)
+	expected := acl.SuperuserClaims{
+		StandardClaims: jwt.StandardClaims{
+			Issuer:  "100",
+			Subject: "herald",
+		},
+		IsSuperuser: true,
+	}
+
+	assert.Equal(t, expected.StandardClaims.Issuer, actual.StandardClaims.Issuer)
+	assert.Equal(t, expected.StandardClaims.Subject, actual.StandardClaims.Subject)
+	assert.Equal(t, expected.IsSuperuser, actual.IsSuperuser)
 }
 
 func TestAuthenticator_Acl(t *testing.T) {

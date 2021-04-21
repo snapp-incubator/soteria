@@ -19,3 +19,8 @@ type Topic struct {
 type Endpoint struct {
 	Name string `json:"name"`
 }
+
+type SuperuserClaims struct {
+	jwt.StandardClaims
+	IsSuperuser bool `json:"is_superuser"`
+}
