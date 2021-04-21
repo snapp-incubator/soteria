@@ -158,6 +158,24 @@ func (a Authenticator) HeraldToken(
 	return tokenString, nil
 }
 
+func (a Authenticator) SuperuserToken(username string, duration time.Duration) (tokenString string, err error) {
+	claims := acl.SuperuserClaims{
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(duration).Unix(),
+			Issuer:    string(user.ThirdParty),
+			Subject:   username,
+		},
+		IsSuperuser: true,
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	tokenString, err = token.SignedString(a.PrivateKeys[user.ThirdParty])
+	if err != nil {
+		return "", fmt.Errorf("could not sign the token. err; %v", err)
+	}
+	return tokenString, nil
+}
+
 func (a Authenticator) EndPointBasicAuth(ctx context.Context, username, password, endpoint string) (bool, error) {
 	var u user.User
 	if err := a.ModelHandler.Get(ctx, "user", username, &u); err != nil {
