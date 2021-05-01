@@ -38,15 +38,19 @@ const (
 )
 
 func TestAuthenticator_Auth(t *testing.T) {
-	driverToken, err := getSampleToken(user.Driver)
+	driverToken, err := getSampleToken(user.Driver, false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	passengerToken, err := getSampleToken(user.Passenger)
+	passengerToken, err := getSampleToken(user.Passenger, false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	thirdPartyToken, err := getSampleToken(user.ThirdParty)
+	thirdPartyToken, err := getSampleToken(user.ThirdParty, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	superuserToken, err := getSampleToken(user.ThirdParty, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,17 +86,23 @@ func TestAuthenticator_Auth(t *testing.T) {
 	t.Run("testing driver token auth", func(t *testing.T) {
 		ok, err := authenticator.Auth(context.Background(), driverToken)
 		assert.NoError(t, err)
-		assert.True(t, ok)
+		assert.False(t, ok)
 	})
 
 	t.Run("testing passenger token auth", func(t *testing.T) {
 		ok, err := authenticator.Auth(context.Background(), passengerToken)
 		assert.NoError(t, err)
-		assert.True(t, ok)
+		assert.False(t, ok)
 	})
 
 	t.Run("testing third party token auth", func(t *testing.T) {
 		ok, err := authenticator.Auth(context.Background(), thirdPartyToken)
+		assert.NoError(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing superuser token auth", func(t *testing.T) {
+		ok, err := authenticator.Auth(context.Background(), superuserToken)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
@@ -202,7 +212,43 @@ func TestAuthenticator_HeraldToken(t *testing.T) {
 		assert.EqualValues(t, expected.Endpoints, actual.Endpoints)
 		assert.EqualValues(t, expected.Topics, actual.Topics)
 	})
+}
 
+func TestAuthenticator_SuperuserToken(t *testing.T) {
+	key, err := getPrivateKey(user.ThirdParty)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pk, err := getPublicKey(user.ThirdParty)
+	if err != nil {
+		t.Fatal(err)
+	}
+	authenticator := Authenticator{
+		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
+			user.ThirdParty: key,
+		},
+	}
+
+	tokenString, err := authenticator.SuperuserToken("herald", time.Hour*24)
+	assert.NoError(t, err)
+
+	token, err := jwt.ParseWithClaims(tokenString, &acl.SuperuserClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return pk, nil
+	})
+	assert.NoError(t, err)
+
+	actual := token.Claims.(*acl.SuperuserClaims)
+	expected := acl.SuperuserClaims{
+		StandardClaims: jwt.StandardClaims{
+			Issuer:  "100",
+			Subject: "herald",
+		},
+		IsSuperuser: true,
+	}
+
+	assert.Equal(t, expected.StandardClaims.Issuer, actual.StandardClaims.Issuer)
+	assert.Equal(t, expected.StandardClaims.Subject, actual.StandardClaims.Subject)
+	assert.Equal(t, expected.IsSuperuser, actual.IsSuperuser)
 }
 
 func TestAuthenticator_Acl(t *testing.T) {
@@ -222,15 +268,15 @@ func TestAuthenticator_Acl(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	passengerToken, err := getSampleToken(user.Passenger)
+	passengerToken, err := getSampleToken(user.Passenger, false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	driverToken, err := getSampleToken(user.Driver)
+	driverToken, err := getSampleToken(user.Driver, false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	thirdPartyToken, err := getSampleToken(user.ThirdParty)
+	thirdPartyToken, err := getSampleToken(user.ThirdParty, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -591,7 +637,7 @@ func getPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func getSampleToken(issuer user.Issuer) (string, error) {
+func getSampleToken(issuer user.Issuer, isSuperuser bool) (string, error) {
 	key, err := getPrivateKey(issuer)
 	if err != nil {
 		panic(err)
@@ -602,10 +648,21 @@ func getSampleToken(issuer user.Issuer) (string, error) {
 	if issuer == user.ThirdParty {
 		sub = "colony-subscriber"
 	}
-	claims := jwt.StandardClaims{
-		ExpiresAt: exp,
-		Issuer:    string(issuer),
-		Subject:   sub,
+
+	var claims jwt.Claims
+	if isSuperuser {
+		claims = jwt.MapClaims{
+			"exp":          exp,
+			"iss":          string(issuer),
+			"sub":          sub,
+			"is_superuser": true,
+		}
+	} else {
+		claims = jwt.StandardClaims{
+			ExpiresAt: exp,
+			Issuer:    string(issuer),
+			Subject:   sub,
+		}
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	tokenString, err := token.SignedString(key)

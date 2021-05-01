@@ -1,17 +1,18 @@
-package configs
+package config
 
 import (
 	"crypto/rsa"
 	"fmt"
+	"io/ioutil"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kelseyhightower/envconfig"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"io/ioutil"
-	"time"
 )
 
-// AppConfig is the main container of Soteria's config
+// AppConfig is the main container of Soteria's config.
 type AppConfig struct {
 	AllowedAccessTypes  []string `default:"sub,pub" split_words:"true"`
 	PassengerHashLength int      `split_words:"true"`
@@ -25,9 +26,10 @@ type AppConfig struct {
 	Mode                string `default:"debug"`
 	HttpPort            int    `default:"9999" split_words:"true"`
 	GrpcPort            int    `default:"50051" split_words:"true"`
+	Tracer              *TracerConfig
 }
 
-// RedisConfig is all configs needed to connect to a Redis server
+// RedisConfig is all configs needed to connect to a Redis server.
 type RedisConfig struct {
 	Address            string        `split_words:"true"`
 	Password           string        `default:"" split_words:"true"`
@@ -43,24 +45,34 @@ type RedisConfig struct {
 	IdleCheckFrequency time.Duration `split_words:"true" default:"60s"`
 }
 
-// CacheConfig contains configs of in memory cache
+// CacheConfig contains configs of in memory cache.
 type CacheConfig struct {
 	Enabled    bool          `split_words:"true" default:"true"`
 	Expiration time.Duration `split_words:"true" default:"600s"`
 }
 
-// JwtConfig contains path of the keys for JWT encryption
+// JwtConfig contains path of the keys for JWT encryption.
 type JwtConfig struct {
 	KeysPath string `split_words:"true" default:"test/"`
 }
 
-// LoggerConfig is the config for logging and this kind of stuff
+// LoggerConfig is the config for logging and this kind of stuff.
 type LoggerConfig struct {
 	Level string `default:"warn" split_words:"true"`
 
 	SentryEnabled bool          `default:"false" split_words:"true"`
 	SentryDSN     string        `envconfig:"SENTRY_DSN"`
 	SentryTimeout time.Duration `split_words:"true" default:"100ms"`
+}
+
+// TracerConfig contains all configs needed to create a tracer
+type TracerConfig struct {
+	Enabled      bool    `split_words:"false" default:"true"`
+	ServiceName  string  `default:"soteria" split_words:"true"`
+	SamplerType  string  `default:"const" split_words:"true"`
+	SamplerParam float64 `default:"1" split_words:"true"`
+	Host         string  `default:"localhost" split_words:"true"`
+	Port         int     `default:"6831" split_words:"true"`
 }
 
 // InitConfig tries to initialize app config from env variables.
@@ -70,12 +82,14 @@ func InitConfig() AppConfig {
 	appConfig.Cache = &CacheConfig{}
 	appConfig.Jwt = &JwtConfig{}
 	appConfig.Logger = &LoggerConfig{}
+	appConfig.Tracer = &TracerConfig{}
 
 	envconfig.MustProcess("soteria", appConfig)
 	envconfig.MustProcess("soteria_redis", appConfig.Redis)
 	envconfig.MustProcess("soteria_cache", appConfig.Cache)
 	envconfig.MustProcess("soteria_jwt", appConfig.Jwt)
 	envconfig.MustProcess("soteria_logger", appConfig.Logger)
+	envconfig.MustProcess("soteria_tracer", appConfig.Tracer)
 	return *appConfig
 }
 

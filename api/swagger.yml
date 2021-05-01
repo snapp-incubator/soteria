@@ -1,3 +1,4 @@
+---
 swagger: '2.0'
 info:
   version: 3.5.0
@@ -24,8 +25,8 @@ paths:
         400:
           description: Bad input parameter
         200:
-          description: OK
-  
+          description: if body is empty means OK, if contains "ignore" it means request is ignored
+
   /acl:
     post:
       summary: Authorizes EMQ user's subscription request
@@ -66,7 +67,7 @@ paths:
           description: Bad input parameter
         200:
           description: OK
-          
+
   /accounts:
     post:
       summary: Creates new account
@@ -85,7 +86,7 @@ paths:
           description: Bad input parameter
         200:
           description: OK
-  
+
   /accounts/:username:
     get:
       summary: gets account
@@ -118,7 +119,7 @@ paths:
         description: Request body
         schema:
           $ref: '#/definitions/updateaccount'
-          
+
       responses:
         400:
           description: Bad input parameter
@@ -153,8 +154,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response'
-  
-  
+
+
   /accounts/:username/rules:
     post:
       summary: creates new rule
@@ -179,8 +180,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response'
-            
-  
+
+
   /accounts/:username/rules/:uuid:
     get:
       summary: get the rule with uuid
@@ -199,7 +200,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response'
-            
+
     put:
       summary: updates a rule
       produces:
@@ -223,13 +224,13 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response'
-  
+
     delete:
       summary: deletes the rule with uuid
       produces:
-      - application/json
+        - application/json
       consumes:
-      - application/json
+        - application/json
       security:
         - basicAuth: []
       responses:
@@ -241,28 +242,28 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response'
-  
+
 components:
   securitySchemes:
     basicAuth:     # <-- arbitrary name for the security scheme
       type: http
       scheme: basic
-  
+
 definitions:
   auth:
     type: object
     required:
-    - token
+      - token
     properties:
       token:
         type: string
-  
+
   acl:
     type: object
     required:
-    - token
-    - topic
-    - access
+      - token
+      - topic
+      - access
     properties:
       token:
         type: string
@@ -273,13 +274,13 @@ definitions:
         type: string
         enum: ["1", "2", "3"]
         example: "1"
-  
+
   token:
     type: object
     required:
-    - grant_type
-    - client_id
-    - client_secret
+      - grant_type
+      - client_id
+      - client_secret
     properties:
       grant_type:
         type: string
@@ -288,13 +289,13 @@ definitions:
         example: "snapp-box"
       client_secret:
         type: string
-        
+
   createaccount:
     type: object
     required:
-    - username
-    - password
-    - user_type
+      - username
+      - password
+      - user_type
     properties:
       username:
         type: string
@@ -303,7 +304,7 @@ definitions:
       user_type:
         type: string
         enum: ["HeraldUser", "EMQUser", "Staff"]
-        
+
   updateaccount:
     type: object
     properties:
@@ -313,16 +314,14 @@ definitions:
         type: array
         items:
           type: string
-      token_expiration_duration:
+      token_expiration:
         type: string
       secret:
         type: string
       user_type:
         type: string
         enum: ["HeraldUser", "EMQUser", "Staff"]
-  
-  
-  
+
   user:
     type: object
     properties:
@@ -339,12 +338,13 @@ definitions:
       rules:
         type: array
         items:
-          type: object
+          schema:
+            $ref: '#/definitions/rule'
           example:
             uuid: "1"
             endpoint: "/event"
-            access_type: "pub"
-            
+            access_type: "2"
+
   response:
     type: object
     properties:
@@ -354,7 +354,7 @@ definitions:
         type: string
       data:
         type: object
-        
+
   rule:
     type: object
     properties:
@@ -364,3 +364,4 @@ definitions:
         type: string
       access_type:
         type: string
+        enum: ["2", "1", "3"]
