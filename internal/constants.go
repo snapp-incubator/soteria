@@ -7,6 +7,7 @@ const (
 	Token          = "token"
 	Success        = "success"
 	Failure        = "failure"
+	Ignore         = "ignore"
 	CabEvent       = "cab_event"
 	DriverLocation = "driver_location"
 	SuperAppEvent  = "super_app_event"

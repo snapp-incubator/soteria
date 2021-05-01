@@ -25,7 +25,7 @@ paths:
         400:
           description: Bad input parameter
         200:
-          description: OK
+          description: if body is empty means OK, if contains "ignore" it means request is ignored
 
   /acl:
     post:
