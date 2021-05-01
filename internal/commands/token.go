@@ -3,27 +3,51 @@ package commands
 import (
 	"bufio"
 	"crypto/rsa"
+	"errors"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/spf13/cobra"
-	"gitlab.snapp.ir/dispatching/soteria/v3/configs"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"os"
-	"time"
 )
 
 var Token = &cobra.Command{
-	Use:     "token",
-	Short:   "token issues token for herald",
+	Use:   "token",
+	Short: "token issues token based on type of user",
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("you should set the token type")
+		}
+
+		t := args[0]
+		if t == "herald" || t == "superuser" {
+			return nil
+		}
+
+		return fmt.Errorf("token with type %s is not valid", t)
+	},
 	PreRunE: tokenPreRun,
-	RunE:    tokenRun,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		switch args[0] {
+		case "herald":
+			return heraldToken(cmd, args)
+		case "superuser":
+			return superuserToken(cmd, args)
+		default:
+			panic("invalid token type")
+		}
+		return nil
+	},
 }
 
 func tokenPreRun(cmd *cobra.Command, args []string) error {
-	config := configs.InitConfig()
+	config := config.InitConfig()
 
 	pk100, err := config.ReadPrivateKey(user.ThirdParty)
 	if err != nil {
@@ -39,7 +63,7 @@ func tokenPreRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func tokenRun(cmd *cobra.Command, args []string) error {
+func heraldToken(cmd *cobra.Command, args []string) error {
 	r := bufio.NewScanner(os.Stdin)
 
 	fmt.Print("username? >>> ")
@@ -107,7 +131,7 @@ func tokenRun(cmd *cobra.Command, args []string) error {
 					"\t3. Publish-Subscribe")
 				fmt.Print(">>> ")
 				r.Scan()
-				at, ok  := accessTypes[r.Text()]
+				at, ok := accessTypes[r.Text()]
 				if !ok {
 					return fmt.Errorf("invalid input. selected access type does not exist")
 				}
@@ -127,7 +151,7 @@ func tokenRun(cmd *cobra.Command, args []string) error {
 				if !ok {
 					return fmt.Errorf("invalid input. selected endpoint does not exist")
 				}
-				e := acl.Endpoint{Name:endpoint}
+				e := acl.Endpoint{Name: endpoint}
 				allowedEndpoints = append(allowedEndpoints, e)
 			default:
 				return fmt.Errorf("invalid input")
@@ -136,4 +160,26 @@ func tokenRun(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("invalid answer. you should enter y or n")
 		}
 	}
+}
+
+func superuserToken(cmd *cobra.Command, args []string) error {
+	r := bufio.NewScanner(os.Stdin)
+
+	fmt.Print("username? >>> ")
+	r.Scan()
+	username := r.Text()
+
+	fmt.Print("duration? (in hours) >>> ")
+	r.Scan()
+	duration, err := time.ParseDuration(fmt.Sprintf("%sh", r.Text()))
+	if err != nil {
+		return err
+	}
+
+	token, err := app.GetInstance().Authenticator.SuperuserToken(username, duration)
+	if err != nil {
+		return err
+	}
+	fmt.Println(token)
+	return nil
 }
