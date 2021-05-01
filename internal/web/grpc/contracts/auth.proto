@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "gitlab.snapp.ir/dispatching/soteria/v3/web/grpc/contracts";
+option go_package = "gitlab.snapp.ir/dispatching/soteria/v3/internal/web/grpc/contracts";
 package contracts;
 
 message AuthContract {

@@ -5,13 +5,14 @@ import (
 	"crypto/rsa"
 	errs "errors"
 	"fmt"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"time"
 )
 
 var TopicNotAllowed = errs.New("topic is not allowed")
@@ -28,8 +29,9 @@ type Authenticator struct {
 }
 
 // Auth check user authentication by checking the user's token
-func (a Authenticator) Auth(ctx context.Context, tokenString string) (bool, error) {
-	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, err error) {
+// isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
+func (a Authenticator) Auth(ctx context.Context, tokenString string) (isSuperuser bool, err error) {
+	_, err = jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("token is not valid, signing method is not RSA")
 		}
@@ -37,6 +39,7 @@ func (a Authenticator) Auth(ctx context.Context, tokenString string) (bool, erro
 		if claims["iss"] == nil {
 			return nil, fmt.Errorf("could not found iss in token claims")
 		}
+		_, isSuperuser = claims["is_superuser"]
 		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
 		key := a.PublicKeys[issuer]
 		if key == nil {
@@ -47,7 +50,7 @@ func (a Authenticator) Auth(ctx context.Context, tokenString string) (bool, erro
 	if err != nil {
 		return false, fmt.Errorf("token is invalid err: %w", err)
 	}
-	return true, nil
+	return isSuperuser, nil
 }
 
 // ACL check a user access to a topic
@@ -156,6 +159,24 @@ func (a Authenticator) HeraldToken(
 	return tokenString, nil
 }
 
+func (a Authenticator) SuperuserToken(username string, duration time.Duration) (tokenString string, err error) {
+	claims := acl.SuperuserClaims{
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(duration).Unix(),
+			Issuer:    string(user.ThirdParty),
+			Subject:   username,
+		},
+		IsSuperuser: true,
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	tokenString, err = token.SignedString(a.PrivateKeys[user.ThirdParty])
+	if err != nil {
+		return "", fmt.Errorf("could not sign the token. err; %v", err)
+	}
+	return tokenString, nil
+}
+
 func (a Authenticator) EndPointBasicAuth(ctx context.Context, username, password, endpoint string) (bool, error) {
 	var u user.User
 	if err := a.ModelHandler.Get(ctx, "user", username, &u); err != nil {
@@ -216,6 +237,8 @@ func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappi
 		ch, _ = a.EMQTopicManager.CreateLocationTopic(id, audience)
 	case topics.SuperappEvent:
 		ch, _ = a.EMQTopicManager.CreateSuperAppEventTopic(id, audience)
+	case topics.GossiperLocation:
+		ch, _ = a.EMQTopicManager.CreateGossiperTopic(id, audience)
 	case topics.BoxEvent:
 		return true
 	}
