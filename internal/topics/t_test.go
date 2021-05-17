@@ -29,38 +29,48 @@ func TestTopic_GetType(t1 *testing.T) {
 			want: DriverLocation,
 		},
 		{
-			name: "#5 testing invalid location",
+			name: "#5 testing passenger location",
 			arg:  "snapp/passenger/sfhsdkifs475sfhs/location",
+			want: PassengerLocation,
+		},
+		{
+			name: "#6 testing invalid location",
+			arg:  "snapp/thirdparty/sfhsdkifs475sfhs/location",
 			want: "",
 		},
 		{
-			name: "#6 testing superapp event",
+			name: "#7 testing superapp event",
 			arg:  "snapp/passenger/fhdyfuiksdf5456456adljada/superapp",
 			want: SuperappEvent,
 		},
 		{
-			name: "#7 testing superapp event",
+			name: "#8 testing superapp event",
 			arg:  "snapp/driver/+/location",
 			want: DriverLocation,
 		},
 		{
-			name: "#8 testing daghigh sys",
+			name: "#9 testing daghigh sys",
 			arg:  "$SYS/brokers/+/clients/+/disconnected",
 			want: DaghighSys,
 		},
 		{
-			name: "#9 testing daghigh sys",
+			name: "#10 testing daghigh sys",
 			arg:  "$SYS/brokers/+/clients/+/connected",
 			want: DaghighSys,
 		},
 		{
-			name: "#10 testing daghigh sys",
+			name: "#11 testing daghigh sys",
 			arg:  "$share/hello/$SYS/brokers/+/clients/+/connected",
 			want: DaghighSys,
 		},
 		{
-			name: "#11 testing gossiper location",
+			name: "#12 testing gossiper passenger location",
 			arg:  "snapp/passenger/py9kdjLYB35RP4q/driver-location",
+			want: GossiperLocation,
+		},
+		{
+			name: "#13 testing gossiper driver location",
+			arg:  "snapp/driver/py9kdjLYB35RP4q/passenger-location",
 			want: GossiperLocation,
 		},
 	}

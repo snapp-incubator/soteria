@@ -35,6 +35,11 @@ const (
 
 	validDriverSuperappEventTopic   = "snapp/driver/0956923be632d673560af9adadd2f78a/superapp"
 	invalidDriverSuperappEventTopic = "snapp/driver/0596923be632d673560af9adadd2f78a/superapp"
+
+	validDriverGossiperTopic      = "snapp/driver/0956923be632d673560af9adadd2f78a/passenger-location"
+	validPassengerGossiperTopic   = "snapp/passenger/0956923be632d673560af9adadd2f78a/driver-location"
+	invalidDriverGossiperTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/passenger-location"
+	invalidPassengerGossiperTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/driver-location"
 )
 
 func TestAuthenticator_Auth(t *testing.T) {
@@ -382,6 +387,30 @@ func TestAuthenticator_Acl(t *testing.T) {
 
 	t.Run("testing driver subscribe on invalid superapp event topic", func(t *testing.T) {
 		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, invalidDriverSuperappEventTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing driver subscribe on valid peer location topic", func(t *testing.T) {
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, validDriverGossiperTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on valid peer location topic", func(t *testing.T) {
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, validPassengerGossiperTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing driver subscribe on invalid peer location topic", func(t *testing.T) {
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, invalidDriverGossiperTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on invalid peer location topic", func(t *testing.T) {
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, invalidPassengerGossiperTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
