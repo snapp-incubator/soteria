@@ -89,6 +89,8 @@ func heraldToken(cmd *cobra.Command, args []string) error {
 		"2": topics.BoxEvent,
 		"3": topics.SuperappEvent,
 		"4": topics.DriverLocation,
+		"5": topics.PassengerLocation,
+		"6": topics.GossiperLocation,
 	}
 	accessTypes := map[string]acl.AccessType{
 		"1": acl.Sub,
