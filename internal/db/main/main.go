@@ -47,6 +47,11 @@ func main() {
 				Topic:      topics.SuperappEvent,
 				AccessType: acl.Sub,
 			},
+			user.Rule{
+				UUID:       uuid.New(),
+				Topic:      topics.GossiperLocation,
+				AccessType: acl.Sub,
+			},
 		},
 	}
 
@@ -70,6 +75,16 @@ func main() {
 			user.Rule{
 				UUID:       uuid.New(),
 				Topic:      topics.SuperappEvent,
+				AccessType: acl.Sub,
+			},
+			user.Rule{
+				UUID:       uuid.New(),
+				Topic:      topics.PassengerLocation,
+				AccessType: acl.Pub,
+			},
+			user.Rule{
+				UUID:       uuid.New(),
+				Topic:      topics.GossiperLocation,
 				AccessType: acl.Sub,
 			},
 		},
