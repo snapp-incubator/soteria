@@ -233,12 +233,12 @@ func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappi
 	switch topic.GetType() {
 	case topics.CabEvent:
 		ch, _ = a.EMQTopicManager.CreateCabEventTopic(id, audience)
-	case topics.DriverLocation:
+	case topics.DriverLocation, topics.PassengerLocation:
 		ch, _ = a.EMQTopicManager.CreateLocationTopic(id, audience)
 	case topics.SuperappEvent:
 		ch, _ = a.EMQTopicManager.CreateSuperAppEventTopic(id, audience)
 	case topics.GossiperLocation:
-		ch, _ = a.EMQTopicManager.CreateGossiperTopic(id, audience)
+		ch, _ = a.EMQTopicManager.CreatePeerLocationTopic(id, audience)
 	case topics.BoxEvent:
 		return true
 	}

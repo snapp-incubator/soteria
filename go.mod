@@ -19,7 +19,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.4.0+incompatible // indirect
-	gitlab.snapp.ir/dispatching/snappids/v2 v2.3.1-0.20210516145325-12365a059f2f // TODO change to semver before merge
+	gitlab.snapp.ir/dispatching/snappids/v2 v2.3.1-0.20210517105858-3fbfa608eb73 // TODO change to semver before merge
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/zap v1.16.0
