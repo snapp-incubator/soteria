@@ -64,14 +64,14 @@ func TestTopic_GetType(t1 *testing.T) {
 			want: DaghighSys,
 		},
 		{
-			name: "#12 testing gossiper passenger location",
+			name: "#12 testing shared passenger location",
 			arg:  "snapp/passenger/py9kdjLYB35RP4q/driver-location",
-			want: GossiperLocation,
+			want: SharedLocation,
 		},
 		{
-			name: "#13 testing gossiper driver location",
+			name: "#13 testing shared driver location",
 			arg:  "snapp/driver/py9kdjLYB35RP4q/passenger-location",
-			want: GossiperLocation,
+			want: SharedLocation,
 		},
 	}
 	for _, tt := range tests {
