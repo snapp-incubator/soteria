@@ -13,7 +13,7 @@ const (
 	SuperappEvent     Type = "superapp_event"
 	BoxEvent          Type = "box_event"
 	DaghighSys        Type = "daghigh_sys"
-	GossiperLocation  Type = "gossiper_location"
+	SharedLocation    Type = "shared_location"
 )
 
 var (
@@ -21,7 +21,7 @@ var (
 	DriverLocationRegexp    = regexp.MustCompile(`snapp/driver/[a-zA-Z0-9+]+/location`)
 	PassengerLocationRegexp = regexp.MustCompile(`snapp/passenger/[a-zA-Z0-9+]+/location`)
 	SuperappEventRegexp     = regexp.MustCompile(`snapp/driver|passenger/[a-zA-Z0-9]+/(superapp)`)
-	GossiperLocationRegexp  = regexp.MustCompile(`snapp+/(driver|passenger)+/[a-zA-Z0-9]+/(driver-location|passenger-location)`)
+	SharedLocationRegexp    = regexp.MustCompile(`snapp+/(driver|passenger)+/[a-zA-Z0-9]+/(driver-location|passenger-location)`)
 	DaghighSysRegexp        = regexp.MustCompile(`\$SYS/brokers/\+/clients/\+/(connected|disconnected)`)
 )
 
@@ -35,8 +35,8 @@ func (t Topic) GetType() Type {
 		return DriverLocation
 	case PassengerLocationRegexp.MatchString(topic):
 		return PassengerLocation
-	case GossiperLocationRegexp.MatchString(topic):
-		return GossiperLocation
+	case SharedLocationRegexp.MatchString(topic):
+		return SharedLocation
 	case SuperappEventRegexp.MatchString(topic):
 		return SuperappEvent
 	case topic == "bucks":

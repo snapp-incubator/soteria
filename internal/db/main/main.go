@@ -49,7 +49,7 @@ func main() {
 			},
 			user.Rule{
 				UUID:       uuid.New(),
-				Topic:      topics.GossiperLocation,
+				Topic:      topics.SharedLocation,
 				AccessType: acl.Sub,
 			},
 		},
@@ -84,7 +84,7 @@ func main() {
 			},
 			user.Rule{
 				UUID:       uuid.New(),
-				Topic:      topics.GossiperLocation,
+				Topic:      topics.SharedLocation,
 				AccessType: acl.Sub,
 			},
 		},
