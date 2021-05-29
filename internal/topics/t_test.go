@@ -1,6 +1,9 @@
 package topics
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestTopic_GetType(t1 *testing.T) {
 	tests := []struct {
@@ -9,73 +12,83 @@ func TestTopic_GetType(t1 *testing.T) {
 		want Type
 	}{
 		{
-			name: "#1 testing cab event",
+			name: "testing cab event",
 			arg:  Topic("passenger-event-123456789abcdefgABCDEFG"),
 			want: CabEvent,
 		},
 		{
-			name: "#2 testing cab event",
+			name: "testing cab event",
 			arg:  "driver-event-123456789abcdefgABCDEFG",
 			want: CabEvent,
 		},
 		{
-			name: "#3 testing invalid event",
+			name: "testing invalid event",
 			arg:  "-event-123456789abcdefgABCDEFG",
 			want: "",
 		},
 		{
-			name: "#4 testing driver location",
+			name: "testing driver location",
 			arg:  "snapp/driver/sfhsdkifs475sfhs/location",
 			want: DriverLocation,
 		},
 		{
-			name: "#5 testing passenger location",
+			name: "testing passenger location",
 			arg:  "snapp/passenger/sfhsdkifs475sfhs/location",
 			want: PassengerLocation,
 		},
 		{
-			name: "#6 testing invalid location",
+			name: "testing invalid location",
 			arg:  "snapp/thirdparty/sfhsdkifs475sfhs/location",
 			want: "",
 		},
 		{
-			name: "#7 testing superapp event",
+			name: "testing superapp event",
 			arg:  "snapp/passenger/fhdyfuiksdf5456456adljada/superapp",
 			want: SuperappEvent,
 		},
 		{
-			name: "#8 testing superapp event",
+			name: "testing superapp event",
 			arg:  "snapp/driver/+/location",
 			want: DriverLocation,
 		},
 		{
-			name: "#9 testing daghigh sys",
+			name: "testing daghigh sys",
 			arg:  "$SYS/brokers/+/clients/+/disconnected",
 			want: DaghighSys,
 		},
 		{
-			name: "#10 testing daghigh sys",
+			name: "testing daghigh sys",
 			arg:  "$SYS/brokers/+/clients/+/connected",
 			want: DaghighSys,
 		},
 		{
-			name: "#11 testing daghigh sys",
+			name: "testing daghigh sys",
 			arg:  "$share/hello/$SYS/brokers/+/clients/+/connected",
 			want: DaghighSys,
 		},
 		{
-			name: "#12 testing shared passenger location",
+			name: "testing shared passenger location",
 			arg:  "snapp/passenger/py9kdjLYB35RP4q/driver-location",
 			want: SharedLocation,
 		},
 		{
-			name: "#13 testing shared driver location",
+			name: "testing shared driver location",
 			arg:  "snapp/driver/py9kdjLYB35RP4q/passenger-location",
 			want: SharedLocation,
 		},
+		{
+			name: "testing passenger read receipts",
+			arg:  "snapp/passenger/py9kdjLYB35RP4q/passenger-read-receipts",
+			want: ReadReceipts,
+		},
+		{
+			name: "testing driver read receipts",
+			arg:  "snapp/driver/py9kdjLYB35RP4q/driver-read-receipts",
+			want: ReadReceipts,
+		},
 	}
-	for _, tt := range tests {
-		t1.Run(tt.name, func(t1 *testing.T) {
+	for i, tt := range tests {
+		t1.Run(fmt.Sprintf("#%d %s", i, tt.name), func(t1 *testing.T) {
 			t := tt.arg
 			if got := t.GetType(); got != tt.want {
 				t1.Errorf("GetType() = %v, want %v", got, tt.want)
