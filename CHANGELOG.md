@@ -6,6 +6,7 @@
 
 ### Added
 
+- Add location sharing topics acl logic.
 - Ignore tokens which contain `is_superuser` flag in their claims.
 - Tracing with jeager. jeager configuration is added
 
