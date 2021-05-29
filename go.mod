@@ -3,6 +3,7 @@ module gitlab.snapp.ir/dispatching/soteria/v3
 go 1.15
 
 require (
+	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/alicebob/miniredis/v2 v2.13.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/zap v0.0.1
@@ -16,7 +17,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.7.1
 	github.com/spf13/cobra v1.0.0
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.4.0+incompatible // indirect
 	gitlab.snapp.ir/dispatching/snappids/v2 v2.4.0
