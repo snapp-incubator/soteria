@@ -239,6 +239,8 @@ func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappi
 		ch, _ = a.EMQTopicManager.CreateSuperAppEventTopic(id, audience)
 	case topics.SharedLocation:
 		ch, _ = a.EMQTopicManager.CreateSharedLocationTopic(id, audience)
+	case topics.Chat:
+		ch, _ = a.EMQTopicManager.CreateChatTopic(id, audience)
 	case topics.BoxEvent:
 		return true
 	}
