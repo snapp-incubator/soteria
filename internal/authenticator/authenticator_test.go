@@ -36,10 +36,15 @@ const (
 	validDriverSuperappEventTopic   = "snapp/driver/0956923be632d673560af9adadd2f78a/superapp"
 	invalidDriverSuperappEventTopic = "snapp/driver/0596923be632d673560af9adadd2f78a/superapp"
 
-	validDriverSharedTopic      = "snapp/driver/0956923be632d673560af9adadd2f78a/passenger-location"
-	validPassengerSharedTopic   = "snapp/passenger/0956923be632d673560af9adadd2f78a/driver-location"
+	validDriverSharedTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/passenger-location"
+	validPassengerSharedTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/driver-location"
 	invalidDriverSharedTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/passenger-location"
 	invalidPassengerSharedTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/driver-location"
+
+	validDriverChatTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/passenger-chat"
+	validPassengerChatTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/driver-chat"
+	invalidDriverChatTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/passenger-chat"
+	invalidPassengerChatTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/driver-chat"
 )
 
 func TestAuthenticator_Auth(t *testing.T) {
@@ -393,14 +398,14 @@ func TestAuthenticator_Acl(t *testing.T) {
 
 	t.Run("testing driver subscribe on valid shared location topic", func(t *testing.T) {
 		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, validDriverSharedTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+		assert.NoError(t, err)
+		assert.True(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on valid shared location topic", func(t *testing.T) {
 		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, validPassengerSharedTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+		assert.NoError(t, err)
+		assert.True(t, ok)
 	})
 
 	t.Run("testing driver subscribe on invalid shared location topic", func(t *testing.T) {
@@ -411,6 +416,30 @@ func TestAuthenticator_Acl(t *testing.T) {
 
 	t.Run("testing passenger subscribe on invalid shared location topic", func(t *testing.T) {
 		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, invalidPassengerSharedTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing driver subscribe on valid chat topic", func(t *testing.T) {
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, validDriverChatTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on valid chat topic", func(t *testing.T) {
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, validPassengerChatTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing driver subscribe on invalid chat topic", func(t *testing.T) {
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, invalidDriverChatTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on invalid chat topic", func(t *testing.T) {
+		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, invalidPassengerChatTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
@@ -540,14 +569,29 @@ func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v int
 			Username: string(user.Passenger),
 			Type:     user.EMQUser,
 			Rules: []user.Rule{
-				user.Rule{
+				{
 					UUID:       uuid.New(),
 					Topic:      topics.CabEvent,
 					AccessType: acl.Sub,
 				},
-				user.Rule{
+				{
 					UUID:       uuid.New(),
 					Topic:      topics.SuperappEvent,
+					AccessType: acl.Sub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.PassengerLocation,
+					AccessType: acl.Pub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.SharedLocation,
+					AccessType: acl.Sub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.Chat,
 					AccessType: acl.Sub,
 				},
 			},
@@ -557,20 +601,37 @@ func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v int
 			MetaData: db.MetaData{},
 			Username: string(user.Driver),
 			Type:     user.EMQUser,
-			Rules: []user.Rule{{
-				UUID:       uuid.Nil,
-				Endpoint:   "",
-				Topic:      topics.DriverLocation,
-				AccessType: acl.Pub,
-			}, {
-				UUID:       uuid.Nil,
-				Endpoint:   "",
-				Topic:      topics.CabEvent,
-				AccessType: acl.Sub,
-			},
+			Rules: []user.Rule{
+				{
+					UUID:       uuid.Nil,
+					Endpoint:   "",
+					Topic:      topics.DriverLocation,
+					AccessType: acl.Pub,
+				},
+				{
+					UUID:       uuid.Nil,
+					Endpoint:   "",
+					Topic:      topics.CabEvent,
+					AccessType: acl.Sub,
+				},
 				{
 					UUID:       uuid.New(),
 					Topic:      topics.SuperappEvent,
+					AccessType: acl.Sub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.PassengerLocation,
+					AccessType: acl.Pub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.SharedLocation,
+					AccessType: acl.Sub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.Chat,
 					AccessType: acl.Sub,
 				},
 			},
