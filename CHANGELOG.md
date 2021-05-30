@@ -1,6 +1,7 @@
 # Change log
 
 # Unreleased - (yyyy-mm-dd)
+- Add chat topic in acl logics
 
 ---
 
