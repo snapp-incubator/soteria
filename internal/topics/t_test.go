@@ -77,14 +77,14 @@ func TestTopic_GetType(t1 *testing.T) {
 			want: SharedLocation,
 		},
 		{
-			name: "testing passenger read receipts",
-			arg:  "snapp/passenger/py9kdjLYB35RP4q/passenger-read-receipts",
-			want: ReadReceipts,
+			name: "testing passenger chat",
+			arg:  "snapp/passenger/py9kdjLYB35RP4q/passenger-chat",
+			want: Chat,
 		},
 		{
-			name: "testing driver read receipts",
-			arg:  "snapp/driver/py9kdjLYB35RP4q/driver-read-receipts",
-			want: ReadReceipts,
+			name: "testing driver chat",
+			arg:  "snapp/driver/py9kdjLYB35RP4q/driver-chat",
+			want: Chat,
 		},
 	}
 	for i, tt := range tests {
