@@ -91,6 +91,7 @@ func heraldToken(cmd *cobra.Command, args []string) error {
 		"4": topics.DriverLocation,
 		"5": topics.PassengerLocation,
 		"6": topics.SharedLocation,
+		"7": topics.Chat,
 	}
 	accessTypes := map[string]acl.AccessType{
 		"1": acl.Sub,
