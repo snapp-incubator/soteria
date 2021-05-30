@@ -39,14 +39,14 @@ func (t Topic) GetType() Type {
 		return PassengerLocation
 	case SharedLocationRegexp.MatchString(topic):
 		return SharedLocation
+	case ChatRegexp.MatchString(topic):
+		return Chat
 	case SuperappEventRegexp.MatchString(topic):
 		return SuperappEvent
 	case topic == "bucks":
 		return BoxEvent
 	case DaghighSysRegexp.MatchString(topic):
 		return DaghighSys
-	case ChatRegexp.MatchString(topic):
-		return Chat
 	}
 
 	return ""
