@@ -14,7 +14,7 @@ const (
 	BoxEvent          Type = "box_event"
 	DaghighSys        Type = "daghigh_sys"
 	SharedLocation    Type = "shared_location"
-	ReadReceipts      Type = "read_receipts"
+	Chat              Type = "chat"
 )
 
 var (
@@ -24,7 +24,7 @@ var (
 	SuperappEventRegexp     = regexp.MustCompile(`snapp/(driver|passenger)/[a-zA-Z0-9]+/(superapp)`)
 	SharedLocationRegexp    = regexp.MustCompile(`snapp+/(driver|passenger)+/[a-zA-Z0-9]+/(driver-location|passenger-location)`)
 	DaghighSysRegexp        = regexp.MustCompile(`\$SYS/brokers/\+/clients/\+/(connected|disconnected)`)
-	ReadReceiptsRegexp      = regexp.MustCompile(`snapp+/(driver|passenger)+/[a-zA-Z0-9]+/(driver-read-receipts|passenger-read-receipts)`)
+	ChatRegexp              = regexp.MustCompile(`snapp+/(driver|passenger)+/[a-zA-Z0-9]+/(driver-chat|passenger-chat)`)
 )
 
 func (t Topic) GetType() Type {
@@ -45,8 +45,8 @@ func (t Topic) GetType() Type {
 		return BoxEvent
 	case DaghighSysRegexp.MatchString(topic):
 		return DaghighSys
-	case ReadReceiptsRegexp.MatchString(topic):
-		return ReadReceipts
+	case ChatRegexp.MatchString(topic):
+		return Chat
 	}
 
 	return ""
