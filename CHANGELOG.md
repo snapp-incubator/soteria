@@ -1,9 +1,20 @@
 # Change log
 
 # Unreleased - (yyyy-mm-dd)
-- Add chat topic in acl logics
 
 ---
+
+## May 31, 2021
+
+### Added
+
+- Add chat topic in acl logics
+
+### Changed
+
+### Fixed
+
+## May 29, 2021
 
 ### Added
 
