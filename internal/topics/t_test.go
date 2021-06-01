@@ -78,12 +78,12 @@ func TestTopic_GetType(t1 *testing.T) {
 		},
 		{
 			name: "testing passenger chat",
-			arg:  "snapp/passenger/py9kdjLYB35RP4q/passenger-chat",
+			arg:  "snapp/passenger/py9kdjLYB35RP4q/chat",
 			want: Chat,
 		},
 		{
 			name: "testing driver chat",
-			arg:  "snapp/driver/py9kdjLYB35RP4q/driver-chat",
+			arg:  "snapp/driver/py9kdjLYB35RP4q/chat",
 			want: Chat,
 		},
 	}
