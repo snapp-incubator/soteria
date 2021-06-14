@@ -94,7 +94,7 @@ python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.
 2. Add rule for accessing the requested topic
 
 ```sh
-python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" rules-add --username gossiper --password password --topic gossiper_location --access-type pub
+python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" rules-add --username gossiper --password password --topic shared_location --access-type pubsub
 ```
 
 3. Set account secret
