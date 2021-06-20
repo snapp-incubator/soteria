@@ -55,7 +55,7 @@ func main() {
 			user.Rule{
 				UUID:       uuid.New(),
 				Topic:      topics.Chat,
-				AccessType: acl.Sub,
+				AccessType: acl.PubSub,
 			},
 		},
 	}
