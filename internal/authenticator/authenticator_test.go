@@ -41,10 +41,10 @@ const (
 	invalidDriverSharedTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/passenger-location"
 	invalidPassengerSharedTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/driver-location"
 
-	validDriverChatTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/passenger-chat"
-	validPassengerChatTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/driver-chat"
-	invalidDriverChatTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/passenger-chat"
-	invalidPassengerChatTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/driver-chat"
+	validDriverChatTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/chat"
+	validPassengerChatTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/chat"
+	invalidDriverChatTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/chat"
+	invalidPassengerChatTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/chat"
 )
 
 func TestAuthenticator_Auth(t *testing.T) {

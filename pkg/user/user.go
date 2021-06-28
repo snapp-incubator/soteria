@@ -59,7 +59,7 @@ func (u User) GetPrimaryKey() string {
 // CheckTopicAllowance checks whether the user is allowed to pub/sub/pubsub to a topic or not
 func (u User) CheckTopicAllowance(topic topics.Type, accessType acl.AccessType) bool {
 	for _, rule := range u.Rules {
-		if rule.Topic == topic && rule.AccessType == accessType {
+		if rule.Topic == topic && (rule.AccessType == acl.PubSub || rule.AccessType == accessType) {
 			return true
 		}
 	}
