@@ -1,6 +1,9 @@
 package topics
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
 type Topic string
 
@@ -17,18 +20,26 @@ const (
 	Chat              Type = "chat"
 )
 
+// Topic regular expressions which are used for detecting the topic name.
+// topics are prefix with the company name will be trimed before matching
+// so they regular expressions should not contain the company prefix.
 var (
 	CabEventRegexp          = regexp.MustCompile(`(\w+)-event-[a-zA-Z0-9]+`)
-	DriverLocationRegexp    = regexp.MustCompile(`snapp/driver/[a-zA-Z0-9+]+/location`)
-	PassengerLocationRegexp = regexp.MustCompile(`snapp/passenger/[a-zA-Z0-9+]+/location`)
-	SuperappEventRegexp     = regexp.MustCompile(`snapp/(driver|passenger)/[a-zA-Z0-9]+/(superapp)`)
-	SharedLocationRegexp    = regexp.MustCompile(`snapp+/(driver|passenger)+/[a-zA-Z0-9]+/(driver-location|passenger-location)`)
+	DriverLocationRegexp    = regexp.MustCompile(`/driver/[a-zA-Z0-9+]+/location`)
+	PassengerLocationRegexp = regexp.MustCompile(`/passenger/[a-zA-Z0-9+]+/location`)
+	SuperappEventRegexp     = regexp.MustCompile(`/(driver|passenger)/[a-zA-Z0-9]+/(superapp)`)
+	SharedLocationRegexp    = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9]+/(driver-location|passenger-location)`)
 	DaghighSysRegexp        = regexp.MustCompile(`\$SYS/brokers/\+/clients/\+/(connected|disconnected)`)
-	ChatRegexp              = regexp.MustCompile(`snapp+/(driver|passenger)+/[a-zA-Z0-9]+/chat`)
+	ChatRegexp              = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9]+/chat`)
 )
 
 func (t Topic) GetType() Type {
+	return t.GetTypeWithCompany("snapp")
+}
+
+func (t Topic) GetTypeWithCompany(company string) Type {
 	topic := string(t)
+	topic = strings.TrimPrefix(topic, company)
 
 	switch {
 	case CabEventRegexp.MatchString(topic):

@@ -26,6 +26,7 @@ type Authenticator struct {
 	EMQTopicManager        *snappids.EMQTopicManager
 	HashIDSManager         *snappids.HashIDSManager
 	CompareHashAndPassword func([]byte, []byte) error
+	Company                string
 }
 
 // Auth check user authentication by checking the user's token
@@ -101,7 +102,7 @@ func (a Authenticator) Acl(ctx context.Context, accessType acl.AccessType, token
 		}
 	}
 
-	if ok := u.CheckTopicAllowance(topic.GetType(), accessType); !ok {
+	if ok := u.CheckTopicAllowance(topic.GetTypeWithCompany(a.Company), accessType); !ok {
 		return false,
 			fmt.Errorf("%w. issuer %s with sub %s is not allowed to %s on topic %s (%s)", TopicNotAllowed, issuer, sub, accessType, topic, topic.GetType())
 	}
