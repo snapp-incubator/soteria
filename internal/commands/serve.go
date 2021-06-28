@@ -11,7 +11,7 @@ import (
 
 	"github.com/patrickmn/go-cache"
 	"github.com/spf13/cobra"
-	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
+	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/accounts"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
@@ -95,10 +95,12 @@ func servePreRun(cmd *cobra.Command, args []string) {
 	}
 
 	redisModelHandler := &redis.ModelHandler{Client: rClient}
-	var modelHandler db.ModelHandler
 
+	var modelHandler db.ModelHandler
 	if cfg.Cache.Enabled {
-		modelHandler = cachedredis.NewCachedRedisModelHandler(redisModelHandler, cache.New(cfg.Cache.Expiration, cache.NoExpiration))
+		modelHandler = cachedredis.NewCachedRedisModelHandler(redisModelHandler,
+			cache.New(cfg.Cache.Expiration, cache.NoExpiration),
+		)
 	} else {
 		modelHandler = redisModelHandler
 	}
@@ -112,6 +114,7 @@ func servePreRun(cmd *cobra.Command, args []string) {
 		zap.L().Fatal("error while getting allowed access types", zap.Error(err))
 	}
 	memoizedCompareHashAndPassword := memoize.MemoizedCompareHashAndPassword()
+
 	app.GetInstance().SetAuthenticator(&authenticator.Authenticator{
 		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: privateKey100,
@@ -124,7 +127,7 @@ func servePreRun(cmd *cobra.Command, args []string) {
 		AllowedAccessTypes:     allowedAccessTypes,
 		ModelHandler:           modelHandler,
 		HashIDSManager:         hid,
-		EMQTopicManager:        snappids.NewEMQManager(hid),
+		EMQTopicManager:        snappids.NewEMQManagerWithCompany(hid, cfg.Company),
 		CompareHashAndPassword: memoizedCompareHashAndPassword,
 	})
 
