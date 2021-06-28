@@ -129,6 +129,7 @@ func servePreRun(cmd *cobra.Command, args []string) {
 		HashIDSManager:         hid,
 		EMQTopicManager:        snappids.NewEMQManagerWithCompany(hid, cfg.Company),
 		CompareHashAndPassword: memoizedCompareHashAndPassword,
+		Company:                cfg.Company,
 	})
 
 	m := metrics.NewMetrics()
