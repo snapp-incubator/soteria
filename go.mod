@@ -16,11 +16,12 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.7.1
+	github.com/speps/go-hashids v2.0.0+incompatible // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.7.0
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.4.0+incompatible // indirect
-	gitlab.snapp.ir/dispatching/snappids/v2 v2.5.1
+	gitlab.snapp.ir/dispatching/snappids/v2 v2.6.0-beta
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/automaxprocs v1.3.0
 	go.uber.org/zap v1.16.0
