@@ -27,6 +27,7 @@ type AppConfig struct {
 	HttpPort            int    `default:"9999" split_words:"true"`
 	GrpcPort            int    `default:"50051" split_words:"true"`
 	Tracer              *TracerConfig
+	Company             string `default:"snapp"`
 }
 
 // RedisConfig is all configs needed to connect to a Redis server.
@@ -65,7 +66,7 @@ type LoggerConfig struct {
 	SentryTimeout time.Duration `split_words:"true" default:"100ms"`
 }
 
-// TracerConfig contains all configs needed to create a tracer
+// TracerConfig contains all configs needed to create a tracer.
 type TracerConfig struct {
 	Enabled      bool    `split_words:"false" default:"true"`
 	ServiceName  string  `default:"soteria" split_words:"true"`
