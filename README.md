@@ -81,8 +81,8 @@ for production deployments on Cloud (okd).
 0. Install [pipenv](https://pipenv.pypa.io/en/latest/).
 
 ```sh
-pipenv install
-pipenv shell
+poetry install
+poetry shell
 ```
 
 1. First create an `emq` account
