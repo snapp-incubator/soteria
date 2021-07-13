@@ -13,14 +13,14 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
 
-// Response is the response structure of the REST API
+// Response is the response structure of the REST API.
 type Response struct {
 	Code    accountsInfo.Code `json:"code"`
 	Message string            `json:"message"`
 	Data    interface{}       `json:"data"`
 }
 
-// CreateResponse returns a HTTP Status Code and a response
+// CreateResponse returns a HTTP Status Code and a response.
 func CreateResponse(code accountsInfo.Code, data interface{}, details ...string) (int, *Response) {
 	return code.HttpStatusCode(), &Response{
 		Code:    code,
