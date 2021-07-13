@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// aclRequest is the body payload structure of the ACL endpoint
+// aclRequest is the body payload structure of the ACL endpoint.
 type aclRequest struct {
 	Access   acl.AccessType `form:"access"`
 	Token    string         `form:"token"`
@@ -25,7 +25,7 @@ type aclRequest struct {
 	Topic    string         `form:"topic"`
 }
 
-// ACL is the handler responsible for ACL requests
+// ACL is the handler responsible for ACL requests.
 func ACL(ctx *gin.Context) {
 	aclSpan := app.GetInstance().Tracer.StartSpan("api.rest.acl")
 	defer aclSpan.Finish()
@@ -81,14 +81,15 @@ func ACL(ctx *gin.Context) {
 
 	aclCheckSpan := app.GetInstance().Tracer.StartSpan("acl check", opentracing.ChildOf(aclSpan.Context()))
 
-	ok, err := app.GetInstance().Authenticator.Acl(ctx, request.Access, tokenString, topic)
+	ok, err := app.GetInstance().Authenticator.ACL(ctx, request.Access, tokenString, topic)
 	if err != nil || !ok {
 		aclCheckSpan.SetTag("success", false)
 		if err != nil {
 			aclCheckSpan.SetTag("error", err.Error())
 		}
 
-		if errors.Is(err, authenticator.TopicNotAllowed) {
+		// nolint: exhaustivestruct
+		if errors.Is(err, authenticator.ErrTopicNotAllowed{}) {
 			zap.L().
 				Warn("acl request is not authorized",
 					zap.Error(err))
