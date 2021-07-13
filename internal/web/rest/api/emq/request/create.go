@@ -2,16 +2,15 @@ package request
 
 import (
 	"fmt"
-	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
 // Create is the body payload structure of create emq endpoint.
 type Create struct {
-	Password string        `json:"password"`
-	Username string        `json:"username"`
-	Duration time.Duration `json:"duration"`
+	Password string `json:"password"`
+	Username string `json:"username"`
+	Duration int64  `json:"duration"`
 }
 
 func (r Create) Validate() error {
