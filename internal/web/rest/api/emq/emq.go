@@ -10,6 +10,10 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/web/rest/api/emq/response"
 )
 
+func Register(group *gin.RouterGroup) {
+	group.POST("/", Create)
+}
+
 // Create is the handler of the create emq redis account endpoint.
 func Create(ctx *gin.Context) {
 	var p request.Create
