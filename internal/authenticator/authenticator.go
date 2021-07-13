@@ -3,21 +3,60 @@ package authenticator
 import (
 	"context"
 	"crypto/rsa"
-	errs "errors"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
+	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
 
-var TopicNotAllowed = errs.New("topic is not allowed")
+var (
+	ErrInvalidSigningMethod = errors.New("token is not valid, signing method is not RSA")
+	ErrIssNotFound          = errors.New("could not found iss in token claims")
+	ErrSubNotFound          = errors.New("could not found sub in token claims")
+	ErrInvalidClaims        = errors.New("invalid claims")
+	ErrInvalidIP            = errors.New("IP is not valid")
+	ErrInvalidAccessType    = errors.New("requested access type is invalid")
+	ErrDecodeHashID         = errors.New("could not decode hash id")
+	ErrInvalidSecret        = errors.New("invalid secret")
+	ErrIncorrectPassword    = errors.New("username or password is worng")
+)
 
-// Authenticator is responsible for Acl/Auth/Token of users
+type ErrTopicNotAllowed struct {
+	Issuer     user.Issuer
+	Sub        string
+	AccessType acl.AccessType
+	Topic      topics.Topic
+}
+
+func (err ErrTopicNotAllowed) Error() string {
+	return fmt.Sprintf("issuer %s with sub %s is not allowed to %s on topic %s (%s)",
+		err.Issuer, err.Sub, err.AccessType, err.Topic, err.Topic.GetType(),
+	)
+}
+
+type ErrPublicKeyNotFound struct {
+	Issuer user.Issuer
+}
+
+func (err ErrPublicKeyNotFound) Error() string {
+	return fmt.Sprintf("cannot find issuer %s public key", err.Issuer)
+}
+
+type ErrInvalidTopic struct {
+	Topic topics.Topic
+}
+
+func (err ErrInvalidTopic) Error() string {
+	return fmt.Sprintf("cannot find issuer %s public key", err.Topic)
+}
+
+// Authenticator is responsible for Acl/Auth/Token of users.
 type Authenticator struct {
 	PrivateKeys            map[user.Issuer]*rsa.PrivateKey
 	PublicKeys             map[user.Issuer]*rsa.PublicKey
@@ -34,94 +73,129 @@ type Authenticator struct {
 func (a Authenticator) Auth(ctx context.Context, tokenString string) (isSuperuser bool, err error) {
 	_, err = jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("token is not valid, signing method is not RSA")
+			return nil, ErrInvalidSigningMethod
 		}
-		claims := token.Claims.(jwt.MapClaims)
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			return nil, ErrInvalidClaims
+		}
 		if claims["iss"] == nil {
-			return nil, fmt.Errorf("could not found iss in token claims")
+			return nil, ErrIssNotFound
 		}
+
 		_, isSuperuser = claims["is_superuser"]
+
 		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
+
 		key := a.PublicKeys[issuer]
 		if key == nil {
-			return nil, fmt.Errorf("cannot find issuer %s public key", issuer)
+			return nil, ErrPublicKeyNotFound{Issuer: issuer}
 		}
+
 		return key, nil
 	})
+
 	if err != nil {
-		return false, fmt.Errorf("token is invalid err: %w", err)
+		return false, fmt.Errorf("token is invalid: %w", err)
 	}
+
 	return isSuperuser, nil
 }
 
-// ACL check a user access to a topic
-func (a Authenticator) Acl(ctx context.Context, accessType acl.AccessType, tokenString string, topic topics.Topic) (bool, error) {
+// ACL check a user access to a topic.
+func (a Authenticator) ACL(ctx context.Context, accessType acl.AccessType,
+	tokenString string, topic topics.Topic) (bool, error) {
 	if !a.validateAccessType(accessType) {
-		return false, fmt.Errorf("requested access type %s is invalid", accessType)
+		return false, ErrInvalidAccessType
 	}
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("token is not valid, signing method is not RSA")
+			return nil, ErrInvalidSigningMethod
 		}
-		claims := token.Claims.(jwt.MapClaims)
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			return nil, ErrInvalidClaims
+		}
 		if claims["iss"] == nil {
-			return nil, fmt.Errorf("could not found iss in token claims")
+			return nil, ErrIssNotFound
 		}
 		if claims["sub"] == nil {
-			return nil, fmt.Errorf("could not find sub in token claims")
+			return nil, ErrSubNotFound
 		}
 
 		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
 		key := a.PublicKeys[issuer]
 		if key == nil {
-			return nil, fmt.Errorf("cannot find user %v public key", issuer)
+			return nil, ErrPublicKeyNotFound{Issuer: issuer}
 		}
+
 		return key, nil
 	})
 	if err != nil {
-		return false, fmt.Errorf("token is invalid. err: %w", err)
+		return false, fmt.Errorf("token is invalid %w", err)
 	}
 
-	claims := token.Claims.(jwt.MapClaims)
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return false, ErrInvalidClaims
+	}
+
+	if claims["iss"] == nil {
+		return false, ErrIssNotFound
+	}
+
 	issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
+
+	if claims["sub"] == nil {
+		return false, ErrSubNotFound
+	}
+
 	sub := fmt.Sprintf("%v", claims["sub"])
+
 	pk := primaryKey(issuer, sub)
-	u := user.User{}
-	err = a.ModelHandler.Get(ctx, "user", pk, &u)
-	if err != nil {
+
+	var u user.User
+	if err := a.ModelHandler.Get(ctx, "user", pk, &u); err != nil {
 		return false, fmt.Errorf("error getting user %s from db err: %w", pk, err)
 	}
+
+	// validate passenger and driver topics.
 	if issuer != user.ThirdParty {
 		id, err := a.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
 		if err != nil {
-			return false, fmt.Errorf("could not decode hash id")
+			return false, ErrDecodeHashID
 		}
+
 		ok := a.ValidateTopicBySender(topic, issuerToAudience(issuer), id)
 		if !ok {
-			return false, fmt.Errorf("provided topic %v is not valid", topic)
+			return false, ErrInvalidTopic{Topic: topic}
 		}
 	}
 
 	if ok := u.CheckTopicAllowance(topic.GetTypeWithCompany(a.Company), accessType); !ok {
 		return false,
-			fmt.Errorf("%w. issuer %s with sub %s is not allowed to %s on topic %s (%s)", TopicNotAllowed, issuer, sub, accessType, topic, topic.GetType())
+			ErrTopicNotAllowed{issuer, sub, accessType, topic}
 	}
+
 	return true, nil
 }
 
-// Token function issues JWT token by taking client credentials
-func (a Authenticator) Token(ctx context.Context, accessType acl.AccessType, username, secret string) (tokenString string, err error) {
-	if accessType == acl.ClientCredentials {
-		accessType = acl.Sub
+// Token function issues JWT token by taking client credentials.
+func (a Authenticator) Token(ctx context.Context, _ acl.AccessType,
+	username, secret string) (string, error) {
+	var u user.User
+	if err := a.ModelHandler.Get(ctx, "user", username, &u); err != nil {
+		return "", fmt.Errorf("could not get user %s. %w", username, err)
 	}
-	u := user.User{}
-	err = a.ModelHandler.Get(ctx, "user", username, &u)
-	if err != nil {
-		return "", fmt.Errorf("could not get user %s. err: %w", username, err)
-	}
+
 	if u.Secret != secret {
-		return "", fmt.Errorf("invlaid secret %v", secret)
+		return "", ErrInvalidSecret
 	}
+
+	// nolint: exhaustivestruct
 	claims := jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(u.TokenExpirationDuration).Unix(),
 		Issuer:    string(user.ThirdParty),
@@ -129,10 +203,12 @@ func (a Authenticator) Token(ctx context.Context, accessType acl.AccessType, use
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	tokenString, err = token.SignedString(a.PrivateKeys[user.ThirdParty])
+
+	tokenString, err := token.SignedString(a.PrivateKeys[user.ThirdParty])
 	if err != nil {
-		return "", fmt.Errorf("could not sign the token. err; %v", err)
+		return "", fmt.Errorf("could not sign the token %w", err)
 	}
+
 	return tokenString, nil
 }
 
@@ -140,8 +216,9 @@ func (a Authenticator) HeraldToken(
 	username string,
 	endpoints []acl.Endpoint,
 	topics []acl.Topic,
-	duration time.Duration) (tokenString string, err error) {
-
+	duration time.Duration,
+) (string, error) {
+	// nolint: exhaustivestruct
 	claims := acl.Claims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
@@ -153,14 +230,17 @@ func (a Authenticator) HeraldToken(
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	tokenString, err = token.SignedString(a.PrivateKeys[user.ThirdParty])
+
+	tokenString, err := token.SignedString(a.PrivateKeys[user.ThirdParty])
 	if err != nil {
-		return "", fmt.Errorf("could not sign the token. err; %v", err)
+		return "", fmt.Errorf("could not sign the token. %w", err)
 	}
+
 	return tokenString, nil
 }
 
-func (a Authenticator) SuperuserToken(username string, duration time.Duration) (tokenString string, err error) {
+func (a Authenticator) SuperuserToken(username string, duration time.Duration) (string, error) {
+	// nolint: exhaustivestruct
 	claims := acl.SuperuserClaims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
@@ -171,10 +251,12 @@ func (a Authenticator) SuperuserToken(username string, duration time.Duration) (
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	tokenString, err = token.SignedString(a.PrivateKeys[user.ThirdParty])
+
+	tokenString, err := token.SignedString(a.PrivateKeys[user.ThirdParty])
 	if err != nil {
-		return "", fmt.Errorf("could not sign the token. err; %v", err)
+		return "", fmt.Errorf("could not sign the token. %w", err)
 	}
+
 	return tokenString, nil
 }
 
@@ -185,13 +267,10 @@ func (a Authenticator) EndPointBasicAuth(ctx context.Context, username, password
 	}
 
 	if err := a.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
-		return false, fmt.Errorf("username or password is worng")
+		return false, ErrIncorrectPassword
 	}
-	ok := u.CheckEndpointAllowance(endpoint)
-	if !ok {
-		return false, nil
-	}
-	return true, nil
+
+	return u.CheckEndpointAllowance(endpoint), nil
 }
 
 func (a Authenticator) EndpointIPAuth(ctx context.Context, username string, ip string, endpoint string) (bool, error) {
@@ -199,15 +278,12 @@ func (a Authenticator) EndpointIPAuth(ctx context.Context, username string, ip s
 	if err := a.ModelHandler.Get(ctx, "user", username, &u); err != nil {
 		return false, fmt.Errorf("could not get user from db: %w", err)
 	}
-	ok := acl.ValidateIP(ip, u.IPs, []string{})
-	if !ok {
-		return false, fmt.Errorf("IP is not valid")
+
+	if ok := acl.ValidateIP(ip, u.IPs, []string{}); !ok {
+		return false, ErrInvalidIP
 	}
-	ok = u.CheckEndpointAllowance(endpoint)
-	if !ok {
-		return false, nil
-	}
-	return true, nil
+
+	return u.CheckEndpointAllowance(endpoint), nil
 }
 
 func (a Authenticator) validateAccessType(accessType acl.AccessType) bool {
@@ -216,21 +292,23 @@ func (a Authenticator) validateAccessType(accessType acl.AccessType) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
 func primaryKey(issuer user.Issuer, sub string) string {
 	if issuer == user.Passenger {
 		return "passenger"
-	}
-	if issuer == user.Driver {
+	} else if issuer == user.Driver {
 		return "driver"
 	}
+
 	return sub
 }
 
 func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappids.Audience, id int) bool {
 	var ch snappids.Topic
+
 	switch topic.GetType() {
 	case topics.CabEvent:
 		ch, _ = a.EMQTopicManager.CreateCabEventTopic(id, audience)
@@ -242,13 +320,13 @@ func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappi
 		ch, _ = a.EMQTopicManager.CreateSharedLocationTopic(id, audience)
 	case topics.Chat:
 		ch, _ = a.EMQTopicManager.CreateChatTopic(id, audience)
+	case topics.DaghighSys:
+		return true
 	case topics.BoxEvent:
 		return true
 	}
-	if string(ch) != string(topic) {
-		return false
-	}
-	return true
+
+	return string(ch) != string(topic)
 }
 
 func issuerToAudience(issuer user.Issuer) snappids.Audience {
