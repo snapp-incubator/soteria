@@ -15,3 +15,9 @@ class EMQStore:
             },
         )
         return res.json()
+
+    def get(self):
+        res = self.session.get(
+            "emq/",
+        )
+        return res.json()
