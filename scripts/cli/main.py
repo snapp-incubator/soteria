@@ -1,7 +1,8 @@
-import click
-import soteria
 import pprint
 
+import click
+
+import soteria
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -221,6 +222,36 @@ def token(
     except Exception as exep:
         raise click.ClickException(str(exep))
 
+@cli.command()
+@click.option(
+    "--username",
+    "-u",
+    required=True,
+    type=str,
+    help="account username e.g. driver",
+)
+@click.option(
+    "--password",
+    "-p",
+    required=True,
+    type=str,
+    help="account password e.g. password",
+)
+@click.option(
+    "--duration",
+    "-d",
+    required=True,
+    type=int,
+    help="token expiration time in nanoseconds",
+)
+@click.pass_context
+def superuser(ctx, username: str, password: str, duration: int):
+    emq_store = soteria.EMQStore(ctx.obj["BASE"])
+    try:
+        resp = emq_store.new(username, password, duration)
+        click.echo(pp.pformat(resp))
+    except Exception as exep:
+        raise click.ClickException(str(exep))
 
 if __name__ == "__main__":
     cli(obj={})
