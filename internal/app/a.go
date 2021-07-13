@@ -18,13 +18,16 @@ type app struct {
 	TracerCloser    io.Closer
 }
 
-var singleton *app
-var once sync.Once
+var (
+	singleton *app
+	once      sync.Once
+)
 
 func GetInstance() *app {
 	once.Do(func() {
 		singleton = &app{}
 	})
+
 	return singleton
 }
 
