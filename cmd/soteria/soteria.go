@@ -1,9 +1,10 @@
 package main
 
 import (
+	"log"
+
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/commands"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/commands/accounts"
-	"log"
 )
 
 var cli = commands.Root
