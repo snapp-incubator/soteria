@@ -2,12 +2,13 @@ package accounts
 
 import (
 	"context"
+	"time"
+
 	"github.com/google/uuid"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/errors"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"time"
 )
 
 // CreateRule will add a new rule with given information to a user
