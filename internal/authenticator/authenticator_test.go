@@ -562,7 +562,7 @@ func (rmh MockModelHandler) Delete(ctx context.Context, modelName, pk string) er
 	return nil
 }
 
-func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v interface{}) error {
+func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v db.Model) error {
 	switch pk {
 	case "passenger":
 		*v.(*user.User) = user.User{
