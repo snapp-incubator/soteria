@@ -253,5 +253,15 @@ def superuser(ctx, username: str, password: str, duration: int):
     except Exception as exep:
         raise click.ClickException(str(exep))
 
+@cli.command()
+@click.pass_context
+def superusers(ctx):
+    emq_store = soteria.EMQStore(ctx.obj["BASE"])
+    try:
+        resp = emq_store.get()
+        click.echo(pp.pformat(resp))
+    except Exception as exep:
+        raise click.ClickException(str(exep))
+
 if __name__ == "__main__":
     cli(obj={})
