@@ -19,6 +19,7 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db/cachedredis"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db/redis"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/emq"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/metrics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/web/grpc"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/web/rest/api"
@@ -108,6 +109,9 @@ func servePreRun(cmd *cobra.Command, args []string) {
 	app.GetInstance().SetAccountsService(&accounts.Service{
 		Handler: modelHandler,
 	})
+
+	store := emq.Store{Client: rClient}
+	app.GetInstance().SetEMQStore(store)
 
 	allowedAccessTypes, err := cfg.GetAllowedAccessTypes()
 	if err != nil {
