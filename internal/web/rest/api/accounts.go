@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
@@ -9,7 +11,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	accountsInfo "gitlab.snapp.ir/dispatching/soteria/v3/pkg/errors"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"time"
 )
 
 // Response is the response structure of the REST API
@@ -30,9 +31,9 @@ func CreateResponse(code accountsInfo.Code, data interface{}, details ...string)
 
 // createAccountPayload is the body payload structure of create account endpoint
 type createAccountPayload struct {
-	Username string        `json:"username" form:"username" binding:"required"`
-	Password string        `json:"password" form:"password" binding:"required"`
-	UserType user.UserType `json:"user_type" form:"user_type" binding:"required"`
+	Username string    `json:"username" form:"username" binding:"required"`
+	Password string    `json:"password" form:"password" binding:"required"`
+	UserType user.Type `json:"user_type" form:"user_type" binding:"required"`
 }
 
 // CreateAccount is the handler of the create account endpoint
@@ -70,7 +71,7 @@ type updateAccountPayload struct {
 	NewPassword     string        `json:"new_password" form:"new_password"`
 	IPs             []string      `json:"ips" form:"ips"`
 	Secret          string        `json:"secret" form:"secret"`
-	Type            user.UserType `json:"type" form:"type"`
+	Type            user.Type     `json:"type" form:"type"`
 	TokenExpiration time.Duration `json:"token_expiration" form:"token_expiration"`
 }
 
