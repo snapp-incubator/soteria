@@ -1,127 +1,123 @@
-package redis
+package redis_test
 
 import (
 	"context"
 	"encoding/json"
-	"github.com/alicebob/miniredis/v2"
-	"github.com/go-redis/redis/v8"
-	"github.com/stretchr/testify/assert"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"testing"
 	"time"
+
+	"github.com/alicebob/miniredis/v2"
+	"github.com/go-redis/redis/v8"
+	"github.com/stretchr/testify/suite"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
+	rd "gitlab.snapp.ir/dispatching/soteria/v3/internal/db/redis"
 )
 
-func TestRedisModelHandler_Get(t *testing.T) {
-	r := newTestRedis()
-	s := ModelHandler{
-		Client: r,
-	}
-	expected := MockModel{Name: "test"}
-	v, _ := json.Marshal(expected)
+type RedisModelHandlerSuite struct {
+	suite.Suite
 
-	err := r.Set(context.Background(), "mock-test", v, 0).Err()
-	assert.NoError(t, err)
-
-	t.Run("testing successful get", func(t *testing.T) {
-		var actual MockModel
-		err := s.Get(context.Background(), "mock", "test", &actual)
-		assert.Equal(t, expected, actual)
-		assert.NoError(t, err)
-	})
-	t.Run("testing failed get", func(t *testing.T) {
-		var actual MockModel
-		err := s.Get(context.Background(), "mock", "t", &actual)
-		assert.Error(t, err)
-		assert.Equal(t, "redis: nil", err.Error())
-	})
-
-	err = r.Del(context.Background(), "mock-test").Err()
-	assert.NoError(t, err)
-
+	Model db.ModelHandler
+	DB    *redis.Client
 }
 
-func TestRedisModelHandler_Save(t *testing.T) {
-	r := newTestRedis()
-	s := ModelHandler{
-		Client: r,
-	}
-
-	t.Run("testing save model", func(t *testing.T) {
-		expected := MockModel{Name: "save-test"}
-		err := s.Save(context.Background(), expected)
-		assert.NoError(t, err)
-		v := r.Get(context.Background(), "mock-save-test").Val()
-		var actual MockModel
-		json.Unmarshal([]byte(v), &actual)
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestRedisModelHandler_Delete(t *testing.T) {
-	r := newTestRedis()
-	s := ModelHandler{
-		Client: r,
-	}
-
-	expected := MockModel{Name: "test"}
-	v, _ := json.Marshal(expected)
-
-	err := r.Set(context.Background(), "mock-test", v, 0).Err()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Run("testing successful delete", func(t *testing.T) {
-		err := s.Delete(context.Background(), "mock", "test")
-		assert.NoError(t, err)
-		err = r.Get(context.Background(), "mock-test").Err()
-		assert.Error(t, err)
-		assert.Equal(t, "redis: nil", err.Error())
-
-	})
-	t.Run("testing failed delete", func(t *testing.T) {
-		var actual MockModel
-		err := s.Get(context.Background(), "mock", "t", &actual)
-		assert.Error(t, err)
-		assert.Equal(t, "redis: nil", err.Error())
-	})
-}
-
-func TestRedisModelHandler_Update(t *testing.T) {
-	r := newTestRedis()
-	s := ModelHandler{
-		Client: r,
-	}
-
-	m := MockModel{Name: "test", Value: "test-1"}
-	v, _ := json.Marshal(m)
-
-	err := r.Set(context.Background(), "mock-test", v, 0).Err()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Run("testing successful update", func(t *testing.T) {
-		newModel := MockModel{Name: "test", Value: "test-2"}
-		err = s.Update(context.Background(), newModel)
-		assert.NoError(t, err)
-
-		var updatedModel MockModel
-		err = s.Get(context.Background(), "mock", "test", &updatedModel)
-		assert.NoError(t, err)
-
-		assert.Equal(t, newModel, updatedModel)
-	})
-}
-
-func newTestRedis() *redis.Client {
+func (suite *RedisModelHandlerSuite) SetupSuite() {
 	mr, err := miniredis.Run()
-	if err != nil {
-		panic(err)
-	}
+	suite.Require().NoError(err)
+
+	// nolint: exhaustivestruct
 	client := redis.NewClient(&redis.Options{
 		Addr: mr.Addr(),
 	})
-	return client
+
+	suite.DB = client
+	suite.Model = rd.ModelHandler{Client: client}
+}
+
+func (suite *RedisModelHandlerSuite) TestGet() {
+	require := suite.Require()
+
+	expected := MockModel{Name: "test", Value: ""}
+	v, err := json.Marshal(expected)
+	require.NoError(err)
+
+	require.NoError(suite.DB.Set(context.Background(), "mock-test", v, 0).Err())
+
+	suite.Run("testing successful get", func() {
+		var actual MockModel
+		err := suite.Model.Get(context.Background(), "mock", "test", &actual)
+		require.Equal(expected, actual)
+		require.NoError(err)
+	})
+
+	suite.Run("testing invalid get usage", func() {
+		var actual MockModel
+		err := suite.Model.Get(context.Background(), "mock", "test", actual)
+		require.Error(err)
+	})
+
+	suite.Run("testing failed get", func() {
+		var actual MockModel
+		err := suite.Model.Get(context.Background(), "mock", "t", &actual)
+		require.EqualError(err, "redis: nil")
+	})
+
+	require.NoError(suite.DB.Del(context.Background(), "mock-test").Err())
+}
+
+func (suite *RedisModelHandlerSuite) TestSave() {
+	require := suite.Require()
+
+	expected := MockModel{Name: "save-test", Value: ""}
+
+	require.NoError(suite.Model.Save(context.Background(), expected))
+
+	v := suite.DB.Get(context.Background(), "mock-save-test").Val()
+
+	var actual MockModel
+
+	require.NoError(json.Unmarshal([]byte(v), &actual))
+	require.Equal(expected, actual)
+}
+
+func (suite *RedisModelHandlerSuite) TestDelete() {
+	require := suite.Require()
+
+	expected := MockModel{Name: "test", Value: ""}
+	v, _ := json.Marshal(expected)
+
+	require.NoError(suite.DB.Set(context.Background(), "mock-test", v, 0).Err())
+
+	suite.Run("testing successful delete", func() {
+		require.NoError(suite.Model.Delete(context.Background(), "mock", "test"))
+
+		err := suite.DB.Get(context.Background(), "mock-test").Err()
+		require.EqualError(err, "redis: nil")
+	})
+
+	suite.Run("testing failed delete", func() {
+		var actual MockModel
+
+		err := suite.Model.Get(context.Background(), "mock", "t", &actual)
+		require.EqualError(err, "redis: nil")
+	})
+}
+
+func (suite *RedisModelHandlerSuite) TestUpdate() {
+	require := suite.Require()
+
+	m := MockModel{Name: "test", Value: "test-1"}
+	v, err := json.Marshal(m)
+	require.NoError(err)
+
+	require.NoError(suite.DB.Set(context.Background(), "mock-test", v, 0).Err())
+
+	newModel := MockModel{Name: "test", Value: "test-2"}
+	require.NoError(suite.Model.Update(context.Background(), newModel))
+
+	var updatedModel MockModel
+
+	require.NoError(suite.Model.Get(context.Background(), "mock", "test", &updatedModel))
+	require.Equal(newModel, updatedModel)
 }
 
 type MockModel struct {
@@ -139,4 +135,10 @@ func (m MockModel) GetMetadata() db.MetaData {
 
 func (m MockModel) GetPrimaryKey() string {
 	return m.Name
+}
+
+func TestRedisModelHandlerSuite(t *testing.T) {
+	t.Parallel()
+
+	suite.Run(t, new(RedisModelHandlerSuite))
 }

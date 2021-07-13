@@ -9,6 +9,7 @@ import (
 )
 
 func NewRedisClient(cfg *config.RedisConfig) (*redis.Client, error) {
+	// nolint: exhaustivestruct
 	opts := &redis.Options{
 		Addr:               cfg.Address,
 		Password:           cfg.Password,
