@@ -53,7 +53,7 @@ type ErrInvalidTopic struct {
 }
 
 func (err ErrInvalidTopic) Error() string {
-	return fmt.Sprintf("cannot find issuer %s public key", err.Topic)
+	return fmt.Sprintf("provided topic %s is not valid", err.Topic)
 }
 
 // Authenticator is responsible for Acl/Auth/Token of users.
@@ -326,7 +326,7 @@ func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappi
 		return true
 	}
 
-	return string(ch) != string(topic)
+	return string(ch) == string(topic)
 }
 
 func issuerToAudience(issuer user.Issuer) snappids.Audience {
