@@ -1,12 +1,13 @@
 package app
 
 import (
+	"io"
+	"sync"
+
 	"github.com/opentracing/opentracing-go"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/accounts"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/metrics"
-	"io"
-	"sync"
 )
 
 type app struct {
