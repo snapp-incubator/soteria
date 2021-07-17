@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 )
 
@@ -13,5 +12,5 @@ var Root = &cobra.Command{
 }
 
 func rootRun(cmd *cobra.Command, args []string) {
-	fmt.Println("Run `soteria serve` to start serving requests")
+	cmd.Println("Run `soteria serve` to start serving requests")
 }
