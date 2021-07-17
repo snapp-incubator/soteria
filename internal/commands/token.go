@@ -47,43 +47,30 @@ var Token = &cobra.Command{
 
 		return ErrInvalidInput{Message: fmt.Sprintf("token with type %s is not valid", t)}
 	},
-	PreRunE: tokenPreRun,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		config := config.InitConfig()
+
+		pk100, err := config.ReadPrivateKey(user.ThirdParty)
+		if err != nil {
+			return fmt.Errorf("cannot load private keys %w", err)
+		}
+
+		// nolint: exhaustivestruct
+		app.GetInstance().SetAuthenticator(&authenticator.Authenticator{
+			PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
+				user.ThirdParty: pk100,
+			},
+		})
+
 		switch args[0] {
 		case "herald":
 			return heraldToken(cmd, args)
 		case "superuser":
-			return superuserToken(cmd, args)
+			return superuserToken(config, cmd, args)
 		default:
 			return ErrInvalidToken
 		}
 	},
-}
-
-func tokenPreRun(cmd *cobra.Command, args []string) error {
-	config := config.InitConfig()
-
-	pk100, err := config.ReadPrivateKey(user.ThirdParty)
-	if err != nil {
-		return fmt.Errorf("cannot load private keys %w", err)
-	}
-
-	cli, err := redis.NewRedisClient(config.Redis)
-	if err != nil {
-		return fmt.Errorf("redis connection failed %w", err)
-	}
-
-	// nolint: exhaustivestruct
-	app.GetInstance().SetAuthenticator(&authenticator.Authenticator{
-		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
-			user.ThirdParty: pk100,
-		},
-	})
-	app.GetInstance().SetEMQStore(emq.Store{
-		Client: cli,
-	})
-
-	return nil
 }
 
 func heraldToken(cmd *cobra.Command, args []string) error {
@@ -196,7 +183,16 @@ func heraldToken(cmd *cobra.Command, args []string) error {
 	}
 }
 
-func superuserToken(cmd *cobra.Command, _ []string) error {
+func superuserToken(config config.AppConfig, cmd *cobra.Command, _ []string) error {
+	cli, err := redis.NewRedisClient(config.Redis)
+	if err != nil {
+		return fmt.Errorf("redis connection failed %w", err)
+	}
+
+	app.GetInstance().SetEMQStore(emq.Store{
+		Client: cli,
+	})
+
 	r := bufio.NewScanner(os.Stdin)
 
 	cmd.Print("username? >>> ")
