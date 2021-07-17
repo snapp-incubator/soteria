@@ -2,12 +2,14 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/web/rest/api/emq"
 	"go.uber.org/zap"
-	"net/http"
-	"time"
 )
 
 // setupRouter will attach all routes needed for Soteria to gin's default router
@@ -35,6 +37,8 @@ func setupRouter(mode string) *gin.Engine {
 			authorizedRoutes.DELETE("/:username/rules/:uuid", DeleteAccountRule)
 		}
 	}
+
+	emq.Register(router.Group("/emq"))
 
 	router.POST("/auth", Auth)
 	router.POST("/acl", ACL)

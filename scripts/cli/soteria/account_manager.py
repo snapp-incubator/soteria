@@ -1,8 +1,8 @@
-from requests_toolbelt import sessions
 import dacite
+from requests_toolbelt import sessions
 
-from .rule import Rule
 from .account import Account
+from .rule import Rule
 
 
 class AccountManager:

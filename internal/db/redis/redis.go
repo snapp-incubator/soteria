@@ -9,16 +9,17 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 )
 
-// RedisModelHandler implements ModelHandler interface
+// RedisModelHandler implements ModelHandler interface.
 type ModelHandler struct {
 	Client redis.Cmdable
 }
 
-// Save saves a model in redis
+// Save saves a model in redis.
 func (rmh ModelHandler) Save(ctx context.Context, model db.Model) error {
 	md := model.GetMetadata()
 	pk := model.GetPrimaryKey()
 	key := GenerateKey(md.ModelName, pk)
+
 	value, err := json.Marshal(model)
 	if err != nil {
 		return err
@@ -31,7 +32,7 @@ func (rmh ModelHandler) Save(ctx context.Context, model db.Model) error {
 	return nil
 }
 
-// Delete finds and deletes a model from redis and cache
+// Delete finds and deletes a model from redis and cache.
 func (rmh ModelHandler) Delete(ctx context.Context, modelName, pk string) error {
 	key := GenerateKey(modelName, pk)
 
@@ -39,14 +40,16 @@ func (rmh ModelHandler) Delete(ctx context.Context, modelName, pk string) error 
 	if err != nil {
 		return fmt.Errorf("%w: %s", db.ErrDb, err)
 	}
+
 	if res < 1 {
 		return fmt.Errorf("key does not exist")
 	}
+
 	return nil
 }
 
-// Get returns a model from redis or from cache, if exists
-func (rmh ModelHandler) Get(ctx context.Context, modelName, pk string, v interface{}) error {
+// Get returns a model from redis or from cache, if exists.
+func (rmh ModelHandler) Get(ctx context.Context, modelName, pk string, v db.Model) error {
 	key := GenerateKey(modelName, pk)
 
 	res, err := rmh.Client.Get(ctx, key).Result()
@@ -56,14 +59,14 @@ func (rmh ModelHandler) Get(ctx context.Context, modelName, pk string, v interfa
 		return fmt.Errorf("%w: %s", db.ErrDb, err)
 	}
 
-	if err := json.Unmarshal([]byte(res), &v); err != nil {
-		return err
+	if err := json.Unmarshal([]byte(res), v); err != nil {
+		return fmt.Errorf("cannot unmarshal model %w", err)
 	}
 
 	return nil
 }
 
-// Update finds and updates a model in redis
+// Update finds and updates a model in redis.
 func (rmh ModelHandler) Update(ctx context.Context, model db.Model) error {
 	md := model.GetMetadata()
 	pk := model.GetPrimaryKey()
@@ -85,7 +88,7 @@ func (rmh ModelHandler) Update(ctx context.Context, model db.Model) error {
 	return nil
 }
 
-// GenerateKey is used to generate redis keys
+// GenerateKey is used to generate redis keys.
 func GenerateKey(modelName, pk string) string {
-	return fmt.Sprintf("%v-%v", modelName, pk)
+	return fmt.Sprintf("%s-%s", modelName, pk)
 }
