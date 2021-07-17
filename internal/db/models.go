@@ -12,7 +12,7 @@ var ErrDb = errors.New("database error")
 type ModelHandler interface {
 	Save(ctx context.Context, model Model) error
 	Delete(ctx context.Context, modelName, pk string) error
-	Get(ctx context.Context, modelName, pk string, v interface{}) error
+	Get(ctx context.Context, modelName, pk string, model Model) error
 	Update(ctx context.Context, model Model) error
 }
 

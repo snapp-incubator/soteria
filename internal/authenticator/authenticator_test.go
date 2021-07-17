@@ -4,6 +4,10 @@ import (
 	"context"
 	"crypto/rsa"
 	"fmt"
+	"io/ioutil"
+	"testing"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -14,9 +18,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/memoize"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	"golang.org/x/crypto/bcrypt"
-	"io/ioutil"
-	"testing"
-	"time"
 )
 
 const (
@@ -35,6 +36,16 @@ const (
 
 	validDriverSuperappEventTopic   = "snapp/driver/0956923be632d673560af9adadd2f78a/superapp"
 	invalidDriverSuperappEventTopic = "snapp/driver/0596923be632d673560af9adadd2f78a/superapp"
+
+	validDriverSharedTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/passenger-location"
+	validPassengerSharedTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/driver-location"
+	invalidDriverSharedTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/passenger-location"
+	invalidPassengerSharedTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/driver-location"
+
+	validDriverChatTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/chat"
+	validPassengerChatTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/chat"
+	invalidDriverChatTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/chat"
+	invalidPassengerChatTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/chat"
 )
 
 func TestAuthenticator_Auth(t *testing.T) {
@@ -311,77 +322,125 @@ func TestAuthenticator_Acl(t *testing.T) {
 		CompareHashAndPassword: passwordChecker,
 	}
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.PubSub, passengerToken, "test")
+		ok, err := authenticator.ACL(context.Background(), acl.PubSub, passengerToken, "test")
 		assert.Error(t, err)
 		assert.False(t, ok)
-		assert.Equal(t, "requested access type publish-subscribe is invalid", err.Error())
+		assert.Equal(t, ErrInvalidAccessType.Error(), err.Error())
 	})
 	t.Run("testing acl with invalid token", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Pub, invalidToken, validDriverCabEventTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Pub, invalidToken, validDriverCabEventTopic)
 		assert.False(t, ok)
 		assert.Error(t, err)
-		assert.Equal(t, "token is invalid. err: illegal base64 data at input byte 37", err.Error())
+		assert.Equal(t, "token is invalid illegal base64 data at input byte 37", err.Error())
 	})
 	t.Run("testing acl with valid inputs", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, validPassengerCabEventTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerCabEventTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 	t.Run("testing acl with invalid topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, invalidPassengerCabEventTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerCabEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Pub, passengerToken, validPassengerCabEventTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Pub, passengerToken, validPassengerCabEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing acl with third party token", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Sub, thirdPartyToken, validDriverLocationTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, thirdPartyToken, validDriverLocationTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver publish on its location topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Pub, driverToken, validDriverLocationTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Pub, driverToken, validDriverLocationTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver publish on invalid location topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Pub, driverToken, invalidDriverLocationTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Pub, driverToken, invalidDriverLocationTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing driver subscribe on invalid cab event topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, invalidDriverCabEventTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, invalidDriverCabEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on valid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, validPassengerSuperappEventTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerSuperappEventTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on invalid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Sub, passengerToken, invalidPassengerSuperappEventTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerSuperappEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing driver subscribe on valid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, validDriverSuperappEventTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, validDriverSuperappEventTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver subscribe on invalid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.Acl(context.Background(), acl.Sub, driverToken, invalidDriverSuperappEventTopic)
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, invalidDriverSuperappEventTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing driver subscribe on valid shared location topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, validDriverSharedTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on valid shared location topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerSharedTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing driver subscribe on invalid shared location topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, invalidDriverSharedTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on invalid shared location topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerSharedTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing driver subscribe on valid chat topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, validDriverChatTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on valid chat topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerChatTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing driver subscribe on invalid chat topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, invalidDriverChatTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on invalid chat topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerChatTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
@@ -503,7 +562,7 @@ func (rmh MockModelHandler) Delete(ctx context.Context, modelName, pk string) er
 	return nil
 }
 
-func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v interface{}) error {
+func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v db.Model) error {
 	switch pk {
 	case "passenger":
 		*v.(*user.User) = user.User{
@@ -511,14 +570,29 @@ func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v int
 			Username: string(user.Passenger),
 			Type:     user.EMQUser,
 			Rules: []user.Rule{
-				user.Rule{
+				{
 					UUID:       uuid.New(),
 					Topic:      topics.CabEvent,
 					AccessType: acl.Sub,
 				},
-				user.Rule{
+				{
 					UUID:       uuid.New(),
 					Topic:      topics.SuperappEvent,
+					AccessType: acl.Sub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.PassengerLocation,
+					AccessType: acl.Pub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.SharedLocation,
+					AccessType: acl.Sub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.Chat,
 					AccessType: acl.Sub,
 				},
 			},
@@ -528,20 +602,37 @@ func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v int
 			MetaData: db.MetaData{},
 			Username: string(user.Driver),
 			Type:     user.EMQUser,
-			Rules: []user.Rule{{
-				UUID:       uuid.Nil,
-				Endpoint:   "",
-				Topic:      topics.DriverLocation,
-				AccessType: acl.Pub,
-			}, {
-				UUID:       uuid.Nil,
-				Endpoint:   "",
-				Topic:      topics.CabEvent,
-				AccessType: acl.Sub,
-			},
+			Rules: []user.Rule{
+				{
+					UUID:       uuid.Nil,
+					Endpoint:   "",
+					Topic:      topics.DriverLocation,
+					AccessType: acl.Pub,
+				},
+				{
+					UUID:       uuid.Nil,
+					Endpoint:   "",
+					Topic:      topics.CabEvent,
+					AccessType: acl.Sub,
+				},
 				{
 					UUID:       uuid.New(),
 					Topic:      topics.SuperappEvent,
+					AccessType: acl.Sub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.PassengerLocation,
+					AccessType: acl.Pub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.SharedLocation,
+					AccessType: acl.Sub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.Chat,
 					AccessType: acl.Sub,
 				},
 			},

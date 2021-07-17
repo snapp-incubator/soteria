@@ -74,16 +74,18 @@ for production deployments on Cloud (okd).
 - `web`: web interface of application including rest and grpc
 - `test`: test data like jwt keys
 
-# Accounting
+# Accounting with Soteria-CLI
 
-## EMQ
+## Installation
 
-0. Install [pipenv](https://pipenv.pypa.io/en/latest/).
+Install [pipenv](https://pipenv.pypa.io/en/latest/).
 
 ```sh
-pipenv install
-pipenv shell
+poetry install
+poetry shell
 ```
+
+## EMQ User (http-auth)
 
 1. First create an `emq` account
 
@@ -94,7 +96,7 @@ python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.
 2. Add rule for accessing the requested topic
 
 ```sh
-python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" rules-add --username gossiper --password password --topic gossiper_location --access-type pub
+python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" rules-add --username gossiper --password password --topic shared_location --access-type pubsub
 ```
 
 3. Set account secret
@@ -119,4 +121,14 @@ python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.
 
 ```sh
 python3 main.py -b "https://soteria-snapp-ode-004.apps.private.teh-1.snappcloud.io/" token --username gossiper --secret secret --grant-type pub
+```
+
+## EMQ Superuser (redis-auth)
+
+The main job of superuser authentication is on the emq and the redis. soteria only makes the creation process easier.
+
+1. Create EMQ superuser on redis. the command returns the authentication information for your service.
+
+```sh
+python3 main.py -b "https://soteria-snapp-ode-012.apps.private.teh-1.snappcloud.io/" superuser --username parham --password password --duration $((1000 * 1000 * 1000))
 ```
