@@ -51,6 +51,9 @@ ingress:
       paths: [ ]
   tls: [ ]
 
+serviceMonitor:
+  enabled: false
+
 jwtKeys:
   0.pem: |-
     -----BEGIN PUBLIC KEY-----

@@ -2,6 +2,9 @@ package api
 
 import (
 	"errors"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
@@ -11,11 +14,9 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"go.uber.org/zap"
-	"net/http"
-	"time"
 )
 
-// aclRequest is the body payload structure of the ACL endpoint
+// aclRequest is the body payload structure of the ACL endpoint.
 type aclRequest struct {
 	Access   acl.AccessType `form:"access"`
 	Token    string         `form:"token"`
@@ -24,7 +25,7 @@ type aclRequest struct {
 	Topic    string         `form:"topic"`
 }
 
-// ACL is the handler responsible for ACL requests
+// ACL is the handler responsible for ACL requests.
 func ACL(ctx *gin.Context) {
 	aclSpan := app.GetInstance().Tracer.StartSpan("api.rest.acl")
 	defer aclSpan.Finish()
@@ -61,6 +62,16 @@ func ACL(ctx *gin.Context) {
 	topic := topics.Topic(request.Topic)
 	topicType := topic.GetType()
 	if len(topicType) == 0 {
+		zap.L().
+			Warn("acl bad request",
+				zap.Error(err),
+				zap.String("access", request.Access.String()),
+				zap.String("topic", request.Topic),
+				zap.String("token", request.Token),
+				zap.String("username", request.Password),
+				zap.String("password", request.Username),
+			)
+
 		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Acl, http.StatusBadRequest)
 		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Failure, "bad request")
 		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
@@ -70,14 +81,15 @@ func ACL(ctx *gin.Context) {
 
 	aclCheckSpan := app.GetInstance().Tracer.StartSpan("acl check", opentracing.ChildOf(aclSpan.Context()))
 
-	ok, err := app.GetInstance().Authenticator.Acl(ctx, request.Access, tokenString, topic)
+	ok, err := app.GetInstance().Authenticator.ACL(ctx, request.Access, tokenString, topic)
 	if err != nil || !ok {
 		aclCheckSpan.SetTag("success", false)
 		if err != nil {
 			aclCheckSpan.SetTag("error", err.Error())
 		}
 
-		if errors.Is(err, authenticator.TopicNotAllowed) {
+		// nolint: exhaustivestruct
+		if errors.Is(err, authenticator.ErrTopicNotAllowed{}) {
 			zap.L().
 				Warn("acl request is not authorized",
 					zap.Error(err))
