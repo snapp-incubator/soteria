@@ -3,6 +3,7 @@ package cachedredis
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/patrickmn/go-cache"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db/redis"
@@ -20,24 +21,29 @@ func NewCachedRedisModelHandler(redisModelHandler *redis.ModelHandler, cache *ca
 	}
 }
 
-// Save saves a model in redis
+// Save saves a model in redis.
 func (mh *ModelHandler) Save(ctx context.Context, model db.Model) error {
 	return mh.redisModelHandler.Save(ctx, model)
 }
 
-// Delete finds and deletes a model from redis and cache
+// Delete finds and deletes a model from redis and cache.
 func (mh *ModelHandler) Delete(ctx context.Context, modelName, pk string) error {
 	key := redis.GenerateKey(modelName, pk)
 	mh.cache.Delete(key)
+
 	return mh.redisModelHandler.Delete(ctx, modelName, pk)
 }
 
-// Get searches cache at first then returns a model from redis or from cache, if exists
-func (mh *ModelHandler) Get(ctx context.Context, modelName, pk string, v interface{}) error {
+// Get searches cache at first then returns a model from redis or from cache, if exists.
+func (mh *ModelHandler) Get(ctx context.Context, modelName, pk string, v db.Model) error {
 	key := redis.GenerateKey(modelName, pk)
+
 	item, found := mh.cache.Get(key)
 	if found {
-		json.Unmarshal([]byte(item.(string)), &v)
+		if err := json.Unmarshal([]byte(item.(string)), v); err != nil {
+			return err
+		}
+
 		return nil
 	}
 
@@ -45,13 +51,14 @@ func (mh *ModelHandler) Get(ctx context.Context, modelName, pk string, v interfa
 	if err != nil {
 		return err
 	}
+
 	value, _ := json.Marshal(v)
 	mh.cache.SetDefault(key, string(value))
 
 	return nil
 }
 
-// Update invalidates cache and then finds and updates a model in redis
+// Update invalidates cache and then finds and updates a model in redis.
 func (mh *ModelHandler) Update(ctx context.Context, model db.Model) error {
 	key := redis.GenerateKey(model.GetMetadata().ModelName, model.GetPrimaryKey())
 
@@ -59,4 +66,3 @@ func (mh *ModelHandler) Update(ctx context.Context, model db.Model) error {
 
 	return mh.redisModelHandler.Update(ctx, model)
 }
-

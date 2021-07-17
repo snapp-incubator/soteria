@@ -1,30 +1,40 @@
 package app
 
 import (
+	"io"
+	"sync"
+
 	"github.com/opentracing/opentracing-go"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/accounts"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/emq"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/metrics"
-	"io"
-	"sync"
 )
 
 type app struct {
 	Metrics         metrics.Metrics
 	Authenticator   *authenticator.Authenticator
 	AccountsService *accounts.Service
+	EMQStore        emq.Store
 	Tracer          opentracing.Tracer
 	TracerCloser    io.Closer
 }
 
-var singleton *app
-var once sync.Once
+var (
+	singleton *app
+	once      sync.Once
+)
 
 func GetInstance() *app {
 	once.Do(func() {
 		singleton = &app{}
 	})
+
 	return singleton
+}
+
+func (a *app) SetEMQStore(store emq.Store) {
+	a.EMQStore = store
 }
 
 func (a *app) SetAuthenticator(authenticator *authenticator.Authenticator) {
