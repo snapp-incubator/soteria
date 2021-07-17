@@ -4,6 +4,18 @@
 
 ---
 
+## July 17, 2021
+
+### Added
+
+- Add superuser token support
+
+### Changed
+
+- Refactor internal packages
+
+### Fixed
+
 ## May 31, 2021
 
 ### Added
