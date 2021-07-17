@@ -2,15 +2,16 @@ package accounts
 
 import (
 	"context"
+	"time"
+
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/errors"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 // SignUp creates a user with the given information in database
-func (s Service) SignUp(ctx context.Context, username, password string, userType user.UserType) *errors.Error {
+func (s Service) SignUp(ctx context.Context, username, password string, userType user.Type) *errors.Error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return errors.CreateError(errors.PasswordHashGenerationFailure, err.Error())

@@ -47,6 +47,16 @@ func main() {
 				Topic:      topics.SuperappEvent,
 				AccessType: acl.Sub,
 			},
+			user.Rule{
+				UUID:       uuid.New(),
+				Topic:      topics.SharedLocation,
+				AccessType: acl.Sub,
+			},
+			user.Rule{
+				UUID:       uuid.New(),
+				Topic:      topics.Chat,
+				AccessType: acl.PubSub,
+			},
 		},
 	}
 
@@ -62,15 +72,30 @@ func main() {
 		Secret:                  string(secret),
 		TokenExpirationDuration: time.Hour * 30 * 24,
 		Rules: []user.Rule{
-			user.Rule{
+			{
 				UUID:       uuid.New(),
 				Topic:      topics.CabEvent,
 				AccessType: acl.Sub,
 			},
-			user.Rule{
+			{
 				UUID:       uuid.New(),
 				Topic:      topics.SuperappEvent,
 				AccessType: acl.Sub,
+			},
+			{
+				UUID:       uuid.New(),
+				Topic:      topics.PassengerLocation,
+				AccessType: acl.Pub,
+			},
+			{
+				UUID:       uuid.New(),
+				Topic:      topics.SharedLocation,
+				AccessType: acl.Sub,
+			},
+			{
+				UUID:       uuid.New(),
+				Topic:      topics.Chat,
+				AccessType: acl.PubSub,
 			},
 		},
 	}
