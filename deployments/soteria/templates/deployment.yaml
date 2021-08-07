@@ -23,7 +23,7 @@ spec:
         prometheus.io/port: {{ .port | quote }}
         {{ end }}
         {{ end }}
-      labels: 
+      labels:
       {{- include "soteria.selectorLabels" . | nindent 8 }}
     spec:
       containers:
@@ -34,6 +34,7 @@ spec:
           ports:
             {{ range .Values.service.ports }}
             - containerPort: {{ .port }}
+              name: {{ .name }}
               protocol: {{ .protocol | upper }}
             {{ end }}
           resources:
