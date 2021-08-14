@@ -331,6 +331,8 @@ gitlab.snapp.ir/dispatching/snappids/v2 v2.5.2 h1:P+PNVwppAee0XzYP9jXPevCyMJO9ES
 gitlab.snapp.ir/dispatching/snappids/v2 v2.5.2/go.mod h1:p9EBmjqBXuImZ5NeoN3SXV8kZ1/6QYAeUu0e7oQkGQc=
 gitlab.snapp.ir/dispatching/snappids/v2 v2.6.0-beta h1:ztJ35NxA0desQqH8ZRPqQSL/iPuvqqO2HV6XWjepKGA=
 gitlab.snapp.ir/dispatching/snappids/v2 v2.6.0-beta/go.mod h1:U7lxAuqPifdXkUNcCXhtk9+6HFAyw5qy8LrF1DQDMuQ=
+gitlab.snapp.ir/dispatching/snappids/v2 v2.6.1 h1:G782ZLXcCTI5Kby/s3YPur9S6cJxtLds1NVemWrgzi8=
+gitlab.snapp.ir/dispatching/snappids/v2 v2.6.1/go.mod h1:U7lxAuqPifdXkUNcCXhtk9+6HFAyw5qy8LrF1DQDMuQ=
 go.etcd.io/bbolt v1.3.2 h1:Z/90sZLPOeCy2PwprqkFa25PdkusRzaj9P8zm/KNyvk=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.opentelemetry.io/otel v0.13.0 h1:2isEnyzjjJZq6r2EKMsFj4TxiQiexsM04AVhwbR/oBA=
