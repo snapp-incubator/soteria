@@ -1,0 +1,100 @@
+.release_template: &release_job_definition
+  image: docker:latest
+  stage: release
+  before_script:
+    - docker info
+    - docker login -u ${CONTAINER_REGISTRY_USERNAME} -p ${CONTAINER_REGISTRY_PASSWORD} ${CONTAINER_REGISTRY_ADDRESS}
+    - docker load --input ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}.tar
+    - docker tag ${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG} ${CONTAINER_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
+  script:
+    - docker push ${CONTAINER_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
+  dependencies:
+    - build
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
+
+release:staging:
+  <<: *release_job_definition
+  variables:
+    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
+    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_STAGING/$CI_PROJECT_NAME"
+    CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+    CONTAINER_REGISTRY_PASSWORD: "$OKD_STAGING_TOKEN"
+  only:
+    - master
+    - tags
+    - branches
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
+
+release:mozart:
+  <<: *release_job_definition
+  variables:
+    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
+    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_MOZART/$CI_PROJECT_NAME"
+    CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+    CONTAINER_REGISTRY_PASSWORD: "$OKD_MOZART_TOKEN"
+  only:
+    - master
+    - tags
+    - branches
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
+  when: manual
+
+release:production:teh-1:
+  <<: *release_job_definition
+  variables:
+    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
+    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_PRODUCTION_TEH1/$CI_PROJECT_NAME"
+    CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+    CONTAINER_REGISTRY_PASSWORD: "$OKD_PRODUCTION_TOKEN_TEH1"
+  only:
+    - tags
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
+
+release:production:teh-2:
+  <<: *release_job_definition
+  variables:
+    CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH2_REGISTRY"
+    CONTAINER_REGISTRY_IMAGE: "$OKD_TEH2_REGISTRY/$PROJECT_PRODUCTION_TEH2/$CI_PROJECT_NAME"
+    CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+    CONTAINER_REGISTRY_PASSWORD: "$OKD_PRODUCTION_TOKEN_TEH2"
+  only:
+    - tags
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
+
+release:production:okd4:teh-1:
+  <<: *release_job_definition
+  variables:
+    OKD4_TEH1_REGISTRY: "image-registry.apps.private.okd4.teh-1.snappcloud.io"
+    RELEASE_CONTAINER_REGISTRY_ADDRESS: "$OKD4_TEH1_REGISTRY"
+    RELEASE_CONTAINER_REGISTRY_IMAGE: "$OKD4_TEH1_REGISTRY/realtime-production/$CI_PROJECT_NAME"
+    RELEASE_CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+    RELEASE_CONTAINER_REGISTRY_PASSWORD: ${OKD4_TEH1_REALTIME_PRODUCTION_TOKEN}
+  only:
+    - tags
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
+
+release:production:baly:
+  <<: *release_job_definition
+  variables:
+    BALY_REGISTRY: "registry.cloud.baly.app"
+    RELEASE_CONTAINER_REGISTRY_ADDRESS: "$BALY_REGISTRY"
+    RELEASE_CONTAINER_REGISTRY_IMAGE: "$BALY_REGISTRY/baly-dispatching/$CI_PROJECT_NAME"
+    RELEASE_CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+    RELEASE_CONTAINER_REGISTRY_PASSWORD: ${BALY_DISPATCHING_PRODUCTION_TOKEN}
+  only:
+    - tags
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
