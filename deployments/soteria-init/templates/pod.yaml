@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "soteria-init.fullname" . }}
+  labels:
+    {{- include "soteria-init.labels" . | nindent 4 }}
+spec:
+  containers:
+    - name: {{ .Chart.Name }}
+      image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+      imagePullPolicy: {{ .Values.image.pullPolicy }}
+      command: ["/app/soteria"]
+      args:
+        - "accounts"
+        - "init"
+        - "db.json"
+      envFrom:
+        - configMapRef:
+            name: {{ include "soteria-init.fullname" . }}
+      volumeMounts:
+        - name: {{ include "soteria-init.fullname" . }}-db
+          mountPath: "/app/db.json"
+          subPath: db.json
+          readOnly: true
+      resources:
+        {{- toYaml .Values.resources | nindent 8 }}
+  restartPolicy: Never
+  volumes:
+    - name: {{ include "soteria-init.fullname" . }}-db
+      secret:
+        secretName: {{ include "soteria-init.fullname" . }}-db
