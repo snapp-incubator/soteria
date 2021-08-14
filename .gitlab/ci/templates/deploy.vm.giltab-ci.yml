@@ -1,0 +1,45 @@
+deploy:production:vm:
+# Extends the global template so it add an after_script step for deployment announcement
+  extends: .deployments_after_script
+  image: registry.snapp.tech/docker/deployer:alpine3.11
+  stage: deploy
+  parallel: 5
+  variables:
+# Add a variable to specify where deployment will be happened for announcement
+    CI_DEPLOYMENT_INFRA: "Afranet"
+    DEPLOYER_PRIVATE_KEY: ${DEPLOYER_PRIVATE_KEY}
+    APP_HOSTNAME: "emqx-0${CI_NODE_INDEX}.app.afra.snapp.infra"
+  before_script:
+    - tar -C ${BUILD_PATH} -cvzf "artifacts-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA.tar.gz" ${CI_PROJECT_NAME}
+  script:
+    - chmod +x ./.gitlab/ci/scripts/deploy.sh
+    - echo  "Deploy Soteria-0${CI_NODE_INDEX}"
+    - ./.gitlab/ci/scripts/deploy.sh
+  needs: ["compile"]
+  only:
+    - tag
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
+  when: manual
+
+deploy:env:
+  image: registry.snapp.tech/docker/deployer:alpine3.11
+  stage: deploy
+  parallel: 5
+  variables:
+    DEPLOYER_PRIVATE_KEY: ${DEPLOYER_PRIVATE_KEY}
+  script:
+    - chmod +x .gitlab/ci/scripts/update-environments.sh
+    - echo  "Update ENV Soteria-0${CI_NODE_INDEX}"
+    - .gitlab/ci/scripts/update-environments.sh
+    - chmod +x .gitlab/ci/scripts/notify-eye.sh
+    - echo  "Send notif to Dispatching-alert room ..."
+    - .gitlab/ci/scripts/notify-eye.sh
+  needs: ['compile']
+  only:
+    - tag
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
+  when: manual

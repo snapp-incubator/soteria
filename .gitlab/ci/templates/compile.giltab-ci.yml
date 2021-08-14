@@ -1,0 +1,28 @@
+
+.go_mod_config: &go_mod
+  image: registry.snapp.tech/docker/golang:1.13.5-alpine3.10
+  cache:
+    policy: pull
+    paths:
+      - vendor/
+  before_script:
+    - go env -w GOPROXY="https://repo.snapp.tech/repository/goproxy/"
+
+compile:
+  <<: *go_mod
+  stage: compile
+  variables:
+    GOOS: "linux"
+    GOARCH: "amd64"
+    CGO_ENABLED: 0
+  script:
+    - go mod vendor -v
+    - go build -mod vendor -v -o ${BUILD_PATH}/${CI_PROJECT_NAME} cmd/soteria/soteria.go
+  artifacts:
+    name: "$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG"
+    paths:
+      - ${BUILD_PATH}/${CI_PROJECT_NAME}
+    expire_in: 1 week
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE

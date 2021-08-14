@@ -1,0 +1,37 @@
+lint:helm:soteria:
+  stage: lint
+  extends: .easy_ci:helm:lint
+  variables:
+    HELM_CHARTS_DIR: "deployments"
+  rules:
+    - if: ' $IGNITE_TRIGGER_BRANCH_HELM && $CI_PIPELINE_SOURCE=="pipeline" '
+      when: manual
+
+package:helm:soteria:
+  stage: build
+  extends: .easy_ci:helm:package
+  variables:
+    HELM_CHARTS_DIR: "deployments"
+    HELM_PACKAGE_DIR: "helm_packages"
+  needs: ["lint:helm:soteria"]
+  artifacts:
+    name: "HELM_PACKAGES-$CI_COMMIT_REF_SLUG"
+    paths:
+      - $HELM_PACKAGE_DIR
+    expire_in: 1h
+  rules:
+    - if: ' $IGNITE_TRIGGER_BRANCH_HELM && $CI_PIPELINE_SOURCE=="pipeline" '
+      when: manual
+
+chart:helm::soteria:
+  stage: deploy
+  extends: .easy_ci:helm:push
+  variables:
+    HELM_PACKAGE_DIR: "helm_packages"
+    HELM_REPO_ADDRESS: "$DISPATCHING_HELM_REPO_ADDRESS"
+    HELM_REPO_USER: "$DISPATCHING_HELM_REPO_USER"
+    HELM_REPO_PASS: "$DISPATCHING_HELM_REPO_PASS"
+  needs: ["package:helm:soteria"]
+  rules:
+    - if: ' $IGNITE_TRIGGER_BRANCH_HELM && $CI_PIPELINE_SOURCE=="pipeline" '
+      when: manual
