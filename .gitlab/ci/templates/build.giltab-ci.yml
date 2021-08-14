@@ -1,0 +1,23 @@
+build:
+  image: docker:latest
+  stage: build
+  variables:
+    HTTP_PROXY: ${SNAPP_HTTP_PROXY}
+    HTTPS_PROXY: ${SNAPP_HTTPS_PROXY}
+    no_proxy: ${SNAPP_NOPROXY}
+  script:
+    - export CURRENT_DATETIME=$(TZ=Asia/Tehran date '+%FT%T')
+    - docker build --build-arg BUILD_DATE=$CURRENT_DATETIME --build-arg VCS_REF=${CI_COMMIT_SHA} --build-arg BUILD_VERSION=${CI_COMMIT_REF_SLUG} -t ${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG} .
+  after_script:
+    - docker save -o ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}.tar ${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}
+  artifacts:
+    name: "docker-image-$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG"
+    paths:
+      - ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}.tar
+    expire_in: 1 week
+  dependencies:
+    - code-generator
+    - compile
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
