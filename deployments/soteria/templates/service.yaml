@@ -8,7 +8,7 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     {{ range .Values.service.ports }}
-    - name: {{ .name }}-{{ .port }}
+    - name: {{ .name }}
       protocol: {{ .protocol | upper }}
       port: {{ .port }}
       targetPort: {{ .port }}
