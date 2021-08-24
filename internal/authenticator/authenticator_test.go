@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
@@ -123,6 +123,12 @@ func TestAuthenticator_Auth(t *testing.T) {
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
+
+	t.Run("testing issuer for third party token", func(t *testing.T) {
+		iss, err := authenticator.Issuer(context.Background(), thirdPartyToken)
+		assert.NoError(t, err)
+		assert.Equal(t, user.ThirdParty, iss)
+	})
 }
 
 func TestAuthenticator_Token(t *testing.T) {
@@ -143,6 +149,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		ModelHandler:           MockModelHandler{},
 		CompareHashAndPassword: passwordChecker,
 	}
+
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
 		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -154,6 +161,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		assert.Equal(t, "100", claims["iss"].(string))
 
 	})
+
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
 		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "invalid secret")
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -331,7 +339,7 @@ func TestAuthenticator_Acl(t *testing.T) {
 		ok, err := authenticator.ACL(context.Background(), acl.Pub, invalidToken, validDriverCabEventTopic)
 		assert.False(t, ok)
 		assert.Error(t, err)
-		assert.Equal(t, "token is invalid illegal base64 data at input byte 37", err.Error())
+		assert.Equal(t, "token is invalid illegal base64 data at input byte 36", err.Error())
 	})
 	t.Run("testing acl with valid inputs", func(t *testing.T) {
 		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerCabEventTopic)
