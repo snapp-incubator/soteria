@@ -42,6 +42,7 @@ func setupRouter(mode string) *gin.Engine {
 
 	router.POST("/auth", Auth)
 	router.POST("/acl", ACL)
+	router.POST("/superuser", Superuser)
 	router.POST("/token", Token)
 
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
