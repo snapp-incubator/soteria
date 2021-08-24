@@ -1,23 +1,24 @@
 package api
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"go.uber.org/zap"
-	"net/http"
-	"time"
 )
 
-// authRequest is the body payload structure of the auth endpoint
+// authRequest is the body payload structure of the auth endpoint.
 type authRequest struct {
 	Token    string `form:"token"`
 	Username string `from:"username"`
 	Password string `form:"password"`
 }
 
-// Auth is the handler responsible for authentication
+// Auth is the handler responsible for authentication.
 func Auth(ctx *gin.Context) {
 	authSpan := app.GetInstance().Tracer.StartSpan("api.rest.auth")
 	defer authSpan.Finish()
