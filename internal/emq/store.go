@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/go-redis/redis/v8"
@@ -28,9 +27,17 @@ func Key(username string) string {
 	return fmt.Sprintf("mqtt_user:%s", username)
 }
 
+func booleanToOneZero(b bool) int {
+	if b {
+		return 1
+	}
+
+	return 0
+}
+
 func (s *Store) Save(ctx context.Context, u User) error {
 	if err := s.Client.HSet(ctx, Key(u.Username), PasswordHKey, u.Password,
-		IsSuperuserHKey, strconv.FormatBool(u.IsSuperuser)).Err(); err != nil {
+		IsSuperuserHKey, booleanToOneZero(u.IsSuperuser)).Err(); err != nil {
 		return fmt.Errorf("failed to save into redis %w", err)
 	}
 
@@ -57,9 +64,9 @@ func (s *Store) Load(ctx context.Context, username string) (User, error) {
 		return User{}, ErrInvalidHResult
 	}
 
-	iss, err := strconv.ParseBool(siss)
-	if err != nil {
-		return User{}, fmt.Errorf("invalid is_superuser %w", err)
+	iss := false
+	if siss == "1" {
+		iss = true
 	}
 
 	return User{
