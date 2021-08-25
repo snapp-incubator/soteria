@@ -81,8 +81,7 @@ func Auth(ctx *gin.Context) {
 		authCheckSpan.SetTag("ignored", true)
 
 		zap.L().
-			Error("auth request is ignored",
-				zap.Error(err),
+			Info("auth request is ignored",
 				zap.String("token", request.Token),
 				zap.String("username", request.Password),
 				zap.String("password", request.Username),
