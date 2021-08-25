@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
@@ -53,35 +53,44 @@ func TestAuthenticator_Auth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	passengerToken, err := getSampleToken(user.Passenger, false)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	thirdPartyToken, err := getSampleToken(user.ThirdParty, false)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	superuserToken, err := getSampleToken(user.ThirdParty, true)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	pkey0, err := getPublicKey(user.Driver)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	pkey1, err := getPublicKey(user.Passenger)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	pkey100, err := getPublicKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	key100, err := getPrivateKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	passwordChecker := memoize.MemoizedCompareHashAndPassword()
+
 	authenticator := Authenticator{
 		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: key100,
@@ -94,6 +103,7 @@ func TestAuthenticator_Auth(t *testing.T) {
 		ModelHandler:           MockModelHandler{},
 		CompareHashAndPassword: passwordChecker,
 	}
+
 	t.Run("testing driver token auth", func(t *testing.T) {
 		ok, err := authenticator.Auth(context.Background(), driverToken)
 		assert.NoError(t, err)
@@ -143,6 +153,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		ModelHandler:           MockModelHandler{},
 		CompareHashAndPassword: passwordChecker,
 	}
+
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
 		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -154,6 +165,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		assert.Equal(t, "100", claims["iss"].(string))
 
 	})
+
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
 		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "invalid secret")
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -331,7 +343,7 @@ func TestAuthenticator_Acl(t *testing.T) {
 		ok, err := authenticator.ACL(context.Background(), acl.Pub, invalidToken, validDriverCabEventTopic)
 		assert.False(t, ok)
 		assert.Error(t, err)
-		assert.Equal(t, "token is invalid illegal base64 data at input byte 37", err.Error())
+		assert.Equal(t, "token is invalid illegal base64 data at input byte 36", err.Error())
 	})
 	t.Run("testing acl with valid inputs", func(t *testing.T) {
 		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerCabEventTopic)
