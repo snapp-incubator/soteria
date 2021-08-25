@@ -4,7 +4,6 @@ const (
 	Soteria        = "soteria"
 	Acl            = "acl"
 	Auth           = "auth"
-	Superuser      = "superuser"
 	Token          = "token"
 	Success        = "success"
 	Failure        = "failure"
