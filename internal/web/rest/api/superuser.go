@@ -14,6 +14,8 @@ import (
 
 // Superuser is the handler responsible for authentication a superuser.
 // it uses the exact same request payload as authentication endpoint.
+// emq calls the superuser endpoint after success auth based on:
+// https://github.com/emqx/emqx-auth-http/blob/master/src/emqx_auth_http.erl#L45.
 func Superuser(ctx *gin.Context) {
 	authSpan := app.GetInstance().Tracer.StartSpan("api.rest.auth")
 	defer authSpan.Finish()
