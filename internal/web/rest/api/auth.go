@@ -1,23 +1,27 @@
 package api
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"go.uber.org/zap"
-	"net/http"
-	"time"
 )
 
-// authRequest is the body payload structure of the auth endpoint
+const EMQAuthIgnore = "ignore"
+
+// authRequest is the body payload structure of the auth endpoint.
 type authRequest struct {
 	Token    string `form:"token"`
 	Username string `from:"username"`
 	Password string `form:"password"`
 }
 
-// Auth is the handler responsible for authentication
+// Auth is the handler responsible for authentication.
+// it will returns "ignore" for superusers to pass them to redis.
 func Auth(ctx *gin.Context) {
 	authSpan := app.GetInstance().Tracer.StartSpan("api.rest.auth")
 	defer authSpan.Finish()
@@ -34,12 +38,15 @@ func Auth(ctx *gin.Context) {
 		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Failure, "bad request")
 		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusBadRequest, "bad request")
+
 		return
 	}
+
 	tokenString := request.Token
 	if len(tokenString) == 0 {
 		tokenString = request.Username
 	}
+
 	if len(tokenString) == 0 {
 		tokenString = request.Password
 	}
@@ -86,7 +93,7 @@ func Auth(ctx *gin.Context) {
 		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Ignore, "request is ignored")
 		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
 
-		ctx.String(http.StatusOK, "ignore")
+		ctx.String(http.StatusOK, EMQAuthIgnore)
 
 		authCheckSpan.Finish()
 
