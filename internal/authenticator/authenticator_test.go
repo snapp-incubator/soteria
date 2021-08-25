@@ -53,35 +53,44 @@ func TestAuthenticator_Auth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	passengerToken, err := getSampleToken(user.Passenger, false)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	thirdPartyToken, err := getSampleToken(user.ThirdParty, false)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	superuserToken, err := getSampleToken(user.ThirdParty, true)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	pkey0, err := getPublicKey(user.Driver)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	pkey1, err := getPublicKey(user.Passenger)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	pkey100, err := getPublicKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	key100, err := getPrivateKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	passwordChecker := memoize.MemoizedCompareHashAndPassword()
+
 	authenticator := Authenticator{
 		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: key100,
@@ -94,6 +103,7 @@ func TestAuthenticator_Auth(t *testing.T) {
 		ModelHandler:           MockModelHandler{},
 		CompareHashAndPassword: passwordChecker,
 	}
+
 	t.Run("testing driver token auth", func(t *testing.T) {
 		ok, err := authenticator.Auth(context.Background(), driverToken)
 		assert.NoError(t, err)
@@ -122,12 +132,6 @@ func TestAuthenticator_Auth(t *testing.T) {
 		ok, err := authenticator.Auth(context.Background(), invalidToken)
 		assert.Error(t, err)
 		assert.False(t, ok)
-	})
-
-	t.Run("testing issuer for third party token", func(t *testing.T) {
-		iss, err := authenticator.Issuer(context.Background(), thirdPartyToken)
-		assert.NoError(t, err)
-		assert.Equal(t, user.ThirdParty, iss)
 	})
 }
 
