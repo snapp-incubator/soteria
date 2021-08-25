@@ -66,22 +66,6 @@ type Authenticator struct {
 	HashIDSManager         *snappids.HashIDSManager
 	CompareHashAndPassword func([]byte, []byte) error
 	Company                string
-	JWTParser              jwt.Parser
-}
-
-// Issuer returns the iss field of the given token without validating the token.
-func (a Authenticator) Issuer(ctx context.Context, tokenString string) (user.Issuer, error) {
-	var claims jwt.MapClaims
-
-	if _, _, err := a.JWTParser.ParseUnverified(tokenString, &claims); err != nil {
-		return user.Issuer(""), fmt.Errorf("cannot parse the token claims %w", err)
-	}
-
-	if claims["iss"] == nil {
-		return user.Issuer(""), ErrIssNotFound
-	}
-
-	return user.Issuer(fmt.Sprintf("%v", claims["iss"])), nil
 }
 
 // Auth check user authentication by checking the user's token
