@@ -86,6 +86,16 @@ func TestTopic_GetType(t1 *testing.T) {
 			arg:  "snapp/driver/py9kdjLYB35RP4q/chat",
 			want: Chat,
 		},
+		{
+			name: "testing passenger call",
+			arg:  "snapp/passenger/py9kdjLYB35RP4q/call",
+			want: Call,
+		},
+		{
+			name: "testing driver call",
+			arg:  "snapp/driver/py9kdjLYB35RP4q/call",
+			want: Call,
+		},
 	}
 	for i, tt := range tests {
 		t1.Run(fmt.Sprintf("#%d %s", i, tt.name), func(t1 *testing.T) {
