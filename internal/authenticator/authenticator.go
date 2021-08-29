@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
@@ -320,6 +320,8 @@ func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappi
 		ch, _ = a.EMQTopicManager.CreateSharedLocationTopic(id, audience)
 	case topics.Chat:
 		ch, _ = a.EMQTopicManager.CreateChatTopic(id, audience)
+	case topics.Call:
+		ch, _ = a.EMQTopicManager.CreateCallTopic(id, audience)
 	case topics.DaghighSys:
 		return true
 	case topics.BoxEvent:
