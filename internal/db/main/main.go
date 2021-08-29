@@ -58,6 +58,11 @@ func main() {
 				Topic:      topics.Chat,
 				AccessType: acl.PubSub,
 			},
+			user.Rule{
+				UUID:       uuid.New(),
+				Topic:      topics.Call,
+				AccessType: acl.PubSub,
+			},
 		},
 	}
 
@@ -96,6 +101,11 @@ func main() {
 			{
 				UUID:       uuid.New(),
 				Topic:      topics.Chat,
+				AccessType: acl.PubSub,
+			},
+			{
+				UUID:       uuid.New(),
+				Topic:      topics.Call,
 				AccessType: acl.PubSub,
 			},
 		},
