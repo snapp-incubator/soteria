@@ -46,6 +46,11 @@ const (
 	validPassengerChatTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/chat"
 	invalidDriverChatTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/chat"
 	invalidPassengerChatTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/chat"
+
+	validDriverCallTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/call"
+	validPassengerCallTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/call"
+	invalidDriverCallTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/call"
+	invalidPassengerCallTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/call"
 )
 
 func TestAuthenticator_Auth(t *testing.T) {
@@ -327,14 +332,14 @@ func TestAuthenticator_Acl(t *testing.T) {
 			user.Passenger:  pkey1,
 			user.ThirdParty: pkey100,
 		},
-		AllowedAccessTypes:     []acl.AccessType{acl.Pub, acl.Sub},
+		AllowedAccessTypes:     []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		ModelHandler:           MockModelHandler{},
 		EMQTopicManager:        snappids.NewEMQManager(hid),
 		HashIDSManager:         hid,
 		CompareHashAndPassword: passwordChecker,
 	}
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.PubSub, passengerToken, "test")
+		ok, err := authenticator.ACL(context.Background(), "invalid-access", passengerToken, "test")
 		assert.Error(t, err)
 		assert.False(t, ok)
 		assert.Equal(t, ErrInvalidAccessType.Error(), err.Error())
@@ -453,6 +458,30 @@ func TestAuthenticator_Acl(t *testing.T) {
 
 	t.Run("testing passenger subscribe on invalid chat topic", func(t *testing.T) {
 		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerChatTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing driver subscribe on valid call topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.PubSub, driverToken, validDriverCallTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on valid call topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.PubSub, passengerToken, validPassengerCallTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing driver subscribe on invalid call topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.PubSub, driverToken, invalidDriverCallTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on invalid call topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.PubSub, passengerToken, invalidPassengerCallTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
@@ -607,6 +636,11 @@ func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v db.
 					Topic:      topics.Chat,
 					AccessType: acl.Sub,
 				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.Call,
+					AccessType: acl.PubSub,
+				},
 			},
 		}
 	case "driver":
@@ -646,6 +680,11 @@ func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v db.
 					UUID:       uuid.New(),
 					Topic:      topics.Chat,
 					AccessType: acl.Sub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.Call,
+					AccessType: acl.PubSub,
 				},
 			},
 		}
