@@ -4,15 +4,16 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"io/ioutil"
+	"os"
+	"time"
+
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"io/ioutil"
-	"os"
-	"time"
 )
 
 func main() {
@@ -57,6 +58,11 @@ func main() {
 				Topic:      topics.Chat,
 				AccessType: acl.PubSub,
 			},
+			user.Rule{
+				UUID:       uuid.New(),
+				Topic:      topics.Call,
+				AccessType: acl.PubSub,
+			},
 		},
 	}
 
@@ -95,6 +101,11 @@ func main() {
 			{
 				UUID:       uuid.New(),
 				Topic:      topics.Chat,
+				AccessType: acl.PubSub,
+			},
+			{
+				UUID:       uuid.New(),
+				Topic:      topics.Call,
 				AccessType: acl.PubSub,
 			},
 		},
