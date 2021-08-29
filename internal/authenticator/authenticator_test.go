@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
@@ -46,6 +46,11 @@ const (
 	validPassengerChatTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/chat"
 	invalidDriverChatTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/chat"
 	invalidPassengerChatTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/chat"
+
+	validDriverCallTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/call"
+	validPassengerCallTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/call"
+	invalidDriverCallTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/call"
+	invalidPassengerCallTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/call"
 )
 
 func TestAuthenticator_Auth(t *testing.T) {
@@ -53,35 +58,44 @@ func TestAuthenticator_Auth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	passengerToken, err := getSampleToken(user.Passenger, false)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	thirdPartyToken, err := getSampleToken(user.ThirdParty, false)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	superuserToken, err := getSampleToken(user.ThirdParty, true)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	pkey0, err := getPublicKey(user.Driver)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	pkey1, err := getPublicKey(user.Passenger)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	pkey100, err := getPublicKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	key100, err := getPrivateKey(user.ThirdParty)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	passwordChecker := memoize.MemoizedCompareHashAndPassword()
+
 	authenticator := Authenticator{
 		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
 			user.ThirdParty: key100,
@@ -94,6 +108,7 @@ func TestAuthenticator_Auth(t *testing.T) {
 		ModelHandler:           MockModelHandler{},
 		CompareHashAndPassword: passwordChecker,
 	}
+
 	t.Run("testing driver token auth", func(t *testing.T) {
 		ok, err := authenticator.Auth(context.Background(), driverToken)
 		assert.NoError(t, err)
@@ -143,6 +158,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		ModelHandler:           MockModelHandler{},
 		CompareHashAndPassword: passwordChecker,
 	}
+
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
 		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -154,6 +170,7 @@ func TestAuthenticator_Token(t *testing.T) {
 		assert.Equal(t, "100", claims["iss"].(string))
 
 	})
+
 	t.Run("testing getting token with valid inputs", func(t *testing.T) {
 		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "invalid secret")
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -315,14 +332,14 @@ func TestAuthenticator_Acl(t *testing.T) {
 			user.Passenger:  pkey1,
 			user.ThirdParty: pkey100,
 		},
-		AllowedAccessTypes:     []acl.AccessType{acl.Pub, acl.Sub},
+		AllowedAccessTypes:     []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		ModelHandler:           MockModelHandler{},
 		EMQTopicManager:        snappids.NewEMQManager(hid),
 		HashIDSManager:         hid,
 		CompareHashAndPassword: passwordChecker,
 	}
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.PubSub, passengerToken, "test")
+		ok, err := authenticator.ACL(context.Background(), "invalid-access", passengerToken, "test")
 		assert.Error(t, err)
 		assert.False(t, ok)
 		assert.Equal(t, ErrInvalidAccessType.Error(), err.Error())
@@ -331,7 +348,7 @@ func TestAuthenticator_Acl(t *testing.T) {
 		ok, err := authenticator.ACL(context.Background(), acl.Pub, invalidToken, validDriverCabEventTopic)
 		assert.False(t, ok)
 		assert.Error(t, err)
-		assert.Equal(t, "token is invalid illegal base64 data at input byte 37", err.Error())
+		assert.Equal(t, "token is invalid illegal base64 data at input byte 36", err.Error())
 	})
 	t.Run("testing acl with valid inputs", func(t *testing.T) {
 		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerCabEventTopic)
@@ -441,6 +458,30 @@ func TestAuthenticator_Acl(t *testing.T) {
 
 	t.Run("testing passenger subscribe on invalid chat topic", func(t *testing.T) {
 		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerChatTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing driver subscribe on valid call topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.PubSub, driverToken, validDriverCallTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on valid call topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.PubSub, passengerToken, validPassengerCallTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing driver subscribe on invalid call topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.PubSub, driverToken, invalidDriverCallTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on invalid call topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.PubSub, passengerToken, invalidPassengerCallTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
@@ -595,6 +636,11 @@ func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v db.
 					Topic:      topics.Chat,
 					AccessType: acl.Sub,
 				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.Call,
+					AccessType: acl.PubSub,
+				},
 			},
 		}
 	case "driver":
@@ -634,6 +680,11 @@ func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v db.
 					UUID:       uuid.New(),
 					Topic:      topics.Chat,
 					AccessType: acl.Sub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.Call,
+					AccessType: acl.PubSub,
 				},
 			},
 		}
