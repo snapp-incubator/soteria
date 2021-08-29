@@ -16,6 +16,23 @@ release:staging:
     variables:
       - $UPDATE_ENVIRONMENT_VARIABLE
 
+release:staging:okd4:teh-1:
+  extends: .easy_ci:release:docker
+  variables:
+    OKD4_TEH1_REGISTRY: "image-registry.apps.private.okd4.teh-1.snappcloud.io"
+    RELEASE_CONTAINER_REGISTRY_ADDRESS: "$OKD4_TEH1_REGISTRY"
+    RELEASE_CONTAINER_REGISTRY_IMAGE: "$OKD4_TEH1_REGISTRY/realtime-staging/$CI_PROJECT_NAME"
+    RELEASE_CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
+    RELEASE_CONTAINER_REGISTRY_PASSWORD: ${OKD4_TEH1_REALTIME_STAGING_TOKEN}
+  dependencies:
+    - build
+  only:
+    - tags
+    - branches
+  except:
+    variables:
+      - $UPDATE_ENVIRONMENT_VARIABLE
+
 release:mozart:
   extends: .easy_ci:release:docker
   variables:

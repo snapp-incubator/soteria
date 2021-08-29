@@ -1,6 +1,6 @@
-
+---
 .go_mod_config: &go_mod
-  image: registry.snapp.tech/docker/golang:1.13.5-alpine3.10
+  image: registry.snapp.tech/docker/golang:1.17-alpine3.14
   cache:
     policy: pull
     paths:
