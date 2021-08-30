@@ -25,6 +25,7 @@ spec:
         {{ end }}
       labels:
       {{- include "soteria.selectorLabels" . | nindent 8 }}
+      {{- include "soteria.podLabels" . | nindent 8 }}
     spec:
       containers:
         - name: app
