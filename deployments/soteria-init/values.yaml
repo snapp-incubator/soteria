@@ -5,7 +5,7 @@
 
 image:
   registry: docker-registry.default.svc:5000
-  repository: realtime-staging/soteria
+  repository: mozart/soteria
   tag: dev
   pullPolicy: Always
 
@@ -21,7 +21,7 @@ envs:
   http_port: "9999"
   grpc_port: "50051"
   mode: "debug"
-  redis_address: "main-redis-master.dispatching-staging.svc:6379"
+  redis_address: "rediscentral:6379"
   redis_pass: ""
   redis_pool_size: "10"
   redis_max_retries: "0"
@@ -53,6 +53,10 @@ db:
     secret: secret
     token_expiration_duration: 2592000000000000
     rules:
+    - uuid: c57553f1-5675-4998-ae07-a9204db76e7c
+      endpoint: ''
+      topic: chat
+      access_type: '1'
     - uuid: 84df6017-a850-42a3-a06f-22306a006a8d
       endpoint: ''
       topic: cab_event
@@ -80,6 +84,10 @@ db:
     secret: secret
     token_expiration_duration: 2592000000000000
     rules:
+    - uuid: 0cae4792-7002-4d7f-88be-2ffb069835a3
+      endpoint: ''
+      topic: chat
+      access_type: '1'
     - uuid: a51f1898-3381-456f-a5fe-0e9d80b5bee0
       endpoint: ''
       topic: cab_event
