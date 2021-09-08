@@ -69,6 +69,9 @@ spec:
             periodSeconds: 23
             successThreshold: 1
             timeoutSeconds: 2
+          env:
+            name: TZ
+            value: {{ .Values.timezone }}
           envFrom:
             - configMapRef:
                 name: {{ include "soteria.fullname" . }}
