@@ -4,7 +4,7 @@ ARG VCS_REF
 ARG BUILD_VERSION
 RUN echo -e "https://repo.snapp.tech/repository/alpine/v3.12/main\nhttps://repo.snapp.tech/repository/alpine/v3.12/community" > /etc/apk/repositories
 
-RUN apk --no-cache --update add ca-certificates
+RUN apk --no-cache --update add ca-certificates tzdata
 
 RUN mkdir /app
 
