@@ -31,8 +31,8 @@ var (
 	SuperappEventRegexp     = regexp.MustCompile(`/(driver|passenger)/[a-zA-Z0-9]+/(superapp)`)
 	SharedLocationRegexp    = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9]+/(driver-location|passenger-location)`)
 	DaghighSysRegexp        = regexp.MustCompile(`\$SYS/brokers/\+/clients/\+/(connected|disconnected)`)
-	ChatRegexp              = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9]+/chat`)
-	CallRegexp              = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9]+/call`)
+	ChatRegexp              = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/chat`)
+	CallRegexp              = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/call`)
 )
 
 func (t Topic) GetType() Type {
