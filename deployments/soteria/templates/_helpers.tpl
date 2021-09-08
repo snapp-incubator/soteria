@@ -42,6 +42,11 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
+{{- define "soteria.podLabels" -}}
+service: soteria
+owned-by: dispatching
+{{- end }}
+
 {{/*
 Selector labels
 */}}
