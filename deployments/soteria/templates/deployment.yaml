@@ -25,6 +25,7 @@ spec:
         {{ end }}
       labels:
       {{- include "soteria.selectorLabels" . | nindent 8 }}
+      {{- include "soteria.podLabels" . | nindent 8 }}
     spec:
       containers:
         - name: app
@@ -68,6 +69,9 @@ spec:
             periodSeconds: 23
             successThreshold: 1
             timeoutSeconds: 2
+          env:
+            name: TZ
+            value: {{ .Values.timezone }}
           envFrom:
             - configMapRef:
                 name: {{ include "soteria.fullname" . }}
