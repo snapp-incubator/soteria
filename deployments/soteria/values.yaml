@@ -13,6 +13,8 @@ image:
   tag: dev
   pullPolicy: Always
 
+timezone: Asia/Tehran
+
 service:
   type: ClusterIP
   ports:
