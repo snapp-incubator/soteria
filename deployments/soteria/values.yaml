@@ -109,6 +109,7 @@ authEnvs:
   passenger_hash_length: "15"
 
 envs:
+  # company: "baly"
   http_port: "9999"
   grpc_port: "50051"
   mode: "debug"
