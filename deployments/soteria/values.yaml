@@ -103,8 +103,8 @@ jwtKeys:
 
 authEnvs:
   jwt_keys_path: "/jwt_pems/"
-  driver_salt: "12345678901234567890123456789012"
-  passenger_salt: "12345678901234567890123456789012"
+  driver_salt: "secret"
+  passenger_salt: "secret"
   driver_hash_length: "15"
   passenger_hash_length: "15"
 
