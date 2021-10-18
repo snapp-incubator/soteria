@@ -60,8 +60,13 @@ func main() {
 			},
 			user.Rule{
 				UUID:       uuid.New(),
-				Topic:      topics.Call,
-				AccessType: acl.PubSub,
+				Topic:      topics.CallEntry,
+				AccessType: acl.Pub,
+			},
+			user.Rule{
+				UUID:       uuid.New(),
+				Topic:      topics.CallOutgoing,
+				AccessType: acl.Sub,
 			},
 		},
 	}
@@ -105,8 +110,13 @@ func main() {
 			},
 			{
 				UUID:       uuid.New(),
-				Topic:      topics.Call,
-				AccessType: acl.PubSub,
+				Topic:      topics.CallEntry,
+				AccessType: acl.Pub,
+			},
+			{
+				UUID:       uuid.New(),
+				Topic:      topics.CallOutgoing,
+				AccessType: acl.Sub,
 			},
 		},
 	}
