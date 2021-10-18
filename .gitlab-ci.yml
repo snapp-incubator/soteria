@@ -36,7 +36,7 @@ include:
   - local: .gitlab/ci/templates/deploy.chart.giltab-ci.yml
 
   - project: dispatching/igniteg/easy-ci
-    ref: master
+    ref: main
     file: "easy-ci.yml"
 
   - project: templates/gitlab-templates
