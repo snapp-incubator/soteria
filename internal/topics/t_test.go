@@ -87,14 +87,24 @@ func TestTopic_GetType(t1 *testing.T) {
 			want: Chat,
 		},
 		{
+			name: "testing passenger call entry",
+			arg:  "snapp/passenger/py9kdjLYB35RP4q/call/send",
+			want: CallEntry,
+		},
+		{
+			name: "testing driver call entry",
+			arg:  "snapp/driver/py9kdjLYB35RP4q/call/send",
+			want: CallEntry,
+		},
+		{
 			name: "testing passenger call",
-			arg:  "snapp/passenger/py9kdjLYB35RP4q/call",
-			want: Call,
+			arg:  "snapp/passenger/py9kdjLYB35RP4q/call/receive",
+			want: CallOutgoing,
 		},
 		{
 			name: "testing driver call",
-			arg:  "snapp/driver/py9kdjLYB35RP4q/call",
-			want: Call,
+			arg:  "snapp/driver/py9kdjLYB35RP4q/call/receive",
+			want: CallOutgoing,
 		},
 	}
 	for i, tt := range tests {

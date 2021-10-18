@@ -18,7 +18,8 @@ const (
 	DaghighSys        Type = "daghigh_sys"
 	SharedLocation    Type = "shared_location"
 	Chat              Type = "chat"
-	Call              Type = "call"
+	CallEntry         Type = "call_entry"
+	CallOutgoing      Type = "call_outgoing"
 )
 
 // Topic regular expressions which are used for detecting the topic name.
@@ -32,7 +33,8 @@ var (
 	SharedLocationRegexp    = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9]+/(driver-location|passenger-location)`)
 	DaghighSysRegexp        = regexp.MustCompile(`\$SYS/brokers/\+/clients/\+/(connected|disconnected)`)
 	ChatRegexp              = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/chat`)
-	CallRegexp              = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/call`)
+	CallEntryRegexp         = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/call/send`)
+	CallOutgoingRegexp      = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/call/receive`)
 )
 
 func (t Topic) GetType() Type {
@@ -54,8 +56,10 @@ func (t Topic) GetTypeWithCompany(company string) Type {
 		return SharedLocation
 	case ChatRegexp.MatchString(topic):
 		return Chat
-	case CallRegexp.MatchString(topic):
-		return Call
+	case CallEntryRegexp.MatchString(topic):
+		return CallEntry
+	case CallOutgoingRegexp.MatchString(topic):
+		return CallOutgoing
 	case SuperappEventRegexp.MatchString(topic):
 		return SuperappEvent
 	case topic == "bucks":
