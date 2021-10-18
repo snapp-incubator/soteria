@@ -25,15 +25,15 @@ variables:
 
 
 include:
-  - local: .gitlab/ci/templates/precompile.giltab-ci.yml
-  - local: .gitlab/ci/templates/compile.giltab-ci.yml
-  - local: .gitlab/ci/templates/test.giltab-ci.yml
-  - local: .gitlab/ci/templates/build.giltab-ci.yml
-  - local: .gitlab/ci/templates/release.giltab-ci.yml
-  - local: .gitlab/ci/templates/deploy.vm.giltab-ci.yml
-  - local: .gitlab/ci/templates/deploy.env.giltab-ci.yml
-  - local: .gitlab/ci/templates/deploy.cloud.giltab-ci.yml
-  - local: .gitlab/ci/templates/deploy.chart.giltab-ci.yml
+  - local: .gitlab/ci/templates/precompile.gitlab-ci.yml
+  - local: .gitlab/ci/templates/compile.gitlab-ci.yml
+  - local: .gitlab/ci/templates/test.gitlab-ci.yml
+  - local: .gitlab/ci/templates/build.gitlab-ci.yml
+  - local: .gitlab/ci/templates/release.gitlab-ci.yml
+  - local: .gitlab/ci/templates/deploy.vm.gitlab-ci.yml
+  - local: .gitlab/ci/templates/deploy.env.gitlab-ci.yml
+  - local: .gitlab/ci/templates/deploy.cloud.gitlab-ci.yml
+  - local: .gitlab/ci/templates/deploy.chart.gitlab-ci.yml
 
   - project: dispatching/igniteg/easy-ci
     ref: main
