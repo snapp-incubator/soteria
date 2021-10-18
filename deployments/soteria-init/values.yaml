@@ -12,10 +12,10 @@ image:
 resources:
   limits:
     memory: 128Mi
-    cpu: 2
+    cpu: 100m
   requests:
     memory: 128Mi
-    cpu: 1
+    cpu: 100m
 
 envs:
   http_port: "9999"
