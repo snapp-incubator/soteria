@@ -1,0 +1,21 @@
+---
+lint:helm:soteria:
+  stage: lint
+  extends: .easy_ci:helm:lint
+  variables:
+    HELM_CHARTS_DIR: "deployments"
+  only:
+    - tags
+  when: manual
+
+chart:helm::soteria:
+  stage: release
+  extends: .easy_ci:helm:push
+  variables:
+    HELM_CHARTS_DIR: "deployments"
+    HELM_REPO_USER: "$DISPATCHING_HELM_REPO_USER"
+    HELM_REPO_PASS: "$DISPATCHING_HELM_REPO_PASS"
+  needs: ["lint:helm:soteria"]
+  only:
+    - tags
+  when: manual

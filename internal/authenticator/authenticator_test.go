@@ -47,10 +47,14 @@ const (
 	invalidDriverChatTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/chat"
 	invalidPassengerChatTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/chat"
 
-	validDriverCallTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/call"
-	validPassengerCallTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/call"
-	invalidDriverCallTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/call"
-	invalidPassengerCallTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/call"
+	validDriverCallEntryTopic         = "snapp/driver/DXKgaNQa7N5Y7bo/call/send"
+	validPassengerCallEntryTopic      = "snapp/passenger/DXKgaNQa7N5Y7bo/call/send"
+	invalidDriverCallEntryTopic       = "snapp/driver/0596923be632d673560af9adadd2f78a/call/send"
+	invalidPassengerCallEntryTopic    = "snapp/passenger/0596923be632d673560af9adadd2f78a/call/send"
+	validDriverCallOutgoingTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/call/receive"
+	validPassengerCallOutgoingTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/call/receive"
+	invalidDriverCallOutgoingTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/call/receive"
+	invalidPassengerCallOutgoingTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/call/receive"
 )
 
 func TestAuthenticator_Auth(t *testing.T) {
@@ -462,26 +466,50 @@ func TestAuthenticator_Acl(t *testing.T) {
 		assert.False(t, ok)
 	})
 
-	t.Run("testing driver subscribe on valid call topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.PubSub, driverToken, validDriverCallTopic)
+	t.Run("testing driver subscribe on valid call entry topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Pub, driverToken, validDriverCallEntryTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
-	t.Run("testing passenger subscribe on valid call topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.PubSub, passengerToken, validPassengerCallTopic)
+	t.Run("testing passenger subscribe on valid entry call topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Pub, passengerToken, validPassengerCallEntryTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
-	t.Run("testing driver subscribe on invalid call topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.PubSub, driverToken, invalidDriverCallTopic)
+	t.Run("testing driver subscribe on invalid call entry topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Pub, driverToken, invalidDriverCallEntryTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
-	t.Run("testing passenger subscribe on invalid call topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.PubSub, passengerToken, invalidPassengerCallTopic)
+	t.Run("testing passenger subscribe on invalid call entry topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Pub, passengerToken, invalidPassengerCallEntryTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing driver subscribe on valid call outgoing topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, validDriverCallOutgoingTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on valid outgoing call topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerCallOutgoingTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing driver subscribe on invalid call outgoing topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, invalidDriverCallOutgoingTopic)
+		assert.Error(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on invalid call outgoing topic", func(t *testing.T) {
+		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerCallOutgoingTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
@@ -638,8 +666,13 @@ func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v db.
 				},
 				{
 					UUID:       uuid.New(),
-					Topic:      topics.Call,
-					AccessType: acl.PubSub,
+					Topic:      topics.CallEntry,
+					AccessType: acl.Pub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.CallOutgoing,
+					AccessType: acl.Sub,
 				},
 			},
 		}
@@ -683,8 +716,13 @@ func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v db.
 				},
 				{
 					UUID:       uuid.New(),
-					Topic:      topics.Call,
-					AccessType: acl.PubSub,
+					Topic:      topics.CallEntry,
+					AccessType: acl.Pub,
+				},
+				{
+					UUID:       uuid.New(),
+					Topic:      topics.CallOutgoing,
+					AccessType: acl.Sub,
 				},
 			},
 		}
