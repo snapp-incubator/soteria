@@ -40,6 +40,7 @@ helm.sh/chart: {{ include "soteria.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.snappcloud.io/created-by: mozart
 {{- end }}
 
 {{- define "soteria.podLabels" -}}
