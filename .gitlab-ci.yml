@@ -1,6 +1,4 @@
 ---
-image: registry.snapp.tech/docker/golang:1.11.4-alpine3.8
-
 stages:
   - lint
   - compile
