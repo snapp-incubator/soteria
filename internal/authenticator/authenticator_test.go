@@ -1,7 +1,6 @@
-package authenticator
+package authenticator_test
 
 import (
-	"context"
 	"crypto/rsa"
 	"fmt"
 	"io/ioutil"
@@ -9,15 +8,12 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/memoize"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
-	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -68,16 +64,6 @@ func TestAuthenticator_Auth(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	thirdPartyToken, err := getSampleToken(user.ThirdParty, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	superuserToken, err := getSampleToken(user.ThirdParty, true)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	pkey0, err := getPublicKey(user.Driver)
 	if err != nil {
 		t.Fatal(err)
@@ -88,199 +74,29 @@ func TestAuthenticator_Auth(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pkey100, err := getPublicKey(user.ThirdParty)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	key100, err := getPrivateKey(user.ThirdParty)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	passwordChecker := memoize.MemoizedCompareHashAndPassword()
-
-	authenticator := Authenticator{
-		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
-			user.ThirdParty: key100,
-		},
+	// nolint: exhaustivestruct
+	authenticator := authenticator.Authenticator{
 		PublicKeys: map[user.Issuer]*rsa.PublicKey{
-			user.Driver:     pkey0,
-			user.Passenger:  pkey1,
-			user.ThirdParty: pkey100,
+			user.Driver:    pkey0,
+			user.Passenger: pkey1,
 		},
-		ModelHandler:           MockModelHandler{},
-		CompareHashAndPassword: passwordChecker,
+		ModelHandler: MockModelHandler{},
 	}
 
 	t.Run("testing driver token auth", func(t *testing.T) {
-		ok, err := authenticator.Auth(context.Background(), driverToken)
+		err := authenticator.Auth(driverToken)
 		assert.NoError(t, err)
-		assert.False(t, ok)
 	})
 
 	t.Run("testing passenger token auth", func(t *testing.T) {
-		ok, err := authenticator.Auth(context.Background(), passengerToken)
+		err := authenticator.Auth(passengerToken)
 		assert.NoError(t, err)
-		assert.False(t, ok)
-	})
-
-	t.Run("testing third party token auth", func(t *testing.T) {
-		ok, err := authenticator.Auth(context.Background(), thirdPartyToken)
-		assert.NoError(t, err)
-		assert.False(t, ok)
-	})
-
-	t.Run("testing superuser token auth", func(t *testing.T) {
-		ok, err := authenticator.Auth(context.Background(), superuserToken)
-		assert.NoError(t, err)
-		assert.True(t, ok)
 	})
 
 	t.Run("testing invalid token auth", func(t *testing.T) {
-		ok, err := authenticator.Auth(context.Background(), invalidToken)
+		err := authenticator.Auth(invalidToken)
 		assert.Error(t, err)
-		assert.False(t, ok)
 	})
-}
-
-func TestAuthenticator_Token(t *testing.T) {
-	key, err := getPrivateKey(user.ThirdParty)
-	if err != nil {
-		t.Fatal(err)
-	}
-	pk, err := getPublicKey(user.ThirdParty)
-	if err != nil {
-		t.Fatal(err)
-	}
-	passwordChecker := memoize.MemoizedCompareHashAndPassword()
-
-	authenticator := Authenticator{
-		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
-			user.ThirdParty: key,
-		},
-		ModelHandler:           MockModelHandler{},
-		CompareHashAndPassword: passwordChecker,
-	}
-
-	t.Run("testing getting token with valid inputs", func(t *testing.T) {
-		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "KJIikjIKbIYVGj)YihYUGIB&")
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			return pk, nil
-		})
-		assert.NoError(t, err)
-		claims := token.Claims.(jwt.MapClaims)
-		assert.Equal(t, "snappbox", claims["sub"].(string))
-		assert.Equal(t, "100", claims["iss"].(string))
-
-	})
-
-	t.Run("testing getting token with valid inputs", func(t *testing.T) {
-		tokenString, err := authenticator.Token(context.Background(), acl.ClientCredentials, "snappbox", "invalid secret")
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			return pk, nil
-		})
-		assert.Error(t, err)
-		assert.Nil(t, token)
-	})
-}
-
-func TestAuthenticator_HeraldToken(t *testing.T) {
-	key, err := getPrivateKey(user.ThirdParty)
-	if err != nil {
-		t.Fatal(err)
-	}
-	pk, err := getPublicKey(user.ThirdParty)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	authenticator := Authenticator{
-		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
-			user.ThirdParty: key,
-		},
-	}
-
-	t.Run("testing issuing valid herald token", func(t *testing.T) {
-		allowedTopics := []acl.Topic{
-			{
-				Type: topics.BoxEvent,
-			},
-		}
-
-		allowedEndpoints := []acl.Endpoint{
-			{
-				Name: "event",
-			},
-		}
-
-		tokenString, err := authenticator.HeraldToken(
-			"snappbox", allowedEndpoints, allowedTopics, time.Hour*24)
-		assert.NoError(t, err)
-		token, err := jwt.ParseWithClaims(tokenString, &acl.Claims{}, func(token *jwt.Token) (interface{}, error) {
-			return pk, nil
-		})
-		assert.NoError(t, err)
-		actual := token.Claims.(*acl.Claims)
-
-		expected := acl.Claims{
-			StandardClaims: jwt.StandardClaims{
-				Issuer:  "100",
-				Subject: "snappbox",
-			},
-			Topics: []acl.Topic{
-				{
-					Type: topics.BoxEvent,
-				},
-			},
-			Endpoints: []acl.Endpoint{
-				{
-					Name: "event",
-				},
-			},
-		}
-		assert.Equal(t, expected.StandardClaims.Issuer, actual.StandardClaims.Issuer)
-		assert.Equal(t, expected.StandardClaims.Subject, actual.StandardClaims.Subject)
-		assert.EqualValues(t, expected.Endpoints, actual.Endpoints)
-		assert.EqualValues(t, expected.Topics, actual.Topics)
-	})
-}
-
-func TestAuthenticator_SuperuserToken(t *testing.T) {
-	key, err := getPrivateKey(user.ThirdParty)
-	if err != nil {
-		t.Fatal(err)
-	}
-	pk, err := getPublicKey(user.ThirdParty)
-	if err != nil {
-		t.Fatal(err)
-	}
-	authenticator := Authenticator{
-		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
-			user.ThirdParty: key,
-		},
-	}
-
-	tokenString, err := authenticator.SuperuserToken("herald", time.Hour*24)
-	assert.NoError(t, err)
-
-	token, err := jwt.ParseWithClaims(tokenString, &acl.SuperuserClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return pk, nil
-	})
-	assert.NoError(t, err)
-
-	actual := token.Claims.(*acl.SuperuserClaims)
-	expected := acl.SuperuserClaims{
-		StandardClaims: jwt.StandardClaims{
-			Issuer:  "100",
-			Subject: "herald",
-		},
-		IsSuperuser: true,
-	}
-
-	assert.Equal(t, expected.StandardClaims.Issuer, actual.StandardClaims.Issuer)
-	assert.Equal(t, expected.StandardClaims.Subject, actual.StandardClaims.Subject)
-	assert.Equal(t, expected.IsSuperuser, actual.IsSuperuser)
 }
 
 func TestAuthenticator_Acl(t *testing.T) {
@@ -292,23 +108,11 @@ func TestAuthenticator_Acl(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pkey100, err := getPublicKey(user.ThirdParty)
-	if err != nil {
-		t.Fatal(err)
-	}
-	key100, err := getPrivateKey(user.ThirdParty)
-	if err != nil {
-		t.Fatal(err)
-	}
 	passengerToken, err := getSampleToken(user.Passenger, false)
 	if err != nil {
 		t.Fatal(err)
 	}
 	driverToken, err := getSampleToken(user.Driver, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	thirdPartyToken, err := getSampleToken(user.ThirdParty, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -326,190 +130,178 @@ func TestAuthenticator_Acl(t *testing.T) {
 		},
 	}
 
-	passwordChecker := memoize.MemoizedCompareHashAndPassword()
-	authenticator := Authenticator{
-		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
-			user.ThirdParty: key100,
-		},
+	auth := authenticator.Authenticator{
 		PublicKeys: map[user.Issuer]*rsa.PublicKey{
-			user.Driver:     pkey0,
-			user.Passenger:  pkey1,
-			user.ThirdParty: pkey100,
+			user.Driver:    pkey0,
+			user.Passenger: pkey1,
 		},
-		AllowedAccessTypes:     []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
-		ModelHandler:           MockModelHandler{},
-		EMQTopicManager:        snappids.NewEMQManager(hid),
-		HashIDSManager:         hid,
-		CompareHashAndPassword: passwordChecker,
+		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
+		ModelHandler:       MockModelHandler{},
+		EMQTopicManager:    snappids.NewEMQManager(hid),
+		HashIDSManager:     hid,
 	}
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), "invalid-access", passengerToken, "test")
+		ok, err := auth.ACL("invalid-access", passengerToken, "test")
 		assert.Error(t, err)
 		assert.False(t, ok)
-		assert.Equal(t, ErrInvalidAccessType.Error(), err.Error())
+		assert.Equal(t, authenticator.ErrInvalidAccessType.Error(), err.Error())
 	})
 	t.Run("testing acl with invalid token", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Pub, invalidToken, validDriverCabEventTopic)
+		ok, err := auth.ACL(acl.Pub, invalidToken, validDriverCabEventTopic)
 		assert.False(t, ok)
 		assert.Error(t, err)
 		assert.Equal(t, "token is invalid illegal base64 data at input byte 36", err.Error())
 	})
 	t.Run("testing acl with valid inputs", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerCabEventTopic)
+		ok, err := auth.ACL(acl.Sub, passengerToken, validPassengerCabEventTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 	t.Run("testing acl with invalid topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerCabEventTopic)
+		ok, err := auth.ACL(acl.Sub, passengerToken, invalidPassengerCabEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Pub, passengerToken, validPassengerCabEventTopic)
+		ok, err := auth.ACL(acl.Pub, passengerToken, validPassengerCabEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
-	t.Run("testing acl with third party token", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, thirdPartyToken, validDriverLocationTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
-	})
-
 	t.Run("testing driver publish on its location topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Pub, driverToken, validDriverLocationTopic)
+		ok, err := auth.ACL(acl.Pub, driverToken, validDriverLocationTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver publish on invalid location topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Pub, driverToken, invalidDriverLocationTopic)
+		ok, err := auth.ACL(acl.Pub, driverToken, invalidDriverLocationTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing driver subscribe on invalid cab event topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, invalidDriverCabEventTopic)
+		ok, err := auth.ACL(acl.Sub, driverToken, invalidDriverCabEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on valid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerSuperappEventTopic)
+		ok, err := auth.ACL(acl.Sub, passengerToken, validPassengerSuperappEventTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on invalid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerSuperappEventTopic)
+		ok, err := auth.ACL(acl.Sub, passengerToken, invalidPassengerSuperappEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing driver subscribe on valid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, validDriverSuperappEventTopic)
+		ok, err := auth.ACL(acl.Sub, driverToken, validDriverSuperappEventTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver subscribe on invalid superapp event topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, invalidDriverSuperappEventTopic)
+		ok, err := auth.ACL(acl.Sub, driverToken, invalidDriverSuperappEventTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing driver subscribe on valid shared location topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, validDriverSharedTopic)
+		ok, err := auth.ACL(acl.Sub, driverToken, validDriverSharedTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on valid shared location topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerSharedTopic)
+		ok, err := auth.ACL(acl.Sub, passengerToken, validPassengerSharedTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver subscribe on invalid shared location topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, invalidDriverSharedTopic)
+		ok, err := auth.ACL(acl.Sub, driverToken, invalidDriverSharedTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on invalid shared location topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerSharedTopic)
+		ok, err := auth.ACL(acl.Sub, passengerToken, invalidPassengerSharedTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing driver subscribe on valid chat topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, validDriverChatTopic)
+		ok, err := auth.ACL(acl.Sub, driverToken, validDriverChatTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on valid chat topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerChatTopic)
+		ok, err := auth.ACL(acl.Sub, passengerToken, validPassengerChatTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver subscribe on invalid chat topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, invalidDriverChatTopic)
+		ok, err := auth.ACL(acl.Sub, driverToken, invalidDriverChatTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on invalid chat topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerChatTopic)
+		ok, err := auth.ACL(acl.Sub, passengerToken, invalidPassengerChatTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing driver subscribe on valid call entry topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Pub, driverToken, validDriverCallEntryTopic)
+		ok, err := auth.ACL(acl.Pub, driverToken, validDriverCallEntryTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on valid entry call topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Pub, passengerToken, validPassengerCallEntryTopic)
+		ok, err := auth.ACL(acl.Pub, passengerToken, validPassengerCallEntryTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver subscribe on invalid call entry topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Pub, driverToken, invalidDriverCallEntryTopic)
+		ok, err := auth.ACL(acl.Pub, driverToken, invalidDriverCallEntryTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on invalid call entry topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Pub, passengerToken, invalidPassengerCallEntryTopic)
+		ok, err := auth.ACL(acl.Pub, passengerToken, invalidPassengerCallEntryTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing driver subscribe on valid call outgoing topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, validDriverCallOutgoingTopic)
+		ok, err := auth.ACL(acl.Sub, driverToken, validDriverCallOutgoingTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on valid outgoing call topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, validPassengerCallOutgoingTopic)
+		ok, err := auth.ACL(acl.Sub, passengerToken, validPassengerCallOutgoingTopic)
 		assert.NoError(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("testing driver subscribe on invalid call outgoing topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, driverToken, invalidDriverCallOutgoingTopic)
+		ok, err := auth.ACL(acl.Sub, driverToken, invalidDriverCallOutgoingTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
 
 	t.Run("testing passenger subscribe on invalid call outgoing topic", func(t *testing.T) {
-		ok, err := authenticator.ACL(context.Background(), acl.Sub, passengerToken, invalidPassengerCallOutgoingTopic)
+		ok, err := auth.ACL(acl.Sub, passengerToken, invalidPassengerCallOutgoingTopic)
 		assert.Error(t, err)
 		assert.False(t, ok)
 	})
@@ -525,29 +317,29 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 		},
 	}
 
-	passwordChecker := memoize.MemoizedCompareHashAndPassword()
-	authenticator := Authenticator{
-		AllowedAccessTypes:     []acl.AccessType{acl.Pub, acl.Sub},
-		ModelHandler:           MockModelHandler{},
-		EMQTopicManager:        snappids.NewEMQManager(hid),
-		HashIDSManager:         hid,
-		CompareHashAndPassword: passwordChecker,
+	// nolint: exhaustivestruct
+	authenticator := authenticator.Authenticator{
+		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
+		ModelHandler:       MockModelHandler{},
+		EMQTopicManager:    snappids.NewEMQManager(hid),
+		HashIDSManager:     hid,
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
 		ok := authenticator.ValidateTopicBySender(validDriverCabEventTopic, snappids.DriverAudience, 123)
 		assert.True(t, ok)
 	})
-
 }
 
 func TestAuthenticator_validateAccessType(t *testing.T) {
 	type fields struct {
 		AllowedAccessTypes []acl.AccessType
 	}
+
 	type args struct {
 		accessType acl.AccessType
 	}
+
 	tests := []struct {
 		name   string
 		fields fields
@@ -609,12 +401,17 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 			want:   true,
 		},
 	}
+
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			a := Authenticator{
+			t.Parallel()
+
+			// nolint: exhaustivestruct
+			a := authenticator.Authenticator{
 				AllowedAccessTypes: tt.fields.AllowedAccessTypes,
 			}
-			if got := a.validateAccessType(tt.args.accessType); got != tt.want {
+			if got := a.ValidateAccessType(tt.args.accessType); got != tt.want {
 				t.Errorf("validateAccessType() = %v, want %v", got, tt.want)
 			}
 		})
@@ -623,174 +420,109 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 
 type MockModelHandler struct{}
 
-func (rmh MockModelHandler) Save(ctx context.Context, model db.Model) error {
-	return nil
-}
+func (rmh MockModelHandler) Get(pk string) user.User {
+	var u user.User
 
-func (rmh MockModelHandler) Delete(ctx context.Context, modelName, pk string) error {
-	return nil
-}
-
-func (rmh MockModelHandler) Get(ctx context.Context, modelName, pk string, v db.Model) error {
 	switch pk {
 	case "passenger":
-		*v.(*user.User) = user.User{
-			MetaData: db.MetaData{},
+		u = user.User{
 			Username: string(user.Passenger),
-			Type:     user.EMQUser,
 			Rules: []user.Rule{
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.CabEvent,
 					AccessType: acl.Sub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.SuperappEvent,
 					AccessType: acl.Sub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.PassengerLocation,
 					AccessType: acl.Pub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.SharedLocation,
 					AccessType: acl.Sub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.Chat,
 					AccessType: acl.Sub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.CallEntry,
 					AccessType: acl.Pub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.CallOutgoing,
 					AccessType: acl.Sub,
 				},
 			},
 		}
 	case "driver":
-		*v.(*user.User) = user.User{
-			MetaData: db.MetaData{},
+		u = user.User{
 			Username: string(user.Driver),
-			Type:     user.EMQUser,
 			Rules: []user.Rule{
 				{
-					UUID:       uuid.Nil,
-					Endpoint:   "",
 					Topic:      topics.DriverLocation,
 					AccessType: acl.Pub,
 				},
 				{
-					UUID:       uuid.Nil,
-					Endpoint:   "",
 					Topic:      topics.CabEvent,
 					AccessType: acl.Sub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.SuperappEvent,
 					AccessType: acl.Sub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.PassengerLocation,
 					AccessType: acl.Pub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.SharedLocation,
 					AccessType: acl.Sub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.Chat,
 					AccessType: acl.Sub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.CallEntry,
 					AccessType: acl.Pub,
 				},
 				{
-					UUID:       uuid.New(),
 					Topic:      topics.CallOutgoing,
 					AccessType: acl.Sub,
 				},
 			},
 		}
-	case "snappbox":
-		*v.(*user.User) = user.User{
-			MetaData:                db.MetaData{},
-			Username:                "snapp-box",
-			Password:                getSamplePassword(),
-			Type:                    user.HeraldUser,
-			Secret:                  "KJIikjIKbIYVGj)YihYUGIB&",
-			TokenExpirationDuration: time.Hour * 72,
-			Rules: []user.Rule{
-				{
-					UUID:       uuid.New(),
-					Topic:      topics.BoxEvent,
-					AccessType: acl.Sub,
-				},
-				{
-					UUID:       uuid.New(),
-					Endpoint:   "/notification",
-					AccessType: acl.Pub,
-				},
-			},
-		}
-	case "colony-subscriber":
-		*v.(*user.User) = user.User{
-			MetaData:                db.MetaData{},
-			Username:                "colony-subscriber",
-			Password:                "password",
-			Type:                    user.EMQUser,
-			Secret:                  "secret",
-			TokenExpirationDuration: 0,
-			Rules: []user.Rule{
-				user.Rule{
-					UUID:       uuid.New(),
-					Topic:      topics.DriverLocation,
-					AccessType: acl.Sub,
-				},
-			},
-		}
 	}
-	return nil
-}
 
-func (rmh MockModelHandler) Update(ctx context.Context, model db.Model) error {
-	return nil
+	return u
 }
 
 func getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
 	var fileName string
+
 	switch u {
 	case user.Passenger:
 		fileName = "../../test/1.pem"
 	case user.Driver:
 		fileName = "../../test/0.pem"
-	case user.ThirdParty:
-		fileName = "../../test/100.pem"
 	default:
 		return nil, fmt.Errorf("invalid user, public key not found")
 	}
+
 	pem, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
+
 	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(pem)
 	if err != nil {
 		return nil, err
 	}
+
 	return publicKey, nil
 }
 
@@ -801,8 +533,6 @@ func getPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
 		fileName = "../../test/0.private.pem"
 	case user.Passenger:
 		fileName = "../../test/1.private.pem"
-	case user.ThirdParty:
-		fileName = "../../test/100.private.pem"
 	default:
 		return nil, fmt.Errorf("invalid user, private key not found")
 	}
@@ -825,9 +555,6 @@ func getSampleToken(issuer user.Issuer, isSuperuser bool) (string, error) {
 
 	exp := time.Now().Add(time.Hour * 24 * 365 * 10).Unix()
 	sub := "DXKgaNQa7N5Y7bo"
-	if issuer == user.ThirdParty {
-		sub = "colony-subscriber"
-	}
 
 	var claims jwt.Claims
 	if isSuperuser {
@@ -850,9 +577,4 @@ func getSampleToken(issuer user.Issuer, isSuperuser bool) (string, error) {
 		panic(err)
 	}
 	return tokenString, nil
-}
-
-func getSamplePassword() string {
-	hash, _ := bcrypt.GenerateFromPassword([]byte("test"), bcrypt.DefaultCost)
-	return string(hash)
 }
