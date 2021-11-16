@@ -1,22 +1,5 @@
 ---
-release:staging:
-  extends: .easy_ci:release:docker
-  variables:
-    RELEASE_CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
-    RELEASE_CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_STAGING/$CI_PROJECT_NAME"
-    RELEASE_CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
-    RELEASE_CONTAINER_REGISTRY_PASSWORD: "$OKD_STAGING_TOKEN"
-  dependencies:
-    - build
-  only:
-    - master
-    - tags
-    - branches
-  except:
-    variables:
-      - $UPDATE_ENVIRONMENT_VARIABLE
-
-release:staging:okd4:teh-1:
+release:staging:teh-1:
   extends: .easy_ci:release:docker
   variables:
     OKD4_TEH1_REGISTRY: "image-registry.apps.private.okd4.teh-1.snappcloud.io"
@@ -37,7 +20,7 @@ release:mozart:
   extends: .easy_ci:release:docker
   variables:
     RELEASE_CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
-    RELEASE_CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_MOZART/$CI_PROJECT_NAME"
+    RELEASE_CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/mozart/$CI_PROJECT_NAME"
     RELEASE_CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
     RELEASE_CONTAINER_REGISTRY_PASSWORD: "$OKD_MOZART_TOKEN"
   dependencies:
@@ -52,36 +35,6 @@ release:mozart:
   when: manual
 
 release:production:teh-1:
-  extends: .easy_ci:release:docker
-  variables:
-    RELEASE_CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
-    RELEASE_CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/$PROJECT_PRODUCTION_TEH1/$CI_PROJECT_NAME"
-    RELEASE_CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
-    RELEASE_CONTAINER_REGISTRY_PASSWORD: "$OKD_PRODUCTION_TOKEN_TEH1"
-  dependencies:
-    - build
-  only:
-    - tags
-  except:
-    variables:
-      - $UPDATE_ENVIRONMENT_VARIABLE
-
-release:production:teh-2:
-  extends: .easy_ci:release:docker
-  variables:
-    RELEASE_CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH2_REGISTRY"
-    RELEASE_CONTAINER_REGISTRY_IMAGE: "$OKD_TEH2_REGISTRY/$PROJECT_PRODUCTION_TEH2/$CI_PROJECT_NAME"
-    RELEASE_CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
-    RELEASE_CONTAINER_REGISTRY_PASSWORD: "$OKD_PRODUCTION_TOKEN_TEH2"
-  dependencies:
-    - build
-  only:
-    - tags
-  except:
-    variables:
-      - $UPDATE_ENVIRONMENT_VARIABLE
-
-release:production:okd4:teh-1:
   extends: .easy_ci:release:docker
   variables:
     OKD4_TEH1_REGISTRY: "image-registry.apps.private.okd4.teh-1.snappcloud.io"
