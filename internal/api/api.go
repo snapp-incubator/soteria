@@ -1,38 +1,26 @@
 package api
 
 import (
-	"fmt"
-	"net/http"
-	"time"
-
-	ginzap "github.com/gin-contrib/zap"
-	"github.com/gin-gonic/gin"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/ansrivas/fiberprometheus/v2"
+	"github.com/gofiber/contrib/fiberzap"
+	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
 
-// setupRouter will attach all routes needed for Soteria to gin's default router
-func setupRouter(mode string) *gin.Engine {
-	gin.SetMode(mode)
+// ReSTServer will return an HTTP.Server with given port and gin mode
+func ReSTServer() *fiber.App {
+	app := fiber.New()
 
-	router := gin.New()
-	router.Use(gin.Recovery())
+	app.Use(fiberzap.New(fiberzap.Config{
+		Logger: zap.L(),
+	}))
 
-	router.Use(ginzap.Ginzap(zap.L(), time.RFC3339, false))
-	router.Use(ginzap.RecoveryWithZap(zap.L(), true))
+	app.Post("/auth", Auth)
+	app.Post("/acl", ACL)
 
-	router.POST("/auth", Auth)
-	router.POST("/acl", ACL)
+	prometheus := fiberprometheus.NewWith("soteria", "dispatching", "http")
+	prometheus.RegisterAt(app, "/metrics")
+	app.Use(prometheus.Middleware)
 
-	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
-
-	return router
-}
-
-// RestServer will return an HTTP.Server with given port and gin mode
-func RestServer(mode string, port int) *http.Server {
-	return &http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
-		Handler: setupRouter(mode),
-	}
+	return app
 }
