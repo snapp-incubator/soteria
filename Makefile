@@ -20,7 +20,7 @@ build-image: compile
 	docker build -t ${IMAGE_TAG} .
 
 push-image: build-image
-    docker push ${IMAGE_TAG}
+  docker push ${IMAGE_TAG}
 
 build-image-dev: compile
 	docker build -t soteria:latest .
