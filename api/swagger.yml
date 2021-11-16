@@ -1,45 +1,46 @@
 ---
 swagger: '2.0'
 info:
-  version: 3.5.0
+  version: 5.0.0
   title: Soteria
-
 
 paths:
   /auth:
     post:
       summary: Authenticates EMQ user's connection request
       produces:
-      - text
+        - text
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - in: body
-        name: request
-        description: Request body
-        schema:
-          $ref: '#/definitions/auth'
+        - in: body
+          name: request
+          description: Request body
+          schema:
+            $ref: '#/definitions/auth'
       responses:
         401:
           description: Request is not authorized
         400:
           description: Bad input parameter
         200:
-          description: if body is empty means OK, if contains "ignore" it means request is ignored
+          description: >
+            if body is empty means OK,
+            if contains "ignore" it means request is ignored
 
   /acl:
     post:
       summary: Authorizes EMQ user's subscription request
       produces:
-      - text
+        - text
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - in: body
-        name: request
-        description: Request body
-        schema:
-          $ref: '#/definitions/acl'
+        - in: body
+          name: request
+          description: Request body
+          schema:
+            $ref: '#/definitions/acl'
       responses:
         401:
           description: Request is not authorized
@@ -47,207 +48,6 @@ paths:
           description: Bad input parameter
         200:
           description: OK
-  /token:
-    post:
-      summary: Generates token for EMQ users
-      produces:
-      - text
-      consumes:
-      - application/json
-      parameters:
-      - in: body
-        name: request
-        description: Request body
-        schema:
-          $ref: '#/definitions/token'
-      responses:
-        401:
-          description: Request is not authorized
-        400:
-          description: Bad input parameter
-        200:
-          description: OK
-
-  /accounts:
-    post:
-      summary: Creates new account
-      produces:
-      - application/json
-      consumes:
-      - application/json
-      parameters:
-      - in: body
-        name: request
-        description: Request body
-        schema:
-          $ref: '#/definitions/createaccount'
-      responses:
-        400:
-          description: Bad input parameter
-        200:
-          description: OK
-
-  /accounts/:username:
-    get:
-      summary: gets account
-      produces:
-      - application/json
-      consumes:
-      - application/json
-      security:
-        - basicAuth: []
-      responses:
-        400:
-          description: Bad input parameter
-          schema:
-            $ref: '#/definitions/response'
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/user'
-    put:
-      summary: updates the account
-      produces:
-      - application/json
-      consumes:
-      - application/json
-      security:
-        - basicAuth: []
-      parameters:
-      - in: body
-        name: request
-        description: Request body
-        schema:
-          $ref: '#/definitions/updateaccount'
-
-      responses:
-        400:
-          description: Bad input parameter
-          schema:
-            $ref: '#/definitions/response'
-        500:
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response'
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/response'
-    delete:
-      summary: deletes the account
-      produces:
-      - application/json
-      consumes:
-      - application/json
-      security:
-        - basicAuth: []
-      responses:
-        400:
-          description: Bad input parameter
-          schema:
-            $ref: '#/definitions/response'
-        500:
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response'
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/response'
-
-
-  /accounts/:username/rules:
-    post:
-      summary: creates new rule
-      produces:
-      - application/json
-      consumes:
-      - application/json
-      security:
-        - basicAuth: []
-      parameters:
-      - in: body
-        name: request
-        description: Request body
-        schema:
-          $ref: '#/definitions/rule'
-      responses:
-        400:
-          description: Bad input parameter
-          schema:
-            $ref: '#/definitions/response'
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/response'
-
-
-  /accounts/:username/rules/:uuid:
-    get:
-      summary: get the rule with uuid
-      produces:
-      - application/json
-      consumes:
-      - application/json
-      security:
-        - basicAuth: []
-      responses:
-        400:
-          description: Bad input parameter
-          schema:
-            $ref: '#/definitions/response'
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/response'
-
-    put:
-      summary: updates a rule
-      produces:
-      - application/json
-      consumes:
-      - application/json
-      security:
-        - basicAuth: []
-      parameters:
-      - in: body
-        name: request
-        description: Request body
-        schema:
-          $ref: '#/definitions/rule'
-      responses:
-        400:
-          description: Bad input parameter
-          schema:
-            $ref: '#/definitions/response'
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/response'
-
-    delete:
-      summary: deletes the rule with uuid
-      produces:
-        - application/json
-      consumes:
-        - application/json
-      security:
-        - basicAuth: []
-      responses:
-        400:
-          description: Bad input parameter
-          schema:
-            $ref: '#/definitions/response'
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/response'
-
-components:
-  securitySchemes:
-    basicAuth:     # <-- arbitrary name for the security scheme
-      type: http
-      scheme: basic
 
 definitions:
   auth:
@@ -274,94 +74,3 @@ definitions:
         type: string
         enum: ["1", "2", "3"]
         example: "1"
-
-  token:
-    type: object
-    required:
-      - grant_type
-      - client_id
-      - client_secret
-    properties:
-      grant_type:
-        type: string
-      client_id:
-        type: string
-        example: "snapp-box"
-      client_secret:
-        type: string
-
-  createaccount:
-    type: object
-    required:
-      - username
-      - password
-      - user_type
-    properties:
-      username:
-        type: string
-      password:
-        type: string
-      user_type:
-        type: string
-        enum: ["HeraldUser", "EMQUser", "Staff"]
-
-  updateaccount:
-    type: object
-    properties:
-      new_password:
-        type: string
-      IPs:
-        type: array
-        items:
-          type: string
-      token_expiration:
-        type: string
-      secret:
-        type: string
-      user_type:
-        type: string
-        enum: ["HeraldUser", "EMQUser", "Staff"]
-
-  user:
-    type: object
-    properties:
-      username:
-        type: string
-      password:
-        type: string
-      IPs:
-        type: array
-        items:
-          type: string
-      token_expiration_duration:
-        type: string
-      rules:
-        type: array
-        items:
-          schema:
-            $ref: '#/definitions/rule'
-          example:
-            uuid: "1"
-            endpoint: "/event"
-            access_type: "2"
-
-  response:
-    type: object
-    properties:
-      code:
-        type: integer
-      message:
-        type: string
-      data:
-        type: object
-
-  rule:
-    type: object
-    properties:
-      endpoint:
-        type: string
-      topic:
-        type: string
-      access_type:
-        type: string
-        enum: ["2", "1", "3"]
