@@ -7,7 +7,7 @@ metadata:
   labels:
     {{- include "soteria.labels" . | nindent 4 }}
 data:
-  config.yaml:
+  config.yaml: |
     allowed_access_types: {{ .Values.envs.allowed_access_types }}
     passenger_hash_length: {{ .Values.authEnvs.passenger_hash_length }}
     driver_hash_length: {{ .Values.authEnvs.driver_hash_length }}
@@ -18,14 +18,18 @@ data:
     logger:
       level: {{ .Values.envs.logger_level }}
     http_port: 9999
+    {{ with .Values.envs.tracer }}
     tracer:
-      enabled: {{ .Values.envs.tracer_enabled }}
-      service_name: {{ .Values.envs.tracer_service_name }}
-      sampler_type: {{ .Values.envs.tracer_sampler_type }}
-      sampler_param: {{ .Values.envs.tracer_sampler_param }}
-      host: {{ .Values.envs.tracer_host }}
-      port: {{ .Values.envs.tracer_port }}
-    company: {{ .Values.envs.company }}
+      enabled: {{ .enabled }}
+      service_name: {{ .service_name }}
+      sampler_type: {{ .sampler_type }}
+      sampler_param: {{ .sampler_param }}
+      host: {{ .host }}
+      port: {{ .port }}
+    {{ end }}
+    {{ with .Values.envs.company }}
+    company: {{ . }}
+    {{ end }}
     {{ with .Values.users }}
     users:
       {{ toYaml . | nindent 8 }}
