@@ -8,7 +8,10 @@ metadata:
     {{- include "soteria.labels" . | nindent 4 }}
 data:
   config.yaml: |
-    allowed_access_types: {{ .Values.envs.allowed_access_types }}
+    {{ with .Values.envs.allowed_access_types }}
+    allowed_access_types:
+      {{ toYaml . | nindent 8 }}
+    {{ end }}
     passenger_hash_length: {{ .Values.authEnvs.passenger_hash_length }}
     driver_hash_length: {{ .Values.authEnvs.driver_hash_length }}
     passenger_salt: {{ .Values.authEnvs.passenger_salt }}
