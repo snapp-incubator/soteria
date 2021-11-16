@@ -9,7 +9,7 @@ type SoteriaMetrics struct {
 	Handler metrics.Handler
 }
 
-// NewMetrics creates and returns all metrics needed in Soteria
+// NewMetrics creates and returns all metrics needed in Soteria.
 func NewMetrics() *SoteriaMetrics {
 	statusCodesCounter := prometheus.NewCounterVec(prometheus.CounterOpts{
 		Namespace: "dispatching",
@@ -36,11 +36,11 @@ func NewMetrics() *SoteriaMetrics {
 	prometheus.MustRegister(statusesCounter)
 	prometheus.MustRegister(responseTimesSummery)
 
-	h := metrics.Handler{
-		StatusCodeCounterVec: statusCodesCounter,
-		StatusCounterVec:     statusesCounter,
-		ResponseTimeVec:      responseTimesSummery,
+	return &SoteriaMetrics{
+		metrics.Handler{
+			StatusCodeCounterVec: statusCodesCounter,
+			StatusCounterVec:     statusesCounter,
+			ResponseTimeVec:      responseTimesSummery,
+		},
 	}
-
-	return &SoteriaMetrics{h}
 }
