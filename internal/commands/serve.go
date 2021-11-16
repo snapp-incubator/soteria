@@ -1,37 +1,26 @@
 package commands
 
 import (
-	"context"
 	"crypto/rsa"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
 
-	"github.com/patrickmn/go-cache"
 	"github.com/spf13/cobra"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/accounts"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/api"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db/cachedredis"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db/redis"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/emq"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/metrics"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/web/grpc"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/web/rest/api"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/log"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/memoize"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/tracer"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
-	grpcLib "google.golang.org/grpc"
 )
 
 var Serve = &cobra.Command{
@@ -42,29 +31,12 @@ var Serve = &cobra.Command{
 	Run:    serveRun,
 }
 
-var cfg config.AppConfig
+var cfg config.Config
 
 func servePreRun(cmd *cobra.Command, args []string) {
-	cfg = config.InitConfig()
+	cfg = config.New()
 	log.InitLogger()
 	log.SetLevel(cfg.Logger.Level)
-
-	zap.L().Debug("config init successfully",
-		zap.String("cache_config", pkg.PrettifyStruct(cfg.Cache)),
-		zap.String("redis_config", pkg.PrettifyStruct(cfg.Redis)),
-		zap.String("logger_config", pkg.PrettifyStruct(cfg.Logger)),
-		zap.String("jwt_keys_path", cfg.Jwt.KeysPath),
-		zap.String("allowed_access_types", fmt.Sprintf("%v", cfg.AllowedAccessTypes)))
-
-	privateKey100, err := cfg.ReadPrivateKey(user.ThirdParty)
-	if err != nil {
-		zap.L().Fatal("could not read third party private key")
-	}
-
-	publicKey100, err := cfg.ReadPublicKey(user.ThirdParty)
-	if err != nil {
-		zap.L().Fatal("could not read third party public key")
-	}
 
 	publicKey0, err := cfg.ReadPublicKey(user.Driver)
 	if err != nil {
@@ -94,50 +66,23 @@ func servePreRun(cmd *cobra.Command, args []string) {
 
 	app.GetInstance().SetTracer(trc, cl)
 
-	rClient, err := redis.NewRedisClient(cfg.Redis)
-	if err != nil {
-		zap.L().Fatal("could not create redis client", zap.Error(err))
-	}
-
-	redisModelHandler := &redis.ModelHandler{Client: rClient}
-
 	var modelHandler db.ModelHandler
-	if cfg.Cache.Enabled {
-		modelHandler = cachedredis.NewCachedRedisModelHandler(redisModelHandler,
-			cache.New(cfg.Cache.Expiration, cache.NoExpiration),
-		)
-	} else {
-		modelHandler = redisModelHandler
-	}
-
-	app.GetInstance().SetAccountsService(&accounts.Service{
-		Handler: modelHandler,
-	})
-
-	store := emq.Store{Client: rClient}
-	app.GetInstance().SetEMQStore(store)
 
 	allowedAccessTypes, err := cfg.GetAllowedAccessTypes()
 	if err != nil {
 		zap.L().Fatal("error while getting allowed access types", zap.Error(err))
 	}
-	memoizedCompareHashAndPassword := memoize.MemoizedCompareHashAndPassword()
 
 	app.GetInstance().SetAuthenticator(&authenticator.Authenticator{
-		PrivateKeys: map[user.Issuer]*rsa.PrivateKey{
-			user.ThirdParty: privateKey100,
-		},
 		PublicKeys: map[user.Issuer]*rsa.PublicKey{
-			user.Driver:     publicKey0,
-			user.Passenger:  publicKey1,
-			user.ThirdParty: publicKey100,
+			user.Driver:    publicKey0,
+			user.Passenger: publicKey1,
 		},
-		AllowedAccessTypes:     allowedAccessTypes,
-		ModelHandler:           modelHandler,
-		HashIDSManager:         hid,
-		EMQTopicManager:        snappids.NewEMQManagerWithCompany(hid, cfg.Company),
-		CompareHashAndPassword: memoizedCompareHashAndPassword,
-		Company:                cfg.Company,
+		AllowedAccessTypes: allowedAccessTypes,
+		ModelHandler:       modelHandler,
+		HashIDSManager:     hid,
+		EMQTopicManager:    snappids.NewEMQManagerWithCompany(hid, cfg.Company),
+		Company:            cfg.Company,
 	})
 
 	m := metrics.NewMetrics()
@@ -145,24 +90,11 @@ func servePreRun(cmd *cobra.Command, args []string) {
 }
 
 func serveRun(cmd *cobra.Command, args []string) {
-	rest := api.RestServer(cfg.Mode, cfg.HttpPort)
-
-	gListen, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GrpcPort))
-	if err != nil {
-		zap.L().Fatal("failed to listen", zap.Int("port", cfg.GrpcPort), zap.Error(err))
-	}
-
-	grpcServer := grpc.NewServer()
+	rest := api.ReSTServer()
 
 	go func() {
-		if err := rest.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := rest.Listen(fmt.Sprintf(":%d", cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			zap.L().Fatal("failed to run REST HTTP server", zap.Error(err))
-		}
-	}()
-
-	go func() {
-		if err := grpcServer.Serve(gListen); err != nil && !errors.Is(err, grpcLib.ErrServerStopped) {
-			zap.L().Fatal("failed to run GRPC server", zap.Error(err))
 		}
 	}()
 
@@ -170,11 +102,9 @@ func serveRun(cmd *cobra.Command, args []string) {
 	signal.Notify(c, os.Interrupt)
 	<-c
 
-	if err := rest.Shutdown(context.Background()); err != nil {
+	if err := rest.Shutdown(); err != nil {
 		zap.L().Error("error happened during REST API shutdown", zap.Error(err))
 	}
-
-	grpcServer.Stop()
 
 	if err := app.GetInstance().TracerCloser.Close(); err != nil {
 		zap.L().Error("error happened while closing tracer", zap.Error(err))
