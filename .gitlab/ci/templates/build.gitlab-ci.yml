@@ -13,3 +13,8 @@ build:
     - docker save -o ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}.tar ${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}
   dependencies:
     - compile
+  artifacts:
+    name: "docker-image-$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG"
+    paths:
+      - ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}.tar
+    expire_in: 1 week

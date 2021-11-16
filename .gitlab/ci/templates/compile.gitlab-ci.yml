@@ -10,3 +10,8 @@ compile:
     - go env -w GOPROXY="https://repo.snapp.tech/repository/goproxy/"
   script:
     - go build -v -o ${BUILD_PATH}/${CI_PROJECT_NAME} cmd/soteria/soteria.go
+  artifacts:
+    name: "$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG"
+    paths:
+      - ${BUILD_PATH}/${CI_PROJECT_NAME}
+    expire_in: 1 week
