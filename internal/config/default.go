@@ -1,6 +1,10 @@
 package config
 
-import "gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
+import (
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
+)
 
 // Default return default configuration.
 func Default() Config {
@@ -31,12 +35,74 @@ func Default() Config {
 		Company: "snapp",
 		Users: []user.User{
 			{
-				Username: "driver",
-				Rules:    []user.Rule{},
+				Username: string(user.Driver),
+				Rules: []user.Rule{
+					{
+						Topic:      topics.DriverLocation,
+						AccessType: acl.Pub,
+					},
+					{
+						Topic:      topics.CabEvent,
+						AccessType: acl.Sub,
+					},
+					{
+						Topic:      topics.SuperappEvent,
+						AccessType: acl.Sub,
+					},
+					{
+						Topic:      topics.PassengerLocation,
+						AccessType: acl.Pub,
+					},
+					{
+						Topic:      topics.SharedLocation,
+						AccessType: acl.Sub,
+					},
+					{
+						Topic:      topics.Chat,
+						AccessType: acl.Sub,
+					},
+					{
+						Topic:      topics.CallEntry,
+						AccessType: acl.Pub,
+					},
+					{
+						Topic:      topics.CallOutgoing,
+						AccessType: acl.Sub,
+					},
+				},
 			},
 			{
-				Username: "passenger",
-				Rules:    []user.Rule{},
+				Username: string(user.Passenger),
+				Rules: []user.Rule{
+					{
+						Topic:      topics.CabEvent,
+						AccessType: acl.Sub,
+					},
+					{
+						Topic:      topics.SuperappEvent,
+						AccessType: acl.Sub,
+					},
+					{
+						Topic:      topics.PassengerLocation,
+						AccessType: acl.Pub,
+					},
+					{
+						Topic:      topics.SharedLocation,
+						AccessType: acl.Sub,
+					},
+					{
+						Topic:      topics.Chat,
+						AccessType: acl.Sub,
+					},
+					{
+						Topic:      topics.CallEntry,
+						AccessType: acl.Pub,
+					},
+					{
+						Topic:      topics.CallOutgoing,
+						AccessType: acl.Sub,
+					},
+				},
 			},
 		},
 	}
