@@ -53,8 +53,7 @@ func Auth(ctx *gin.Context) {
 
 	authCheckSpan := app.GetInstance().Tracer.StartSpan("auth check", opentracing.ChildOf(authSpan.Context()))
 
-	superuser, err := app.GetInstance().Authenticator.Auth(ctx, tokenString)
-	if err != nil {
+	if err := app.GetInstance().Authenticator.Auth(ctx, tokenString); err != nil {
 		authCheckSpan.SetTag("success", false)
 		authCheckSpan.SetTag("error", err.Error())
 
@@ -70,29 +69,6 @@ func Auth(ctx *gin.Context) {
 		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Failure, "request is not authorized")
 		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
 		ctx.String(http.StatusUnauthorized, "request is not authorized")
-
-		authCheckSpan.Finish()
-
-		return
-	}
-
-	if superuser == true {
-		authCheckSpan.SetTag("success", false)
-		authCheckSpan.SetTag("ignored", true)
-
-		zap.L().
-			Info("auth request is ignored",
-				zap.String("token", request.Token),
-				zap.String("username", request.Password),
-				zap.String("password", request.Username),
-				zap.Bool("superuser", superuser),
-			)
-
-		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Auth, http.StatusOK)
-		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Ignore, "request is ignored")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
-
-		ctx.String(http.StatusOK, EMQAuthIgnore)
 
 		authCheckSpan.Finish()
 
