@@ -5,9 +5,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 )
 
-// Type indicates user type which is herald, emq and staff.
-type Type string
-
 // Issuer indicate issuers.
 type Issuer string
 
@@ -19,7 +16,6 @@ const (
 // User is Soteria's users db model.
 type User struct {
 	Username string `json:"username"`
-	Type     Type   `json:"type"`
 	Rules    []Rule `json:"rules"`
 }
 
