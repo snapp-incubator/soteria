@@ -17,6 +17,3 @@ build:
     expire_in: 1 week
   dependencies:
     - compile
-  except:
-    variables:
-      - $UPDATE_ENVIRONMENT_VARIABLE
