@@ -89,7 +89,7 @@ func ACL(ctx *gin.Context) {
 		}
 
 		// nolint: exhaustivestruct
-		if errors.Is(err, authenticator.ErrTopicNotAllowed{}) {
+		if errors.Is(err, authenticator.TopicNotAllowedError{}) {
 			zap.L().
 				Warn("acl request is not authorized",
 					zap.Error(err))
