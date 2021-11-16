@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/opentracing/opentracing-go"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
@@ -21,15 +21,13 @@ type authRequest struct {
 }
 
 // Auth is the handler responsible for authentication.
-// it will returns "ignore" for superusers to pass them to redis.
-func Auth(ctx *gin.Context) {
+func Auth(c *fiber.Ctx) error {
 	authSpan := app.GetInstance().Tracer.StartSpan("api.rest.auth")
 	defer authSpan.Finish()
 
 	s := time.Now()
 	request := &authRequest{}
-	err := ctx.ShouldBind(request)
-	if err != nil {
+	if err := c.BodyParser(request); err != nil {
 		zap.L().
 			Warn("bad request",
 				zap.Error(err),
@@ -37,9 +35,8 @@ func Auth(ctx *gin.Context) {
 		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Auth, http.StatusBadRequest)
 		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Failure, "bad request")
 		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
-		ctx.String(http.StatusBadRequest, "bad request")
 
-		return
+		return c.Status(http.StatusBadRequest).SendString("bad request")
 	}
 
 	tokenString := request.Token
@@ -52,8 +49,9 @@ func Auth(ctx *gin.Context) {
 	}
 
 	authCheckSpan := app.GetInstance().Tracer.StartSpan("auth check", opentracing.ChildOf(authSpan.Context()))
+	defer authCheckSpan.Finish()
 
-	if err := app.GetInstance().Authenticator.Auth(ctx, tokenString); err != nil {
+	if err := app.GetInstance().Authenticator.Auth(tokenString); err != nil {
 		authCheckSpan.SetTag("success", false)
 		authCheckSpan.SetTag("error", err.Error())
 
@@ -68,11 +66,8 @@ func Auth(ctx *gin.Context) {
 		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Auth, http.StatusUnauthorized)
 		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Failure, "request is not authorized")
 		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
-		ctx.String(http.StatusUnauthorized, "request is not authorized")
 
-		authCheckSpan.Finish()
-
-		return
+		return c.Status(http.StatusUnauthorized).SendString("request is not authorized")
 	}
 
 	zap.L().
@@ -88,5 +83,5 @@ func Auth(ctx *gin.Context) {
 
 	authSpan.SetTag("success", true)
 
-	ctx.String(http.StatusOK, "ok")
+	return c.Status(http.StatusOK).SendString("ok")
 }
