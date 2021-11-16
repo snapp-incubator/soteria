@@ -12,9 +12,7 @@ release:staging:teh-1:
   only:
     - tags
     - branches
-  except:
-    variables:
-      - $UPDATE_ENVIRONMENT_VARIABLE
+  when: manual
 
 release:mozart:
   extends: .easy_ci:release:docker
@@ -26,12 +24,8 @@ release:mozart:
   dependencies:
     - build
   only:
-    - master
     - tags
     - branches
-  except:
-    variables:
-      - $UPDATE_ENVIRONMENT_VARIABLE
   when: manual
 
 release:production:teh-1:
@@ -46,9 +40,7 @@ release:production:teh-1:
     - build
   only:
     - tags
-  except:
-    variables:
-      - $UPDATE_ENVIRONMENT_VARIABLE
+  when: manual
 
 release:production:baly:
   extends: .easy_ci:release:docker
@@ -62,6 +54,4 @@ release:production:baly:
     - build
   only:
     - tags
-  except:
-    variables:
-      - $UPDATE_ENVIRONMENT_VARIABLE
+  when: manual
