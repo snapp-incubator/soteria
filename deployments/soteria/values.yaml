@@ -1,3 +1,4 @@
+---
 # Default values for Soteria.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
@@ -20,9 +21,6 @@ service:
   ports:
     - name: http
       port: 9999
-      protocol: tcp
-    - name: grpc
-      port: 50051
       protocol: tcp
 
 resources:
@@ -77,58 +75,45 @@ jwtKeys:
     9L/zyDMi4jgFTZEWNXC2vIrxwZMFwFhBXEp0PcCbuHJgJIucbRrbwukQC16uHJwP
     zQIDAQAB
     -----END PUBLIC KEY-----
-  100.pem: |-
-    -----BEGIN PUBLIC KEY-----
-    MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCTxwVGmWzJNOaZnBRL+9/V1Mc8
-    OWWzUDxlG2kL+0WxHh8/+76ngIvp7YsHHxUadR0iY6NkzLgFv+sBkKh523Nx0Ytu
-    GgmGuuVTaD27G2inwgFDabUsAKISBbn6d6jwlkfk3D+O6h5pdLqoI64Zq/NPmD0o
-    Wsupn2HVhMSjFbE6dwIDAQAB
-    -----END PUBLIC KEY-----
-  100.private.pem: |-
-    -----BEGIN RSA PRIVATE KEY-----
-    MIICWwIBAAKBgQCTxwVGmWzJNOaZnBRL+9/V1Mc8OWWzUDxlG2kL+0WxHh8/+76n
-    gIvp7YsHHxUadR0iY6NkzLgFv+sBkKh523Nx0YtuGgmGuuVTaD27G2inwgFDabUs
-    AKISBbn6d6jwlkfk3D+O6h5pdLqoI64Zq/NPmD0oWsupn2HVhMSjFbE6dwIDAQAB
-    AoGAJDRGHp3IASNsu4V5k4QJuqF+jkqhl+S4Zyzn939/+3ydu1c5xl+/53fC7+O1
-    j93RXXN7vF5LV11FfgSqwe/5wDEcAtyLXWPCHtLB1CIYFfqHxgwOQm4gQSyOgBnP
-    hMccyv0VCDK23+Mk37lLkuON6xXMC8+IUq5UW/aadxkeqoECQQDU9Z5IFCmp3Ibs
-    hJXx/x+ZQI+gLj0hh71pQEO2zqhu19i+M62KKnDb7k2OtK9IJR2ucU+YE3SXGShh
-    1sPmgfVfAkEAsaTtZ1oZmszOs5TPYhs2e7LKLPNADZ36GVsG2h1FHVX+LyNkwk/E
-    pn+FV3Dd1vkzxG/a3znEKz+2BJiz4vF56QJATUxKA4euB8XQA5Gsi4Y7Bfl1KIMg
-    FUeb7NQyv+wLHxChz4gaeYgmJu48oIvdA6bVOzhN17lYHHA5RCocOVL6qQJAdHdT
-    6nmo5dO3BQfgO0rqGolqgbPtX8AeE3eZc3DTOluBrbf/vGF95UcfzedCmkmBxh0r
-    m0SNN2mq1TKkZXq52QJAIjxhG7spkOSZJQnVBA9TfLYZFM/aUzDpLxflvFAuJuqJ
-    l+PFsbek2Zl6fgy294dXRvQhp1PJryngDaXTBiWK6g==
-    -----END RSA PRIVATE KEY-----
 
 authEnvs:
   jwt_keys_path: "/jwt_pems/"
   driver_salt: "secret"
   passenger_salt: "secret"
-  driver_hash_length: "15"
-  passenger_hash_length: "15"
+  driver_hash_length: 15
+  passenger_hash_length: 15
 
 envs:
+  allowed_access_types: [ "pub", "sub" ]
   # company: "baly"
-  http_port: "9999"
-  grpc_port: "50051"
-  mode: "debug"
-  redis_address: "main-redis-master.dispatching-staging.svc:6379"
-  redis_pass: ""
-  redis_pool_size: "10"
-  redis_max_retries: "0"
-  redis_read_timeout: "3s"
-  redis_pool_timeout: "4s"
-  redis_min_retry_backoff: "8ms"
-  redis_max_retry_backoff: "512ms"
-  redis_idle_timeout: "300s"
-  redis_idle_check_frequency: "60s"
-  redis_set_member_exp_time: "300s"
-  redis_min_idle_connections: "5"
-  logger_level: "debug"
-  logger_sentry_enabled: "false"
-  logger_sentry_dsn: ""
-  logger_sentry_timeout: "500ms"
-  allowed_access_types: "sub,pub"
-  cache_enabled: "true"
-  cache_expiration: "600s"
+  logger_level: "warn"
+
+users:
+  - username: driver
+    rules:
+      - topic: cab_event
+        access_type: '1'
+      - topic: driver_location
+        access_type: '2'
+      - topic: shared_location
+        access_type: '1'
+      - topic: superapp_event
+        access_type: '1'
+      - topic: call_entry
+        access_type: '2'
+      - topic: call_outgoing
+        access_type: '1'
+  - username: passenger
+    rules:
+      - topic: cab_event
+        access_type: '1'
+      - topic: superapp_event
+        access_type: '1'
+      - topic: passenger_location
+        access_type: '2'
+      - topic: shared_location
+        access_type: '1'
+      - topic: call_entry
+        access_type: '2'
+      - topic: call_outgoing
+        access_type: '1'
