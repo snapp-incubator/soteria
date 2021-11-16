@@ -12,17 +12,7 @@ stages:
 
 variables:
   BUILD_PATH: "./"
-  OKD_TEH1_CLUSTER_ADDRESS: "okd.private.teh-1.snappcloud.io"
-  OKD_TEH2_CLUSTER_ADDRESS: "okd.private.teh-2.snappcloud.io"
-  OKD_TEH1_REGISTRY: 'registry.apps.private.teh-1.snappcloud.io'
-  OKD_TEH2_REGISTRY: 'registry.apps.private.teh-2.snappcloud.io'
-  PROJECT_SERVICE_NAME: 'soteria'
-  PROJECT_STAGING: 'realtime-staging'
-  PROJECT_PRODUCTION_TEH1: 'realtime-production'
-  PROJECT_PRODUCTION_TEH2: 'rtc'
-  PROJECT_MOZART: 'mozart'
   PROJECT_VERSION: "${CI_COMMIT_SHA}"
-
 
 include:
   - local: .gitlab/ci/templates/precompile.gitlab-ci.yml
