@@ -1,7 +1,5 @@
 package acl
 
-import "net"
-
 // Access Types for EMQ contains subscribe, publish and publish-subscribe.
 type AccessType string
 
@@ -45,39 +43,6 @@ func ValidateEndpoint(endpoint string, authorizedEndpoints, unauthorizedEndpoint
 
 	for _, e := range unauthorizedEndpoints {
 		if e == endpoint {
-			isValid = false
-
-			break
-		}
-	}
-
-	return isValid
-}
-
-// ValidateIP takes validIPs and invalidIPs and tell whether a IP is valid or not.
-func ValidateIP(ip string, validIPs, invalidIPs []string) bool {
-	isValid := false
-
-	for _, validIP := range validIPs {
-		_, network, err := net.ParseCIDR(validIP)
-		if err != nil && validIP == ip {
-			isValid = true
-
-			break
-		} else if err == nil && network.Contains(net.ParseIP(ip)) {
-			isValid = true
-
-			break
-		}
-	}
-
-	for _, invalidIP := range invalidIPs {
-		_, network, err := net.ParseCIDR(invalidIP)
-		if err != nil && invalidIP == ip {
-			isValid = false
-
-			break
-		} else if err == nil && network.Contains(net.ParseIP(ip)) {
 			isValid = false
 
 			break
