@@ -150,7 +150,7 @@ func (a Authenticator) ACL(accessType acl.AccessType,
 
 	pk := primaryKey(issuer, sub)
 
-	u := a.ModelHandler.Get(pk)
+	user := a.ModelHandler.Get(pk)
 
 	id, err := a.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
 	if err != nil {
@@ -161,7 +161,7 @@ func (a Authenticator) ACL(accessType acl.AccessType,
 		return false, InvalidTopicError{Topic: topic}
 	}
 
-	if ok := u.CheckTopicAllowance(topic.GetTypeWithCompany(a.Company), accessType); !ok {
+	if ok := user.CheckTopicAllowance(topic.GetTypeWithCompany(a.Company), accessType); !ok {
 		return false,
 			TopicNotAllowedError{issuer, sub, accessType, topic}
 	}
