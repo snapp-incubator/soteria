@@ -8,7 +8,6 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/web/rest/api/emq"
 	"go.uber.org/zap"
 )
 
@@ -22,27 +21,8 @@ func setupRouter(mode string) *gin.Engine {
 	router.Use(ginzap.Ginzap(zap.L(), time.RFC3339, false))
 	router.Use(ginzap.RecoveryWithZap(zap.L(), true))
 
-	a := router.Group("/accounts")
-	{
-		a.POST("", CreateAccount)
-		authorizedRoutes := a.Use(accountsBasicAuth())
-		{
-			authorizedRoutes.GET("/:username", ReadAccount)
-			authorizedRoutes.PUT("/:username", UpdateAccount)
-			authorizedRoutes.DELETE("/:username", DeleteAccount)
-
-			authorizedRoutes.POST("/:username/rules", CreateAccountRule)
-			authorizedRoutes.GET("/:username/rules/:uuid", ReadAccountRule)
-			authorizedRoutes.PUT("/:username/rules/:uuid", UpdateAccountRule)
-			authorizedRoutes.DELETE("/:username/rules/:uuid", DeleteAccountRule)
-		}
-	}
-
-	emq.Register(router.Group("/emq"))
-
 	router.POST("/auth", Auth)
 	router.POST("/acl", ACL)
-	router.POST("/token", Token)
 
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
