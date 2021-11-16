@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,8 +7,26 @@ metadata:
   labels:
     {{- include "soteria.labels" . | nindent 4 }}
 data:
-  {{ range $key, $value := .Values.envs }}
-  {{ if $value }}
-  SOTERIA_{{ $key | upper }}: {{ $value | quote }}
-  {{ end }}
-  {{ end }}
+  config.yaml:
+    allowed_access_types: {{ .Values.envs.allowed_access_types }}
+    passenger_hash_length: {{ .Values.authEnvs.passenger_hash_length }}
+    driver_hash_length: {{ .Values.authEnvs.driver_hash_length }}
+    passenger_salt: {{ .Values.authEnvs.passenger_salt }}
+    driver_salt: {{ .Values.authEnvs.driver_salt }}
+    jwt:
+      path: {{ .Values.authEnvs.jwt_keys_path }}
+    logger:
+      level: {{ .Values.envs.logger_level }}
+    http_port: 9999
+    tracer:
+      enabled: {{ .Values.envs.tracer_enabled }}
+      service_name: {{ .Values.envs.tracer_service_name }}
+      sampler_type: {{ .Values.envs.tracer_sampler_type }}
+      sampler_param: {{ .Values.envs.tracer_sampler_param }}
+      host: {{ .Values.envs.tracer_host }}
+      port: {{ .Values.envs.tracer_port }}
+    company: {{ .Values.envs.company }}
+    {{ with .Values.users }}
+    users:
+      {{ toYaml . | nindent 8 }}
+    {{ end }}
