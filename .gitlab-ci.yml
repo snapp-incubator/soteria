@@ -3,7 +3,6 @@ image: registry.snapp.tech/docker/golang:1.11.4-alpine3.8
 
 stages:
   - lint
-  - pre-compile
   - compile
   - test
   - build
@@ -14,7 +13,6 @@ variables:
   PROJECT_VERSION: "${CI_COMMIT_SHA}"
 
 include:
-  - local: .gitlab/ci/templates/precompile.gitlab-ci.yml
   - local: .gitlab/ci/templates/compile.gitlab-ci.yml
   - local: .gitlab/ci/templates/test.gitlab-ci.yml
   - local: .gitlab/ci/templates/build.gitlab-ci.yml
