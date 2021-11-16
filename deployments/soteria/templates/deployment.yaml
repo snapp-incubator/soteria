@@ -73,20 +73,22 @@ spec:
           env:
             - name: TZ
               value: {{ .Values.timezone }}
-          envFrom:
-            - configMapRef:
-                name: {{ include "soteria.fullname" . }}
-            - secretRef:
-                name: {{ include "soteria.fullname" . }}-auth-envs
           volumeMounts:
-            {{- $root := . -}}
+            - name: configuration
+              mountPath: "/app/config.yml"
+              subPath: "config.yaml"
+              readOnly: true
             {{- range $key, $value := .Values.jwtKeys }}
             - name: {{ include "soteria.fullname" $ }}-jwt-keys
-              mountPath: "{{ $root.Values.authEnvs.jwt_keys_path }}{{ $key }}"
+              mountPath: "{{ $.Values.authEnvs.jwt_keys_path }}{{ $key }}"
               subPath: {{ $key }}
               readOnly: true
             {{ end }}
       volumes:
+        - name: configuration
+          configMap:
+            defaultMode: 0440
+            name: {{ include "soteria.fullname" . }}
         - name: {{ include "soteria.fullname" . }}-jwt-keys
           secret:
             secretName: {{ include "soteria.fullname" . }}-jwt-keys
