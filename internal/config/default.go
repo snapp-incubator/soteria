@@ -18,7 +18,7 @@ func Default() Config {
 		PassengerSalt:       "secret",
 		DriverSalt:          "secret",
 		JWT: &JWT{
-			Path: "/test",
+			Path: "test/",
 		},
 		Logger: &Logger{
 			Level: "warn",
