@@ -18,8 +18,4 @@ unit_tests:
     - rm -rf .coverage.out.tmp
     - go tool cover -func .coverage.out
   dependencies:
-    - code-generator
     - compile
-  except:
-    variables:
-      - $UPDATE_ENVIRONMENT_VARIABLE
