@@ -2,158 +2,142 @@ package config
 
 import (
 	"crypto/rsa"
+	"errors"
 	"fmt"
 	"io/ioutil"
-	"time"
+	"log"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/kelseyhightower/envconfig"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/env"
+	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/providers/structs"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
 
-// AppConfig is the main container of Soteria's config.
-type AppConfig struct {
-	AllowedAccessTypes  []string `default:"sub,pub" split_words:"true"`
-	PassengerHashLength int      `split_words:"true"`
-	DriverHashLength    int      `split_words:"true"`
-	PassengerSalt       string   `split_words:"true"`
-	DriverSalt          string   `split_words:"true"`
-	Redis               *RedisConfig
-	Jwt                 *JwtConfig
-	Logger              *LoggerConfig
-	Cache               *CacheConfig
-	Mode                string `default:"debug"`
-	HttpPort            int    `default:"9999" split_words:"true"`
-	GrpcPort            int    `default:"50051" split_words:"true"`
-	Tracer              *TracerConfig
-	Company             string `default:"snapp"`
+const (
+	// Prefix indicates environment variables prefix.
+	Prefix = "soteria_"
+)
+
+type (
+	// Config is the main container of Soteria's config.
+	Config struct {
+		AllowedAccessTypes  []string      `koanf:"allowed_access_types"`
+		PassengerHashLength int           `koanf:"passenger_hash_length"`
+		DriverHashLength    int           `koanf:"driver_hash_length"`
+		PassengerSalt       string        `koanf:"passenger_salt"`
+		DriverSalt          string        `koanf:"driver_salt"`
+		JWT                 *JWT          `koanf:"jwt"`
+		Logger              *Logger       `koanf:"logger"`
+		HTTPPort            int           `koanf:"http_port"`
+		Tracer              *TracerConfig `koanf:"tracer"`
+		Company             string        `koanf:"company"`
+		Users               []user.User   `koanf:"users"`
+	}
+
+	// JWt contains path of the keys for JWT encryption.
+	JWT struct {
+		Path string `koanf:"path"`
+	}
+
+	// Logger is the config for logging and this kind of stuff.
+	Logger struct {
+		Level string `koanf:"level"`
+	}
+
+	// Tracer contains all configs needed to create a tracer.
+	TracerConfig struct {
+		Enabled      bool    `koanf:"enabled"`
+		ServiceName  string  `koanf:"service_name"`
+		SamplerType  string  `koanf:"sampler_type"`
+		SamplerParam float64 `koanf:"sampler_param"`
+		Host         string  `koanf:"host"`
+		Port         int     `koanf:"port"`
+	}
+)
+
+// New reads configuration with koanf.
+func New() Config {
+	var instance Config
+
+	k := koanf.New(".")
+
+	// load default configuration from file
+	if err := k.Load(structs.Provider(Default(), "koanf"), nil); err != nil {
+		log.Fatalf("error loading default: %s", err)
+	}
+
+	// load configuration from file
+	if err := k.Load(file.Provider("config.yml"), yaml.Parser()); err != nil {
+		log.Printf("error loading config.yml: %s", err)
+	}
+
+	// load environment variables
+	if err := k.Load(env.Provider(Prefix, ".", func(s string) string {
+		return strings.ReplaceAll(strings.ToLower(
+			strings.TrimPrefix(s, Prefix)), "_", ".")
+	}), nil); err != nil {
+		log.Printf("error loading environment variables: %s", err)
+	}
+
+	if err := k.Unmarshal("", &instance); err != nil {
+		log.Fatalf("error unmarshalling config: %s", err)
+	}
+
+	log.Printf("following configuration is loaded:\n%+v", instance)
+
+	return instance
 }
 
-// RedisConfig is all configs needed to connect to a Redis server.
-type RedisConfig struct {
-	Address            string        `split_words:"true"`
-	Password           string        `default:"" split_words:"true"`
-	ExpirationTime     int           `default:"30" split_words:"true"`
-	PoolSize           int           `split_words:"true" default:"10"`
-	MaxRetries         int           `split_words:"true" default:"0"`
-	MinIdleConnections int           `split_words:"true" default:"5"`
-	ReadTimeout        time.Duration `split_words:"true" default:"3s"`
-	PoolTimeout        time.Duration `split_words:"true" default:"4s"`
-	MinRetryBackoff    time.Duration `split_words:"true" default:"8ms"`
-	MaxRetryBackoff    time.Duration `split_words:"true" default:"512ms"`
-	IdleTimeout        time.Duration `split_words:"true" default:"300s"`
-	IdleCheckFrequency time.Duration `split_words:"true" default:"60s"`
-}
-
-// CacheConfig contains configs of in memory cache.
-type CacheConfig struct {
-	Enabled    bool          `split_words:"true" default:"true"`
-	Expiration time.Duration `split_words:"true" default:"600s"`
-}
-
-// JwtConfig contains path of the keys for JWT encryption.
-type JwtConfig struct {
-	KeysPath string `split_words:"true" default:"test/"`
-}
-
-// LoggerConfig is the config for logging and this kind of stuff.
-type LoggerConfig struct {
-	Level string `default:"warn" split_words:"true"`
-
-	SentryEnabled bool          `default:"false" split_words:"true"`
-	SentryDSN     string        `envconfig:"SENTRY_DSN"`
-	SentryTimeout time.Duration `split_words:"true" default:"100ms"`
-}
-
-// TracerConfig contains all configs needed to create a tracer.
-type TracerConfig struct {
-	Enabled      bool    `split_words:"false" default:"true"`
-	ServiceName  string  `default:"soteria" split_words:"true"`
-	SamplerType  string  `default:"const" split_words:"true"`
-	SamplerParam float64 `default:"1" split_words:"true"`
-	Host         string  `default:"localhost" split_words:"true"`
-	Port         int     `default:"6831" split_words:"true"`
-}
-
-// InitConfig tries to initialize app config from env variables.
-func InitConfig() AppConfig {
-	appConfig := &AppConfig{}
-	appConfig.Redis = &RedisConfig{}
-	appConfig.Cache = &CacheConfig{}
-	appConfig.Jwt = &JwtConfig{}
-	appConfig.Logger = &LoggerConfig{}
-	appConfig.Tracer = &TracerConfig{}
-
-	envconfig.MustProcess("soteria", appConfig)
-	envconfig.MustProcess("soteria_redis", appConfig.Redis)
-	envconfig.MustProcess("soteria_cache", appConfig.Cache)
-	envconfig.MustProcess("soteria_jwt", appConfig.Jwt)
-	envconfig.MustProcess("soteria_logger", appConfig.Logger)
-	envconfig.MustProcess("soteria_tracer", appConfig.Tracer)
-	return *appConfig
-}
-
-// ReadPrivateKey will read and return private key that is used for JWT encryption
-func (a *AppConfig) ReadPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
+// ReadPrivateKey will read and return private key that is used for JWT encryption.
+func (a *Config) ReadPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
 	var fileName string
-	switch u {
-	case user.ThirdParty:
-		fileName = fmt.Sprintf("%s%s", a.Jwt.KeysPath, "100.private.pem")
-	default:
-		return nil, fmt.Errorf("invalid issuer, private key not found")
-	}
-	pem, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		return nil, err
-	}
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(pem)
-	if err != nil {
-		return nil, err
-	}
-	return privateKey, nil
-}
 
-// ReadPrivateKey will read and return private key that is used for JWT encryption
-func (a *AppConfig) ReadPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
-	var fileName string
 	switch u {
 	case user.Driver:
-		fileName = fmt.Sprintf("%s%s", a.Jwt.KeysPath, "0.pem")
+		fileName = fmt.Sprintf("%s%s", a.JWT.Path, "0.pem")
 	case user.Passenger:
-		fileName = fmt.Sprintf("%s%s", a.Jwt.KeysPath, "1.pem")
-	case user.ThirdParty:
-		fileName = fmt.Sprintf("%s%s", a.Jwt.KeysPath, "100.pem")
+		fileName = fmt.Sprintf("%s%s", a.JWT.Path, "1.pem")
 	default:
-		return nil, fmt.Errorf("invalid issuer, public key not found")
+		return nil, errors.New("invalid issuer, public key not found")
 	}
+
 	pem, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
-	privateKey, err := jwt.ParseRSAPublicKeyFromPEM(pem)
+
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(pem)
 	if err != nil {
 		return nil, err
 	}
-	return privateKey, nil
+
+	return publicKey, nil
 }
 
-// GetAllowedAccessTypes will return all allowed access types in Soteria
-func (a *AppConfig) GetAllowedAccessTypes() ([]acl.AccessType, error) {
-	var allowedAccessTypes []acl.AccessType
+// GetAllowedAccessTypes will return all allowed access types in Soteria.
+func (a *Config) GetAllowedAccessTypes() ([]acl.AccessType, error) {
+	allowedAccessTypes := make([]acl.AccessType, 0, len(a.AllowedAccessTypes))
+
 	for _, a := range a.AllowedAccessTypes {
 		at, err := toUserAccessType(a)
 		if err != nil {
 			return nil, fmt.Errorf("could not convert %s: %w", at, err)
 		}
+
 		allowedAccessTypes = append(allowedAccessTypes, at)
 	}
+
 	return allowedAccessTypes, nil
 }
 
-// toUserAccessType will convert string access type to it's own type
-func toUserAccessType(i string) (acl.AccessType, error) {
-	switch i {
+// toUserAccessType will convert string access type to it's own type.
+func toUserAccessType(access string) (acl.AccessType, error) {
+	switch access {
 	case "pub":
 		return acl.Pub, nil
 	case "sub":
@@ -161,5 +145,6 @@ func toUserAccessType(i string) (acl.AccessType, error) {
 	case "pubsub":
 		return acl.PubSub, nil
 	}
-	return "", fmt.Errorf("%v is a invalid acces type", i)
+
+	return "", fmt.Errorf("%v is a invalid acces type", access)
 }
