@@ -66,8 +66,6 @@ func servePreRun(cmd *cobra.Command, args []string) {
 
 	app.GetInstance().SetTracer(trc, cl)
 
-	var modelHandler db.ModelHandler
-
 	allowedAccessTypes, err := cfg.GetAllowedAccessTypes()
 	if err != nil {
 		zap.L().Fatal("error while getting allowed access types", zap.Error(err))
@@ -79,7 +77,7 @@ func servePreRun(cmd *cobra.Command, args []string) {
 			user.Passenger: publicKey1,
 		},
 		AllowedAccessTypes: allowedAccessTypes,
-		ModelHandler:       modelHandler,
+		ModelHandler:       db.NewInternal(cfg.Users),
 		HashIDSManager:     hid,
 		EMQTopicManager:    snappids.NewEMQManagerWithCompany(hid, cfg.Company),
 		Company:            cfg.Company,
