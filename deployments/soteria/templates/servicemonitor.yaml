@@ -5,6 +5,8 @@ metadata:
   name: {{ template "soteria.fullname" .  }}
   {{- if .Values.serviceMonitor.namespace }}
   namespace: {{ .Values.serviceMonitor.namespace }}
+  {{ else }}
+  namespace: {{ $.Release.Namespace }}
   {{- end }}
   labels:
     {{- include "soteria.labels" . | nindent 4 }}
@@ -29,7 +31,7 @@ spec:
     {{- end }}
   namespaceSelector:
     matchNames:
-      - {{ .Release.Namespace }}
+      - {{ $.Release.Namespace }}
   selector:
     matchLabels:
       {{- include "soteria.selectorLabels" . | nindent 6 }}
