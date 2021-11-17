@@ -6,6 +6,12 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
 
+const (
+	DefaultHTTPPort            = 9999
+	DefaultDriverHashLength    = 15
+	DefaultPassengerHashLength = 15
+)
+
 // Default return default configuration.
 func Default() Config {
 	return Config{
@@ -13,8 +19,8 @@ func Default() Config {
 			"pub",
 			"sub",
 		},
-		PassengerHashLength: 15,
-		DriverHashLength:    15,
+		PassengerHashLength: DefaultPassengerHashLength,
+		DriverHashLength:    DefaultDriverHashLength,
 		PassengerSalt:       "secret",
 		DriverSalt:          "secret",
 		JWT: &JWT{
@@ -23,7 +29,7 @@ func Default() Config {
 		Logger: &Logger{
 			Level: "warn",
 		},
-		HTTPPort: 0,
+		HTTPPort: DefaultHTTPPort,
 		Tracer: &TracerConfig{
 			Enabled:      false,
 			ServiceName:  "",
