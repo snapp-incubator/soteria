@@ -43,7 +43,7 @@ rollingParams:
 
 ingress:
   enabled: false
-  annotations: { }
+  annotations: {}
   # kubernetes.io/ingress.class: nginDeploymentConfigx
   # kubernetes.io/tls-acme: "true"
   hosts:
