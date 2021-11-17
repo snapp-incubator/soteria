@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// ReSTServer will return an HTTP.Server with given port and gin mode
+// ReSTServer will return fiber app.
 func ReSTServer() *fiber.App {
 	app := fiber.New()
 
@@ -15,12 +15,12 @@ func ReSTServer() *fiber.App {
 		Logger: zap.L(),
 	}))
 
-	app.Post("/auth", Auth)
-	app.Post("/acl", ACL)
-
-	prometheus := fiberprometheus.NewWith("soteria", "dispatching", "http")
+	prometheus := fiberprometheus.NewWith("http", "dispatching", "soteria")
 	prometheus.RegisterAt(app, "/metrics")
 	app.Use(prometheus.Middleware)
+
+	app.Post("/auth", Auth)
+	app.Post("/acl", ACL)
 
 	return app
 }
