@@ -24,11 +24,10 @@ data:
     {{ with .Values.envs.tracer }}
     tracer:
       enabled: {{ .enabled }}
-      service_name: {{ .service_name }}
-      sampler_type: {{ .sampler_type }}
-      sampler_param: {{ .sampler_param }}
-      host: {{ .host }}
-      port: {{ .port }}
+      ratio: {{ .ratio }}
+      agent:
+        host: {{ .host }}
+        port: {{ .port }}
     {{ end }}
     {{ with .Values.envs.company }}
     company: {{ . }}
