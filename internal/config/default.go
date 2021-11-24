@@ -1,6 +1,7 @@
 package config
 
 import (
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/logger"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
@@ -13,6 +14,7 @@ const (
 )
 
 // Default return default configuration.
+// nolint: funlen
 func Default() Config {
 	return Config{
 		AllowedAccessTypes: []string{
@@ -26,7 +28,7 @@ func Default() Config {
 		JWT: &JWT{
 			Path: "test/",
 		},
-		Logger: &Logger{
+		Logger: logger.Config{
 			Level: "warn",
 		},
 		HTTPPort: DefaultHTTPPort,
