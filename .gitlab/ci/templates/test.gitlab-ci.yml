@@ -1,5 +1,8 @@
 ---
-unit_tests:
+lint:
+  extends: .easy_ci:lint
+
+test:
   image: registry.snapp.tech/docker/golang:1.17-alpine3.14
   stage: test
   coverage: '/total:\s*\(statements\)\s*([\d.]+)%/'
