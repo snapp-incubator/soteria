@@ -14,6 +14,7 @@ import (
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/structs"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/logger"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
@@ -32,7 +33,7 @@ type (
 		PassengerSalt       string        `koanf:"passenger_salt"`
 		DriverSalt          string        `koanf:"driver_salt"`
 		JWT                 *JWT          `koanf:"jwt"`
-		Logger              *Logger       `koanf:"logger"`
+		Logger              logger.Config `koanf:"logger"`
 		HTTPPort            int           `koanf:"http_port"`
 		Tracer              *TracerConfig `koanf:"tracer"`
 		Company             string        `koanf:"company"`
@@ -42,11 +43,6 @@ type (
 	// JWt contains path of the keys for JWT encryption.
 	JWT struct {
 		Path string `koanf:"path"`
-	}
-
-	// Logger is the config for logging and this kind of stuff.
-	Logger struct {
-		Level string `koanf:"level"`
 	}
 
 	// Tracer contains all configs needed to create a tracer.
