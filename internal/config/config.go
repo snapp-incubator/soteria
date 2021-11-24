@@ -81,6 +81,7 @@ func New() Config {
 }
 
 // ReadPrivateKey will read and return private key that is used for JWT encryption.
+// nolint: wrapcheck, goerr113
 func (a *Config) ReadPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
 	var fileName string
 
@@ -123,6 +124,7 @@ func (a *Config) GetAllowedAccessTypes() ([]acl.AccessType, error) {
 }
 
 // toUserAccessType will convert string access type to it's own type.
+// nolint: goerr113
 func toUserAccessType(access string) (acl.AccessType, error) {
 	switch access {
 	case "pub":
