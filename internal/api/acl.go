@@ -3,14 +3,13 @@ package api
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
 
@@ -28,8 +27,6 @@ func ACL(c *fiber.Ctx) error {
 	_, span := app.GetInstance().Tracer.Start(c.Context(), "api.acl")
 	defer span.End()
 
-	s := time.Now()
-
 	request := new(aclRequest)
 	if err := c.BodyParser(request); err != nil {
 		zap.L().
@@ -41,10 +38,6 @@ func ACL(c *fiber.Ctx) error {
 				zap.String("username", request.Password),
 				zap.String("password", request.Username),
 			)
-
-		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Acl, http.StatusBadRequest)
-		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Failure, "bad request")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 
 		return c.Status(http.StatusBadRequest).SendString("bad request")
 	}
@@ -59,6 +52,14 @@ func ACL(c *fiber.Ctx) error {
 		tokenString = request.Password
 	}
 
+	span.SetAttributes(
+		attribute.String("access", request.Access.String()),
+		attribute.String("topic", request.Topic),
+		attribute.String("token", request.Token),
+		attribute.String("username", request.Password),
+		attribute.String("password", request.Username),
+	)
+
 	topic := topics.Topic(request.Topic)
 	topicType := topic.GetType()
 
@@ -72,10 +73,6 @@ func ACL(c *fiber.Ctx) error {
 				zap.String("password", request.Username),
 			)
 
-		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Acl, http.StatusBadRequest)
-		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Failure, "bad request")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
-
 		return c.Status(http.StatusBadRequest).SendString("bad request")
 	}
 
@@ -85,7 +82,6 @@ func ACL(c *fiber.Ctx) error {
 			span.RecordError(err)
 		}
 
-		// nolint: exhaustivestruct
 		if errors.Is(err, authenticator.TopicNotAllowedError{}) {
 			zap.L().
 				Warn("acl request is not authorized",
@@ -95,11 +91,6 @@ func ACL(c *fiber.Ctx) error {
 				Error("acl request is not authorized",
 					zap.Error(err))
 		}
-
-		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Acl, http.StatusUnauthorized)
-		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, request.Access.String(), internal.Failure, string(topicType))
-		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Failure, "request is not authorized")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 
 		return c.Status(http.StatusUnauthorized).SendString("request is not authorized")
 	}
@@ -112,11 +103,6 @@ func ACL(c *fiber.Ctx) error {
 			zap.String("username", request.Password),
 			zap.String("password", request.Username),
 		)
-
-	app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Acl, http.StatusOK)
-	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Success, "ok")
-	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, request.Access.String(), internal.Success, string(topicType))
-	app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
 
 	return c.Status(http.StatusOK).SendString("ok")
 }

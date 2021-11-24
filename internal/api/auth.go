@@ -2,15 +2,12 @@ package api
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
-
-const EMQAuthIgnore = "ignore"
 
 // authRequest is the body payload structure of the auth endpoint.
 type authRequest struct {
@@ -24,17 +21,15 @@ func Auth(c *fiber.Ctx) error {
 	_, span := app.GetInstance().Tracer.Start(c.Context(), "api.auth")
 	defer span.End()
 
-	s := time.Now()
 	request := new(authRequest)
 
 	if err := c.BodyParser(request); err != nil {
+		span.RecordError(err)
+
 		zap.L().
 			Warn("bad request",
 				zap.Error(err),
 			)
-		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Auth, http.StatusBadRequest)
-		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Failure, "bad request")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
 
 		return c.Status(http.StatusBadRequest).SendString("bad request")
 	}
@@ -48,6 +43,11 @@ func Auth(c *fiber.Ctx) error {
 		tokenString = request.Password
 	}
 
+	span.SetAttributes(
+		attribute.String("token", request.Token),
+		attribute.String("username", request.Password),
+		attribute.String("password", request.Username),
+	)
 	if err := app.GetInstance().Authenticator.Auth(tokenString); err != nil {
 		span.RecordError(err)
 
@@ -59,10 +59,6 @@ func Auth(c *fiber.Ctx) error {
 				zap.String("password", request.Username),
 			)
 
-		app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Auth, http.StatusUnauthorized)
-		app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Failure, "request is not authorized")
-		app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
-
 		return c.Status(http.StatusUnauthorized).SendString("request is not authorized")
 	}
 
@@ -72,10 +68,6 @@ func Auth(c *fiber.Ctx) error {
 			zap.String("username", request.Password),
 			zap.String("password", request.Username),
 		)
-
-	app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Auth, http.StatusOK)
-	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Success, "ok")
-	app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
 
 	return c.Status(http.StatusOK).SendString("ok")
 }

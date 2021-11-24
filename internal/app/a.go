@@ -5,12 +5,10 @@ import (
 	"sync"
 
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/metrics"
 	"go.opentelemetry.io/otel/trace"
 )
 
 type App struct {
-	Metrics       metrics.Metrics
 	Authenticator *authenticator.Authenticator
 	Tracer        trace.Tracer
 	TracerCloser  io.Closer
@@ -32,10 +30,6 @@ func GetInstance() *App {
 
 func (a *App) SetAuthenticator(authenticator *authenticator.Authenticator) {
 	a.Authenticator = authenticator
-}
-
-func (a *App) SetMetrics(m metrics.Metrics) {
-	a.Metrics = m
 }
 
 func (a *App) SetTracer(tracer trace.Tracer) {
