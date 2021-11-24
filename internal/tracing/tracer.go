@@ -5,7 +5,6 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
-	stdout "go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -15,19 +14,13 @@ import (
 
 // nolint: ireturn
 func New(cfg Config) trace.Tracer {
-	var exporter sdktrace.SpanExporter
-
-	var err error
 	if !cfg.Enabled {
-		exporter, err = stdout.New(
-			stdout.WithPrettyPrint(),
-		)
-	} else {
-		exporter, err = jaeger.New(
-			jaeger.WithAgentEndpoint(jaeger.WithAgentHost(cfg.Agent.Host), jaeger.WithAgentPort(cfg.Agent.Port)),
-		)
+		return trace.NewNoopTracerProvider().Tracer("snapp.dispatching")
 	}
 
+	exporter, err := jaeger.New(
+		jaeger.WithAgentEndpoint(jaeger.WithAgentHost(cfg.Agent.Host), jaeger.WithAgentPort(cfg.Agent.Port)),
+	)
 	if err != nil {
 		log.Fatalf("failed to initialize export pipeline: %v", err)
 	}
