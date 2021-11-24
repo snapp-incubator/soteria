@@ -15,7 +15,7 @@ const (
 )
 
 // Default return default configuration.
-// nolint: funlen
+// nolint: funlen, gomnd
 func Default() Config {
 	return Config{
 		AllowedAccessTypes: []string{

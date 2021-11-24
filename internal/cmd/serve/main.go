@@ -17,7 +17,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	"go.opentelemetry.io/otel/trace"
-	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 )
 
