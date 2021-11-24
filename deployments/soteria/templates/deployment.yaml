@@ -16,14 +16,6 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/path: "/metrics"
-        {{ range .Values.service.ports }}
-        {{ if eq .name "http"}}
-        prometheus.io/port: {{ .port | quote }}
-        {{ end }}
-        {{ end }}
       labels:
       {{- include "soteria.selectorLabels" . | nindent 8 }}
       {{- include "soteria.podLabels" . | nindent 8 }}
