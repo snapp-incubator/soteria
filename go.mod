@@ -8,7 +8,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.22.0
 	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/knadh/koanf v1.3.3
-	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
 	gitlab.snapp.ir/dispatching/snappids/v2 v2.8.0
@@ -20,7 +20,6 @@ require (
 require (
 	go.opentelemetry.io/otel v1.2.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.2.0
-	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.2.0
 	go.opentelemetry.io/otel/sdk v1.2.0
 	go.opentelemetry.io/otel/trace v1.2.0
 )

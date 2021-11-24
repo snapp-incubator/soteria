@@ -1,7 +1,6 @@
 package app
 
 import (
-	"io"
 	"sync"
 
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
@@ -11,7 +10,6 @@ import (
 type App struct {
 	Authenticator *authenticator.Authenticator
 	Tracer        trace.Tracer
-	TracerCloser  io.Closer
 }
 
 // nolint: gochecknoglobals
