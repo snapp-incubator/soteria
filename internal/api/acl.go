@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/opentracing/opentracing-go"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
@@ -26,8 +25,8 @@ type aclRequest struct {
 
 // ACL is the handler responsible for ACL requests.
 func ACL(c *fiber.Ctx) error {
-	aclSpan := app.GetInstance().Tracer.StartSpan("api.rest.acl")
-	defer aclSpan.Finish()
+	_, span := app.GetInstance().Tracer.Start(c.Context(), "api.acl")
+	defer span.End()
 
 	s := time.Now()
 
@@ -80,15 +79,10 @@ func ACL(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).SendString("bad request")
 	}
 
-	aclCheckSpan := app.GetInstance().Tracer.StartSpan("acl check", opentracing.ChildOf(aclSpan.Context()))
-	defer aclCheckSpan.Finish()
-
 	ok, err := app.GetInstance().Authenticator.ACL(request.Access, tokenString, topic)
 	if err != nil || !ok {
-		aclCheckSpan.SetTag("success", false)
-
 		if err != nil {
-			aclCheckSpan.SetTag("error", err.Error())
+			span.RecordError(err)
 		}
 
 		// nolint: exhaustivestruct
@@ -123,8 +117,6 @@ func ACL(c *fiber.Ctx) error {
 	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Acl, internal.Success, "ok")
 	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, request.Access.String(), internal.Success, string(topicType))
 	app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Acl, float64(time.Since(s).Nanoseconds()))
-
-	aclCheckSpan.SetTag("success", true)
 
 	return c.Status(http.StatusOK).SendString("ok")
 }
