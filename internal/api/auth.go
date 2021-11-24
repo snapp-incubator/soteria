@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/opentracing/opentracing-go"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"go.uber.org/zap"
@@ -22,11 +21,12 @@ type authRequest struct {
 
 // Auth is the handler responsible for authentication.
 func Auth(c *fiber.Ctx) error {
-	authSpan := app.GetInstance().Tracer.StartSpan("api.rest.auth")
-	defer authSpan.Finish()
+	_, span := app.GetInstance().Tracer.Start(c.Context(), "api.auth")
+	defer span.End()
 
 	s := time.Now()
-	request := &authRequest{}
+	request := new(authRequest)
+
 	if err := c.BodyParser(request); err != nil {
 		zap.L().
 			Warn("bad request",
@@ -48,12 +48,8 @@ func Auth(c *fiber.Ctx) error {
 		tokenString = request.Password
 	}
 
-	authCheckSpan := app.GetInstance().Tracer.StartSpan("auth check", opentracing.ChildOf(authSpan.Context()))
-	defer authCheckSpan.Finish()
-
 	if err := app.GetInstance().Authenticator.Auth(tokenString); err != nil {
-		authCheckSpan.SetTag("success", false)
-		authCheckSpan.SetTag("error", err.Error())
+		span.RecordError(err)
 
 		zap.L().
 			Error("auth request is not authorized",
@@ -80,8 +76,6 @@ func Auth(c *fiber.Ctx) error {
 	app.GetInstance().Metrics.ObserveStatusCode(internal.HttpApi, internal.Soteria, internal.Auth, http.StatusOK)
 	app.GetInstance().Metrics.ObserveStatus(internal.HttpApi, internal.Soteria, internal.Auth, internal.Success, "ok")
 	app.GetInstance().Metrics.ObserveResponseTime(internal.HttpApi, internal.Soteria, internal.Auth, float64(time.Since(s).Nanoseconds()))
-
-	authSpan.SetTag("success", true)
 
 	return c.Status(http.StatusOK).SendString("ok")
 }

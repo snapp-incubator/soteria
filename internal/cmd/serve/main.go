@@ -16,21 +16,21 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/metrics"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/tracer"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
+	"go.opentelemetry.io/otel/trace"
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 )
 
-func main(cfg config.Config, logger *zap.Logger) {
+func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 	publicKey0, err := cfg.ReadPublicKey(user.Driver)
 	if err != nil {
-		zap.L().Fatal("could not read driver public key")
+		logger.Fatal("could not read driver public key")
 	}
 
 	publicKey1, err := cfg.ReadPublicKey(user.Passenger)
 	if err != nil {
-		zap.L().Fatal("could not read passenger public key")
+		logger.Fatal("could not read passenger public key")
 	}
 
 	hid := &snappids.HashIDSManager{
@@ -44,16 +44,9 @@ func main(cfg config.Config, logger *zap.Logger) {
 		},
 	}
 
-	trc, cl, err := tracer.New(cfg.Tracer)
-	if err != nil {
-		zap.L().Fatal("could not create tracer", zap.Error(err))
-	}
-
-	app.GetInstance().SetTracer(trc, cl)
-
 	allowedAccessTypes, err := cfg.GetAllowedAccessTypes()
 	if err != nil {
-		zap.L().Fatal("error while getting allowed access types", zap.Error(err))
+		logger.Fatal("error while getting allowed access types", zap.Error(err))
 	}
 
 	app.GetInstance().SetAuthenticator(&authenticator.Authenticator{
@@ -68,6 +61,8 @@ func main(cfg config.Config, logger *zap.Logger) {
 		Company:            cfg.Company,
 	})
 
+	app.GetInstance().SetTracer(tracer)
+
 	m := metrics.NewMetrics()
 	app.GetInstance().SetMetrics(&m.Handler)
 
@@ -75,7 +70,7 @@ func main(cfg config.Config, logger *zap.Logger) {
 
 	go func() {
 		if err := rest.Listen(fmt.Sprintf(":%d", cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			zap.L().Fatal("failed to run REST HTTP server", zap.Error(err))
+			logger.Fatal("failed to run REST HTTP server", zap.Error(err))
 		}
 	}()
 
@@ -84,16 +79,12 @@ func main(cfg config.Config, logger *zap.Logger) {
 	<-c
 
 	if err := rest.Shutdown(); err != nil {
-		zap.L().Error("error happened during REST API shutdown", zap.Error(err))
-	}
-
-	if err := app.GetInstance().TracerCloser.Close(); err != nil {
-		zap.L().Error("error happened while closing tracer", zap.Error(err))
+		logger.Error("error happened during REST API shutdown", zap.Error(err))
 	}
 }
 
 // Register serve command.
-func Register(root *cobra.Command, cfg config.Config, logger *zap.Logger) {
+func Register(root *cobra.Command, cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 	root.AddCommand(
 		// nolint: exhaustivestruct
 		&cobra.Command{
@@ -101,7 +92,7 @@ func Register(root *cobra.Command, cfg config.Config, logger *zap.Logger) {
 			Short: "serve runs the application",
 			Long:  `serve will run Soteria ReST server and waits until user disrupts.`,
 			Run: func(cmd *cobra.Command, args []string) {
-				main(cfg, logger)
+				main(cfg, logger, tracer)
 			},
 		},
 	)

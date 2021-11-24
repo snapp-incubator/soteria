@@ -97,8 +97,11 @@ func (a Authenticator) Auth(tokenString string) (err error) {
 }
 
 // ACL check a user access to a topic.
-func (a Authenticator) ACL(accessType acl.AccessType,
-	tokenString string, topic topics.Topic) (bool, error) {
+func (a Authenticator) ACL(
+	accessType acl.AccessType,
+	tokenString string,
+	topic topics.Topic,
+) (bool, error) {
 	if !a.ValidateAccessType(accessType) {
 		return false, ErrInvalidAccessType
 	}
