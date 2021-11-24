@@ -1,4 +1,4 @@
-package commands
+package serve
 
 import (
 	"crypto/rsa"
@@ -16,28 +16,13 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/metrics"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/log"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/tracer"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 )
 
-var Serve = &cobra.Command{
-	Use:    "serve",
-	Short:  "serve runs the application",
-	Long:   `serve will run Soteria REST and gRPC server and waits until user disrupts.`,
-	PreRun: servePreRun,
-	Run:    serveRun,
-}
-
-var cfg config.Config
-
-func servePreRun(cmd *cobra.Command, args []string) {
-	cfg = config.New()
-	log.InitLogger()
-	log.SetLevel(cfg.Logger.Level)
-
+func main(cfg config.Config, logger *zap.Logger) {
 	publicKey0, err := cfg.ReadPublicKey(user.Driver)
 	if err != nil {
 		zap.L().Fatal("could not read driver public key")
@@ -85,9 +70,7 @@ func servePreRun(cmd *cobra.Command, args []string) {
 
 	m := metrics.NewMetrics()
 	app.GetInstance().SetMetrics(&m.Handler)
-}
 
-func serveRun(cmd *cobra.Command, args []string) {
 	rest := api.ReSTServer()
 
 	go func() {
@@ -107,4 +90,19 @@ func serveRun(cmd *cobra.Command, args []string) {
 	if err := app.GetInstance().TracerCloser.Close(); err != nil {
 		zap.L().Error("error happened while closing tracer", zap.Error(err))
 	}
+}
+
+// Register serve command.
+func Register(root *cobra.Command, cfg config.Config, logger *zap.Logger) {
+	root.AddCommand(
+		// nolint: exhaustivestruct
+		&cobra.Command{
+			Use:   "serve",
+			Short: "serve runs the application",
+			Long:  `serve will run Soteria ReST server and waits until user disrupts.`,
+			Run: func(cmd *cobra.Command, args []string) {
+				main(cfg, logger)
+			},
+		},
+	)
 }
