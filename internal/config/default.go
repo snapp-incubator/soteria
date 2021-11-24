@@ -3,6 +3,7 @@ package config
 import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/logger"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/tracing"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
@@ -32,13 +33,13 @@ func Default() Config {
 			Level: "warn",
 		},
 		HTTPPort: DefaultHTTPPort,
-		Tracer: &TracerConfig{
-			Enabled:      false,
-			ServiceName:  "",
-			SamplerType:  "",
-			SamplerParam: 0.0,
-			Host:         "",
-			Port:         0,
+		Tracer: tracing.Config{
+			Enabled: false,
+			Ratio:   0.1,
+			Agent: tracing.Agent{
+				Host: "127.0.0.1",
+				Port: "6831",
+			},
 		},
 		Company: "snapp",
 		Users: []user.User{
