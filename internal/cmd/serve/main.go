@@ -15,7 +15,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/metrics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	"go.opentelemetry.io/otel/trace"
 	_ "go.uber.org/automaxprocs"
@@ -62,9 +61,6 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 	})
 
 	app.GetInstance().SetTracer(tracer)
-
-	m := metrics.NewMetrics()
-	app.GetInstance().SetMetrics(&m.Handler)
 
 	rest := api.ReSTServer()
 
