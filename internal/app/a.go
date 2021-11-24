@@ -4,15 +4,15 @@ import (
 	"io"
 	"sync"
 
-	"github.com/opentracing/opentracing-go"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/metrics"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type App struct {
 	Metrics       metrics.Metrics
 	Authenticator *authenticator.Authenticator
-	Tracer        opentracing.Tracer
+	Tracer        trace.Tracer
 	TracerCloser  io.Closer
 }
 
@@ -38,7 +38,6 @@ func (a *App) SetMetrics(m metrics.Metrics) {
 	a.Metrics = m
 }
 
-func (a *App) SetTracer(tracer opentracing.Tracer, closer io.Closer) {
+func (a *App) SetTracer(tracer trace.Tracer) {
 	a.Tracer = tracer
-	a.TracerCloser = closer
 }

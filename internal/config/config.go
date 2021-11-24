@@ -15,6 +15,7 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/structs"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/logger"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/tracing"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
@@ -27,32 +28,22 @@ const (
 type (
 	// Config is the main container of Soteria's config.
 	Config struct {
-		AllowedAccessTypes  []string      `koanf:"allowed_access_types"`
-		PassengerHashLength int           `koanf:"passenger_hash_length"`
-		DriverHashLength    int           `koanf:"driver_hash_length"`
-		PassengerSalt       string        `koanf:"passenger_salt"`
-		DriverSalt          string        `koanf:"driver_salt"`
-		JWT                 *JWT          `koanf:"jwt"`
-		Logger              logger.Config `koanf:"logger"`
-		HTTPPort            int           `koanf:"http_port"`
-		Tracer              *TracerConfig `koanf:"tracer"`
-		Company             string        `koanf:"company"`
-		Users               []user.User   `koanf:"users"`
+		AllowedAccessTypes  []string       `koanf:"allowed_access_types"`
+		PassengerHashLength int            `koanf:"passenger_hash_length"`
+		DriverHashLength    int            `koanf:"driver_hash_length"`
+		PassengerSalt       string         `koanf:"passenger_salt"`
+		DriverSalt          string         `koanf:"driver_salt"`
+		JWT                 *JWT           `koanf:"jwt"`
+		Logger              logger.Config  `koanf:"logger"`
+		HTTPPort            int            `koanf:"http_port"`
+		Tracer              tracing.Config `koanf:"tracer"`
+		Company             string         `koanf:"company"`
+		Users               []user.User    `koanf:"users"`
 	}
 
 	// JWt contains path of the keys for JWT encryption.
 	JWT struct {
 		Path string `koanf:"path"`
-	}
-
-	// Tracer contains all configs needed to create a tracer.
-	TracerConfig struct {
-		Enabled      bool    `koanf:"enabled"`
-		ServiceName  string  `koanf:"service_name"`
-		SamplerType  string  `koanf:"sampler_type"`
-		SamplerParam float64 `koanf:"sampler_param"`
-		Host         string  `koanf:"host"`
-		Port         int     `koanf:"port"`
 	}
 )
 
