@@ -11,6 +11,7 @@ import (
 func ReSTServer() *fiber.App {
 	app := fiber.New()
 
+	// nolint: exhaustivestruct
 	app.Use(fiberzap.New(fiberzap.Config{
 		Logger: zap.L(),
 	}))
