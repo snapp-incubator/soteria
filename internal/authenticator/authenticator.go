@@ -97,6 +97,7 @@ func (a Authenticator) Auth(tokenString string) (err error) {
 }
 
 // ACL check a user access to a topic.
+// nolint: funlen, cyclop
 func (a Authenticator) ACL(
 	accessType acl.AccessType,
 	tokenString string,

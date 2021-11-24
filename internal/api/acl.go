@@ -23,6 +23,7 @@ type aclRequest struct {
 }
 
 // ACL is the handler responsible for ACL requests.
+// nolint: wrapcheck, funlen
 func ACL(c *fiber.Ctx) error {
 	_, span := app.GetInstance().Tracer.Start(c.Context(), "api.acl")
 	defer span.End()
@@ -82,6 +83,7 @@ func ACL(c *fiber.Ctx) error {
 			span.RecordError(err)
 		}
 
+		// nolint: exhaustivestruct
 		if errors.Is(err, authenticator.TopicNotAllowedError{}) {
 			zap.L().
 				Warn("acl request is not authorized",
