@@ -7,7 +7,6 @@ region: teh-1
 image:
   registry: docker-registry.default.svc:5000
   repository: realtime-staging/soteria
-  tag: dev
   pullPolicy: Always
 
 timezone: Asia/Tehran
@@ -36,16 +35,6 @@ autoscaling:
 rollingParams:
   maxSurge: 5
   maxUnavailable: 0
-
-ingress:
-  enabled: false
-  annotations: {}
-  # kubernetes.io/ingress.class: nginDeploymentConfigx
-  # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths: [ ]
-  tls: [ ]
 
 serviceMonitor:
   enabled: false
