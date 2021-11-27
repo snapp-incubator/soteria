@@ -1,0 +1,9 @@
+---
+namespace: ode
+region: teh-1
+
+image:
+  registry: docker-registry.default.svc:5000
+  repository: mozart/soteria
+  tag: main
+  pullPolicy: Always
