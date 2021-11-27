@@ -88,6 +88,10 @@ users:
         access: '2'
       - topic: call_outgoing
         access: '1'
+      - topic: chat
+        access: '1'
+      - topic: chat
+        access: '2'
   - username: passenger
     rules:
       - topic: cab_event
@@ -102,3 +106,7 @@ users:
         access: '2'
       - topic: call_outgoing
         access: '1'
+      - topic: chat
+        access: '1'
+      - topic: chat
+        access: '2'
