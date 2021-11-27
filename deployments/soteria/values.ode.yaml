@@ -3,7 +3,7 @@ namespace: ode
 region: teh-1
 
 image:
-  registry: docker-registry.default.svc:5000
+  registry: registry.apps.private.teh-1.snappcloud.io
   repository: mozart/soteria
   tag: main
   pullPolicy: Always
