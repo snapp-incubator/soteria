@@ -35,6 +35,7 @@ Common labels
 */}}
 {{- define "soteria.labels" -}}
 helm.sh/chart: {{ include "soteria.chart" . }}
+app: soteria
 {{ include "soteria.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
