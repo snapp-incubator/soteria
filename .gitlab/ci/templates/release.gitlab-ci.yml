@@ -17,7 +17,7 @@ release:staging:teh-1:
 release:staging:teh-2:
   extends: .easy_ci:release:docker
   variables:
-    OKD4_TEH1_REGISTRY: "image-registry.apps.private.okd4.teh-2.snappcloud.io"
+    OKD4_TEH2_REGISTRY: "image-registry.apps.private.okd4.teh-2.snappcloud.io"
     RELEASE_CONTAINER_REGISTRY_ADDRESS: "$OKD4_TEH2_REGISTRY"
     RELEASE_CONTAINER_REGISTRY_IMAGE: "$OKD4_TEH2_REGISTRY/realtime-staging/$CI_PROJECT_NAME"
     RELEASE_CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
@@ -60,7 +60,7 @@ release:production:teh-1:
 release:production:teh-2:
   extends: .easy_ci:release:docker
   variables:
-    OKD4_TEH1_REGISTRY: "image-registry.apps.private.okd4.teh-2.snappcloud.io"
+    OKD4_TEH2_REGISTRY: "image-registry.apps.private.okd4.teh-2.snappcloud.io"
     RELEASE_CONTAINER_REGISTRY_ADDRESS: "$OKD4_TEH2_REGISTRY"
     RELEASE_CONTAINER_REGISTRY_IMAGE: "$OKD4_TEH2_REGISTRY/realtime-production/$CI_PROJECT_NAME"
     RELEASE_CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
