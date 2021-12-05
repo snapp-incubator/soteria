@@ -211,8 +211,6 @@ func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappi
 		ch, _ = a.EMQTopicManager.CreateCallEntryTopic(id, audience)
 	case topics.CallOutgoing:
 		ch, _ = a.EMQTopicManager.CreateCallOutgoingTopic(id, audience)
-	case topics.DaghighSys:
-		return true
 	case topics.BoxEvent:
 		return true
 	}

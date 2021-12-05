@@ -15,7 +15,6 @@ const (
 	PassengerLocation Type = "passenger_location"
 	SuperappEvent     Type = "superapp_event"
 	BoxEvent          Type = "box_event"
-	DaghighSys        Type = "daghigh_sys"
 	SharedLocation    Type = "shared_location"
 	Chat              Type = "chat"
 	CallEntry         Type = "call_entry"
@@ -31,7 +30,6 @@ var (
 	PassengerLocationRegexp = regexp.MustCompile(`/passenger/[a-zA-Z0-9+]+/location`)
 	SuperappEventRegexp     = regexp.MustCompile(`/(driver|passenger)/[a-zA-Z0-9]+/(superapp)`)
 	SharedLocationRegexp    = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9]+/(driver-location|passenger-location)`)
-	DaghighSysRegexp        = regexp.MustCompile(`\$SYS/brokers/\+/clients/\+/(connected|disconnected)`)
 	ChatRegexp              = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/chat`)
 	CallEntryRegexp         = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/call/send`)
 	CallOutgoingRegexp      = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/call/receive`)
@@ -41,7 +39,6 @@ func (t Topic) GetType() Type {
 	return t.GetTypeWithCompany("snapp")
 }
 
-// nolint: cyclop
 func (t Topic) GetTypeWithCompany(company string) Type {
 	topic := string(t)
 	topic = strings.TrimPrefix(topic, company)
@@ -65,8 +62,6 @@ func (t Topic) GetTypeWithCompany(company string) Type {
 		return SuperappEvent
 	case topic == "bucks":
 		return BoxEvent
-	case DaghighSysRegexp.MatchString(topic):
-		return DaghighSys
 	}
 
 	return ""
