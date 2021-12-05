@@ -52,21 +52,6 @@ func TestTopic_GetType(t1 *testing.T) {
 			want: DriverLocation,
 		},
 		{
-			name: "testing daghigh sys",
-			arg:  "$SYS/brokers/+/clients/+/disconnected",
-			want: DaghighSys,
-		},
-		{
-			name: "testing daghigh sys",
-			arg:  "$SYS/brokers/+/clients/+/connected",
-			want: DaghighSys,
-		},
-		{
-			name: "testing daghigh sys",
-			arg:  "$share/hello/$SYS/brokers/+/clients/+/connected",
-			want: DaghighSys,
-		},
-		{
 			name: "testing shared passenger location",
 			arg:  "snapp/passenger/py9kdjLYB35RP4q/driver-location",
 			want: SharedLocation,
