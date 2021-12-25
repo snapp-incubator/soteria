@@ -6,8 +6,8 @@ region: teh-1
 
 labels:
   managedby: dispatching-team
-  createdby: mozart
-  
+  createdby: dispatching-team
+
 image:
   registry: docker-registry.default.svc:5000
   repository: realtime-staging/soteria
