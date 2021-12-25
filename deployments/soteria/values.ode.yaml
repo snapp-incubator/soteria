@@ -2,6 +2,10 @@
 namespace: ode
 region: teh-1
 
+labels:
+  managedby: dispatching-team
+  createdby: mozart
+
 image:
   registry: registry.apps.private.teh-1.snappcloud.io
   repository: mozart/soteria
