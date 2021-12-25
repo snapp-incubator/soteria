@@ -40,8 +40,8 @@ app: soteria
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-app.snappcloud.io/created-by: mozart
+app.kubernetes.io/managed-by: {{ .Values.labels.managedby }}
+app.snappcloud.io/created-by: {{ .Values.labels.createdby }}
 {{- end }}
 
 {{- define "soteria.podLabels" -}}
