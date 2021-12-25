@@ -4,6 +4,10 @@ replicaCount: 1
 namespace: dispatching-staging
 region: teh-1
 
+labels:
+  managedby: dispatching-team
+  createdby: mozart
+  
 image:
   registry: docker-registry.default.svc:5000
   repository: realtime-staging/soteria
