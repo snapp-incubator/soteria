@@ -208,7 +208,7 @@ func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappi
 	case topics.Chat:
 		ch, _ = a.EMQTopicManager.CreateChatTopic(id, audience)
 	case topics.CallEntry:
-		ch, _ = a.EMQTopicManager.CreateCallEntryTopic(id, audience)
+		ch, _ = a.EMQTopicManager.CreateGeneralCallEntryTopic(id, audience)
 	case topics.CallOutgoing:
 		ch, _ = a.EMQTopicManager.CreateCallOutgoingTopic(id, audience)
 	case topics.BoxEvent:
