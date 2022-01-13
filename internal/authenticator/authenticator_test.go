@@ -43,8 +43,8 @@ const (
 	invalidDriverChatTopic    = "snapp/driver/0596923be632d673560af9adadd2f78a/chat"
 	invalidPassengerChatTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/chat"
 
-	validDriverCallEntryTopic         = "snapp/driver/DXKgaNQa7N5Y7bo/call/send"
-	validPassengerCallEntryTopic      = "snapp/passenger/DXKgaNQa7N5Y7bo/call/send"
+	validDriverCallEntryTopic         = "shared/snapp/driver/DXKgaNQa7N5Y7bo/call/send"
+	validPassengerCallEntryTopic      = "shared/snapp/passenger/DXKgaNQa7N5Y7bo/call/send"
 	invalidDriverCallEntryTopic       = "snapp/driver/0596923be632d673560af9adadd2f78a/call/send"
 	invalidPassengerCallEntryTopic    = "snapp/passenger/0596923be632d673560af9adadd2f78a/call/send"
 	validDriverCallOutgoingTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/call/receive"
