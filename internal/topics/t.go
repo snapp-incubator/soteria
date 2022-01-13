@@ -41,6 +41,7 @@ func (t Topic) GetType() Type {
 	return t.GetTypeWithCompany("snapp")
 }
 
+// nolint: cyclop
 func (t Topic) GetTypeWithCompany(company string) Type {
 	topic := string(t)
 	topic = strings.TrimPrefix(topic, company)
