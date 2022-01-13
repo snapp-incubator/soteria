@@ -71,7 +71,11 @@ func Default() Config {
 						Access: acl.Sub,
 					},
 					{
-						Topic:  topics.CallEntry,
+						Topic:  topics.GeneralCallEntry,
+						Access: acl.Pub,
+					},
+					{
+						Topic:  topics.NodeCallEntry,
 						Access: acl.Pub,
 					},
 					{
@@ -104,7 +108,11 @@ func Default() Config {
 						Access: acl.Sub,
 					},
 					{
-						Topic:  topics.CallEntry,
+						Topic:  topics.GeneralCallEntry,
+						Access: acl.Pub,
+					},
+					{
+						Topic:  topics.NodeCallEntry,
 						Access: acl.Pub,
 					},
 					{
