@@ -45,6 +45,8 @@ const (
 
 	validDriverCallEntryTopic         = "shared/snapp/driver/DXKgaNQa7N5Y7bo/call/send"
 	validPassengerCallEntryTopic      = "shared/snapp/passenger/DXKgaNQa7N5Y7bo/call/send"
+	validDriverNodeCallEntryTopic     = "snapp/driver/DXKgaNQa7N5Y7bo/call/heliograph-0/send"
+	validPassengerNodeCallEntryTopic  = "snapp/passenger/DXKgaNQa7N5Y7bo/call/heliograph-0/send"
 	invalidDriverCallEntryTopic       = "snapp/driver/0596923be632d673560af9adadd2f78a/call/send"
 	invalidPassengerCallEntryTopic    = "snapp/passenger/0596923be632d673560af9adadd2f78a/call/send"
 	validDriverCallOutgoingTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/call/receive"
@@ -294,6 +296,18 @@ func TestAuthenticator_Acl(t *testing.T) {
 		assert.True(t, ok)
 	})
 
+	t.Run("testing driver subscribe on valid call outgoing node topic", func(t *testing.T) {
+		ok, err := auth.ACL(acl.Pub, driverToken, validDriverNodeCallEntryTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
+	t.Run("testing passenger subscribe on valid outgoing call node topic", func(t *testing.T) {
+		ok, err := auth.ACL(acl.Pub, passengerToken, validPassengerNodeCallEntryTopic)
+		assert.NoError(t, err)
+		assert.True(t, ok)
+	})
+
 	t.Run("testing driver subscribe on invalid call outgoing topic", func(t *testing.T) {
 		ok, err := auth.ACL(acl.Sub, driverToken, invalidDriverCallOutgoingTopic)
 		assert.Error(t, err)
@@ -449,7 +463,11 @@ func (rmh MockModelHandler) Get(pk string) user.User {
 					Access: acl.Sub,
 				},
 				{
-					Topic:  topics.CallEntry,
+					Topic:  topics.GeneralCallEntry,
+					Access: acl.Pub,
+				},
+				{
+					Topic:  topics.NodeCallEntry,
 					Access: acl.Pub,
 				},
 				{
@@ -487,7 +505,11 @@ func (rmh MockModelHandler) Get(pk string) user.User {
 					Access: acl.Sub,
 				},
 				{
-					Topic:  topics.CallEntry,
+					Topic:  topics.GeneralCallEntry,
+					Access: acl.Pub,
+				},
+				{
+					Topic:  topics.NodeCallEntry,
 					Access: acl.Pub,
 				},
 				{
