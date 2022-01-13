@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
@@ -207,8 +208,11 @@ func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappi
 		ch, _ = a.EMQTopicManager.CreateSharedLocationTopic(id, audience)
 	case topics.Chat:
 		ch, _ = a.EMQTopicManager.CreateChatTopic(id, audience)
-	case topics.CallEntry:
+	case topics.GeneralCallEntry:
 		ch, _ = a.EMQTopicManager.CreateGeneralCallEntryTopic(id, audience)
+	case topics.NodeCallEntry:
+		node := strings.Split(string(topic), "/")[4]
+		ch, _ = a.EMQTopicManager.CreateNodeCallEntryTopic(id, audience, node)
 	case topics.CallOutgoing:
 		ch, _ = a.EMQTopicManager.CreateCallOutgoingTopic(id, audience)
 	case topics.BoxEvent:
