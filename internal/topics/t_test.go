@@ -47,11 +47,6 @@ func TestTopic_GetType(t1 *testing.T) {
 			want: SuperappEvent,
 		},
 		{
-			name: "testing superapp event",
-			arg:  "snapp/driver/+/location",
-			want: DriverLocation,
-		},
-		{
 			name: "testing shared passenger location",
 			arg:  "snapp/passenger/py9kdjLYB35RP4q/driver-location",
 			want: SharedLocation,
@@ -72,14 +67,24 @@ func TestTopic_GetType(t1 *testing.T) {
 			want: Chat,
 		},
 		{
-			name: "testing passenger call entry",
-			arg:  "snapp/passenger/py9kdjLYB35RP4q/call/send",
-			want: CallEntry,
+			name: "testing passenger general call entry",
+			arg:  "shared/snapp/passenger/py9kdjLYB35RP4q/call/send",
+			want: GeneralCallEntry,
 		},
 		{
-			name: "testing driver call entry",
-			arg:  "snapp/driver/py9kdjLYB35RP4q/call/send",
-			want: CallEntry,
+			name: "testing driver general call entry",
+			arg:  "shared/snapp/driver/py9kdjLYB35RP4q/call/send",
+			want: GeneralCallEntry,
+		},
+		{
+			name: "testing passenger node call entry",
+			arg:  "snapp/passenger/py9kdjLYB35RP4q/call/heliograph-0/send",
+			want: NodeCallEntry,
+		},
+		{
+			name: "testing driver node call entry",
+			arg:  "snapp/driver/py9kdjLYB35RP4q/call/heliograph-1/send",
+			want: NodeCallEntry,
 		},
 		{
 			name: "testing passenger call",

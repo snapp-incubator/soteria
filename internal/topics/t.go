@@ -17,7 +17,8 @@ const (
 	BoxEvent          Type = "box_event"
 	SharedLocation    Type = "shared_location"
 	Chat              Type = "chat"
-	CallEntry         Type = "call_entry"
+	GeneralCallEntry  Type = "general_call_entry"
+	NodeCallEntry     Type = "node_call_entry"
 	CallOutgoing      Type = "call_outgoing"
 )
 
@@ -26,13 +27,14 @@ const (
 // so they regular expressions should not contain the company prefix.
 var (
 	CabEventRegexp          = regexp.MustCompile(`(\w+)-event-[a-zA-Z0-9]+`)
-	DriverLocationRegexp    = regexp.MustCompile(`/driver/[a-zA-Z0-9+]+/location`)
-	PassengerLocationRegexp = regexp.MustCompile(`/passenger/[a-zA-Z0-9+]+/location`)
+	DriverLocationRegexp    = regexp.MustCompile(`/driver/[a-zA-Z0-9]+/location`)
+	PassengerLocationRegexp = regexp.MustCompile(`/passenger/[a-zA-Z0-9]+/location`)
 	SuperappEventRegexp     = regexp.MustCompile(`/(driver|passenger)/[a-zA-Z0-9]+/(superapp)`)
-	SharedLocationRegexp    = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9]+/(driver-location|passenger-location)`)
-	ChatRegexp              = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/chat`)
-	CallEntryRegexp         = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/call/send`)
-	CallOutgoingRegexp      = regexp.MustCompile(`/(driver|passenger)+/[a-zA-Z0-9+]+/call/receive`)
+	SharedLocationRegexp    = regexp.MustCompile(`/(driver|passenger)/[a-zA-Z0-9]+/(driver-location|passenger-location)`)
+	ChatRegexp              = regexp.MustCompile(`/(driver|passenger)/[a-zA-Z0-9]+/chat`)
+	GeneralCallEntryRegexp  = regexp.MustCompile(`/(driver|passenger)/[a-zA-Z0-9]+/call/send`)
+	NodeCallEntryRegexp     = regexp.MustCompile(`/(driver|passenger)/[a-zA-Z0-9]+/call/[a-zA-Z0-9-]+/send`)
+	CallOutgoingRegexp      = regexp.MustCompile(`/(driver|passenger)/[a-zA-Z0-9]+/call/receive`)
 )
 
 func (t Topic) GetType() Type {
@@ -54,8 +56,10 @@ func (t Topic) GetTypeWithCompany(company string) Type {
 		return SharedLocation
 	case ChatRegexp.MatchString(topic):
 		return Chat
-	case CallEntryRegexp.MatchString(topic):
-		return CallEntry
+	case GeneralCallEntryRegexp.MatchString(topic):
+		return GeneralCallEntry
+	case NodeCallEntryRegexp.MatchString(topic):
+		return NodeCallEntry
 	case CallOutgoingRegexp.MatchString(topic):
 		return CallOutgoing
 	case SuperappEventRegexp.MatchString(topic):
