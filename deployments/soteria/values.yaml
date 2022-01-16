@@ -88,7 +88,9 @@ users:
         access: '1'
       - topic: superapp_event
         access: '1'
-      - topic: call_entry
+      - topic: node_call_entry
+        access: '2'
+      - topic: general_call_entry
         access: '2'
       - topic: call_outgoing
         access: '1'
@@ -106,7 +108,9 @@ users:
         access: '2'
       - topic: shared_location
         access: '1'
-      - topic: call_entry
+      - topic: node_call_entry
+        access: '2'
+      - topic: general_call_entry
         access: '2'
       - topic: call_outgoing
         access: '1'
