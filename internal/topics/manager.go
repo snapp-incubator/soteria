@@ -17,12 +17,15 @@ func NewManager(topics map[string]string) Manager {
 }
 
 func (m Manager) IsTopicValid(topic string) bool {
+	return len(m.GetTopicType(topic)) != 0
+}
 
-	for _, regex := range m.regexes {
+func (m Manager) GetTopicType(topic string) string {
+	for key, regex := range m.regexes {
 		if regex.MatchString(topic) {
-			return true
+			return key
 		}
 	}
 
-	return false
+	return ""
 }
