@@ -28,17 +28,18 @@ const (
 type (
 	// Config is the main container of Soteria's config.
 	Config struct {
-		AllowedAccessTypes  []string       `koanf:"allowed_access_types"`
-		PassengerHashLength int            `koanf:"passenger_hash_length"`
-		DriverHashLength    int            `koanf:"driver_hash_length"`
-		PassengerSalt       string         `koanf:"passenger_salt"`
-		DriverSalt          string         `koanf:"driver_salt"`
-		JWT                 *JWT           `koanf:"jwt"`
-		Logger              logger.Config  `koanf:"logger"`
-		HTTPPort            int            `koanf:"http_port"`
-		Tracer              tracing.Config `koanf:"tracer"`
-		Company             string         `koanf:"company"`
-		Users               []user.User    `koanf:"users"`
+		AllowedAccessTypes  []string          `koanf:"allowed_access_types"`
+		PassengerHashLength int               `koanf:"passenger_hash_length"`
+		DriverHashLength    int               `koanf:"driver_hash_length"`
+		PassengerSalt       string            `koanf:"passenger_salt"`
+		DriverSalt          string            `koanf:"driver_salt"`
+		JWT                 *JWT              `koanf:"jwt"`
+		Logger              logger.Config     `koanf:"logger"`
+		HTTPPort            int               `koanf:"http_port"`
+		Tracer              tracing.Config    `koanf:"tracer"`
+		Company             string            `koanf:"company"`
+		Users               []user.User       `koanf:"users"`
+		Topics              map[string]string `koanf:"topics"`
 	}
 
 	// JWt contains path of the keys for JWT encryption.
