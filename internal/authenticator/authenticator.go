@@ -4,6 +4,8 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
+	"regexp"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -30,12 +32,12 @@ type TopicNotAllowedError struct {
 	Issuer     user.Issuer
 	Sub        string
 	AccessType acl.AccessType
-	Topic      topics.Topic
+	Topic      string
 }
 
 func (err TopicNotAllowedError) Error() string {
 	return fmt.Sprintf("issuer %s with sub %s is not allowed to %s on topic %s (%s)",
-		err.Issuer, err.Sub, err.AccessType, err.Topic, err.Topic.GetType(),
+		err.Issuer, err.Sub, err.AccessType, err.Topic, app.GetInstance().Authenticator.GetTopicType(err.Topic),
 	)
 }
 
@@ -63,6 +65,7 @@ type Authenticator struct {
 	EMQTopicManager    *snappids.EMQTopicManager
 	HashIDSManager     *snappids.HashIDSManager
 	Company            string
+	Regexes            map[string]*regexp.Regexp
 }
 
 // Auth check user authentication by checking the user's token
@@ -231,4 +234,37 @@ func issuerToAudience(issuer user.Issuer) snappids.Audience {
 	default:
 		return -1
 	}
+}
+
+// IsTopicValid returns true if it finds a topic type for the given topic.
+func (a Authenticator) IsTopicValid(topic string) bool {
+	return len(a.GetTopicType(topic)) != 0
+}
+
+// GetTopicType find topic type based on regexes.
+func (a Authenticator) GetTopicType(topic string) string {
+	return a.GetTopicTypeByCompany(topic, "snapp")
+}
+
+func (a Authenticator) GetTopicTypeByCompany(topic, company string) string {
+	topic = strings.TrimPrefix(topic, company)
+
+	for key, regex := range a.Regexes {
+		if regex.MatchString(topic) {
+			return key
+		}
+	}
+
+	return ""
+}
+
+// CompileTopicsRegexes compile topic regex template reading from config.
+func CompileTopicsRegexes(topics map[string]string) map[string]*regexp.Regexp {
+	regexes := make(map[string]*regexp.Regexp)
+
+	for key, template := range topics {
+		regexes[key] = regexp.MustCompile(template)
+	}
+
+	return regexes
 }
