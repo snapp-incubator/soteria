@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"net/http"
 	"os"
 	"os/signal"
@@ -54,9 +55,8 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 		},
 		AllowedAccessTypes: allowedAccessTypes,
 		ModelHandler:       db.NewInternal(cfg.Users),
-		HashIDSManager:     hid,
-		EMQTopicManager:    snappids.NewEMQManagerWithCompany(hid, cfg.Company),
 		Company:            cfg.Company,
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, cfg.Company),
 	})
 
 	app.GetInstance().SetTracer(tracer)
