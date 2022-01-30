@@ -4,12 +4,7 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
-	"regexp"
-	"strings"
-
 	"github.com/golang-jwt/jwt/v4"
-	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
@@ -33,11 +28,12 @@ type TopicNotAllowedError struct {
 	Sub        string
 	AccessType acl.AccessType
 	Topic      string
+	TopicType  string
 }
 
 func (err TopicNotAllowedError) Error() string {
 	return fmt.Sprintf("issuer %s with sub %s is not allowed to %s on topic %s (%s)",
-		err.Issuer, err.Sub, err.AccessType, err.Topic, app.GetInstance().Authenticator.GetTopicType(err.Topic),
+		err.Issuer, err.Sub, err.AccessType, err.Topic, err.TopicType,
 	)
 }
 
@@ -50,7 +46,7 @@ func (err PublicKeyNotFoundError) Error() string {
 }
 
 type InvalidTopicError struct {
-	Topic topics.Topic
+	Topic string
 }
 
 func (err InvalidTopicError) Error() string {
@@ -62,10 +58,8 @@ type Authenticator struct {
 	PublicKeys         map[user.Issuer]*rsa.PublicKey
 	AllowedAccessTypes []acl.AccessType
 	ModelHandler       db.ModelHandler
-	EMQTopicManager    *snappids.EMQTopicManager
-	HashIDSManager     *snappids.HashIDSManager
+	TopicManager       topics.Manager
 	Company            string
-	Regexes            map[string]*regexp.Regexp
 }
 
 // Auth check user authentication by checking the user's token
@@ -105,7 +99,7 @@ func (a Authenticator) Auth(tokenString string) (err error) {
 func (a Authenticator) ACL(
 	accessType acl.AccessType,
 	tokenString string,
-	topic topics.Topic,
+	topic string,
 ) (bool, error) {
 	if !a.ValidateAccessType(accessType) {
 		return false, ErrInvalidAccessType
@@ -160,18 +154,13 @@ func (a Authenticator) ACL(
 
 	user := a.ModelHandler.Get(pk)
 
-	id, err := a.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
-	if err != nil {
-		return false, ErrDecodeHashID
-	}
-
-	if !a.ValidateTopicBySender(topic, issuerToAudience(issuer), id) {
+	if !a.TopicManager.ValidateTopicBySender(topic, issuer, sub) {
 		return false, InvalidTopicError{Topic: topic}
 	}
 
-	if ok := user.CheckTopicAllowance(topic.GetTypeWithCompany(a.Company), accessType); !ok {
+	if ok := user.CheckTopicAllowance(a.TopicManager.GetTopicType(topic, a.Company), accessType); !ok {
 		return false,
-			TopicNotAllowedError{issuer, sub, accessType, topic}
+			TopicNotAllowedError{issuer, sub, accessType, topic, a.TopicManager.GetTopicType(topic, "snapp")}
 	}
 
 	return true, nil
@@ -195,76 +184,4 @@ func primaryKey(issuer user.Issuer, sub string) string {
 	}
 
 	return sub
-}
-
-func (a Authenticator) ValidateTopicBySender(topic topics.Topic, audience snappids.Audience, id int) bool {
-	var ch snappids.Topic
-
-	switch topic.GetType() {
-	case topics.CabEvent:
-		ch, _ = a.EMQTopicManager.CreateCabEventTopic(id, audience)
-	case topics.DriverLocation, topics.PassengerLocation:
-		ch, _ = a.EMQTopicManager.CreateLocationTopic(id, audience)
-	case topics.SuperappEvent:
-		ch, _ = a.EMQTopicManager.CreateSuperAppEventTopic(id, audience)
-	case topics.SharedLocation:
-		ch, _ = a.EMQTopicManager.CreateSharedLocationTopic(id, audience)
-	case topics.Chat:
-		ch, _ = a.EMQTopicManager.CreateChatTopic(id, audience)
-	case topics.GeneralCallEntry:
-		ch, _ = a.EMQTopicManager.CreateGeneralCallEntryTopic(id, audience)
-	case topics.NodeCallEntry:
-		node := strings.Split(string(topic), "/")[4]
-		ch, _ = a.EMQTopicManager.CreateNodeCallEntryTopic(id, audience, node)
-	case topics.CallOutgoing:
-		ch, _ = a.EMQTopicManager.CreateCallOutgoingTopic(id, audience)
-	case topics.BoxEvent:
-		return true
-	}
-
-	return string(ch) == string(topic)
-}
-
-func issuerToAudience(issuer user.Issuer) snappids.Audience {
-	switch issuer {
-	case user.Passenger:
-		return snappids.PassengerAudience
-	case user.Driver:
-		return snappids.DriverAudience
-	default:
-		return -1
-	}
-}
-
-// IsTopicValid returns true if it finds a topic type for the given topic.
-func (a Authenticator) IsTopicValid(topic string) bool {
-	return len(a.GetTopicType(topic)) != 0
-}
-
-// GetTopicType find topic type based on regexes.
-func (a Authenticator) GetTopicType(topic string) string {
-	return a.GetTopicTypeByCompany(topic, "snapp")
-}
-
-func (a Authenticator) GetTopicTypeByCompany(topic, company string) string {
-	topic = strings.TrimPrefix(topic, company)
-
-	for key, regex := range a.Regexes {
-		if regex.MatchString(topic) {
-			return key
-		}
-	}
-
-	return ""
-}
-
-// CompileTopicsRegexes compile topic regex template reading from config.
-func CompileTopicsRegexes(topics map[string]string) map[string]*regexp.Regexp {
-	regexes := make(map[string]*regexp.Regexp)
-
-	for key, template := range topics {
-		regexes[key] = regexp.MustCompile(template)
-	}
-
-	return regexes
 }
