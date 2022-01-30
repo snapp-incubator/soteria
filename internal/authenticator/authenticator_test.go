@@ -3,6 +3,7 @@ package authenticator_test
 import (
 	"crypto/rsa"
 	"fmt"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -119,6 +120,8 @@ func TestAuthenticator_Acl(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	cfg := config.New()
+
 	hid := &snappids.HashIDSManager{
 		Salts: map[snappids.Audience]string{
 			snappids.PassengerAudience:  "secret",
@@ -139,8 +142,8 @@ func TestAuthenticator_Acl(t *testing.T) {
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		ModelHandler:       MockModelHandler{},
-		EMQTopicManager:    snappids.NewEMQManager(hid),
-		HashIDSManager:     hid,
+		Company:            "snapp",
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp"),
 	}
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
 		ok, err := auth.ACL("invalid-access", passengerToken, "test")
@@ -331,16 +334,18 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 		},
 	}
 
+	cfg := config.New()
+
 	// nolint: exhaustivestruct
 	authenticator := authenticator.Authenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		ModelHandler:       MockModelHandler{},
-		EMQTopicManager:    snappids.NewEMQManager(hid),
-		HashIDSManager:     hid,
+		Company:            "snapp",
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp"),
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
-		ok := authenticator.ValidateTopicBySender(validDriverCabEventTopic, snappids.DriverAudience, 123)
+		ok := authenticator.TopicManager.ValidateTopicBySender(validDriverCabEventTopic, user.Driver, "DXKgaNQa7N5Y7bo")
 		assert.True(t, ok)
 	})
 }

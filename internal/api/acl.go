@@ -7,7 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
@@ -61,10 +60,10 @@ func ACL(c *fiber.Ctx) error {
 		attribute.String("password", request.Username),
 	)
 
-	topic := topics.Topic(request.Topic)
-	topicType := topic.GetType()
+	topic := request.Topic
+	isTopicValid := app.GetInstance().Authenticator.TopicManager.IsTopicValid(topic)
 
-	if len(topicType) == 0 {
+	if !isTopicValid {
 		zap.L().
 			Warn("acl bad request",
 				zap.String("access", request.Access.String()),
