@@ -95,9 +95,9 @@ func (t Manager) ValidateTopicBySender(topic string, issuer user.Issuer, sub str
 	return parsedTopic == topic
 }
 
-func (t Manager) getHashID(topicType, sub string, issuer user.Issuer) (string, error) {
-	if topicType == CabEvent {
-		id, err := t.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
+func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audience) (string, error) {
+	if hashType == MD5 {
+		id, err := t.HashIDSManager.DecodeHashID(sub, audience)
 		if err != nil {
 			return "", ErrDecodeHashID
 		}
