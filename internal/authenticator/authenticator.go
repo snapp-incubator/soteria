@@ -158,9 +158,9 @@ func (a Authenticator) ACL(
 		return false, InvalidTopicError{Topic: topic}
 	}
 
-	if ok := user.CheckTopicAllowance(a.TopicManager.GetTopicType(topic, a.Company), accessType); !ok {
+	if ok := user.CheckTopicAllowance(a.TopicManager.GetTopicType(topic), accessType); !ok {
 		return false,
-			TopicNotAllowedError{issuer, sub, accessType, topic, a.TopicManager.GetTopicType(topic, "snapp")}
+			TopicNotAllowedError{issuer, sub, accessType, topic, a.TopicManager.GetTopicType(topic)}
 	}
 
 	return true, nil

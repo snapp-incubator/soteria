@@ -71,7 +71,7 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 }
 
 func (t Manager) ValidateTopicBySender(topic string, issuer user.Issuer, sub string) bool {
-	topicTemplate, ok := t.GetTopicTemplate(topic, "snapp")
+	topicTemplate, ok := t.GetTopicTemplate(topic)
 	if !ok {
 		return false
 	}
@@ -119,8 +119,8 @@ func (t Manager) getHashID(topicType, sub string, issuer user.Issuer) (string, e
 	}
 }
 
-func (t Manager) GetTopicTemplate(input, company string) (*Template, bool) {
-	topic := strings.TrimPrefix(input, company)
+func (t Manager) GetTopicTemplate(input string) (*Template, bool) {
+	topic := strings.TrimPrefix(input, t.Company)
 
 	for _, each := range t.TopicTemplates {
 		if each.Regex.MatchString(topic) {
@@ -133,12 +133,12 @@ func (t Manager) GetTopicTemplate(input, company string) (*Template, bool) {
 
 // IsTopicValid returns true if it finds a topic type for the given topic.
 func (t Manager) IsTopicValid(topic string) bool {
-	return len(t.GetTopicType(topic, "snapp")) != 0
+	return len(t.GetTopicType(topic)) != 0
 }
 
 // GetTopicType finds topic type based on regexes.
-func (t Manager) GetTopicType(input, company string) string {
-	topic := strings.TrimPrefix(input, company)
+func (t Manager) GetTopicType(input string) string {
+	topic := strings.TrimPrefix(input, t.Company)
 
 	for _, each := range t.TopicTemplates {
 		if each.Regex.MatchString(topic) {
