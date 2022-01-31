@@ -1,33 +1,34 @@
 package topics
 
 import (
-	"crypto/md5"
+	"crypto/md5" // nolint:gosec
 	"errors"
 	"fmt"
-	"gitlab.snapp.ir/dispatching/snappids/v2"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"gitlab.snapp.ir/dispatching/snappids/v2"
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
 
 const (
 	CabEvent          string = "cab_event"
-	DriverLocation           = "driver_location"
-	PassengerLocation        = "passenger_location"
-	SuperappEvent            = "superapp_event"
-	BoxEvent                 = "box_event"
-	SharedLocation           = "shared_location"
-	Chat                     = "chat"
-	GeneralCallEntry         = "general_call_entry"
-	NodeCallEntry            = "node_call_entry"
-	CallOutgoing             = "call_outgoing"
+	DriverLocation    string = "driver_location"
+	PassengerLocation string = "passenger_location"
+	SuperappEvent     string = "superapp_event"
+	BoxEvent          string = "box_event"
+	SharedLocation    string = "shared_location"
+	Chat              string = "chat"
+	GeneralCallEntry  string = "general_call_entry"
+	NodeCallEntry     string = "node_call_entry"
+	CallOutgoing      string = "call_outgoing"
 )
 
 const (
 	Driver    string = "driver"
-	Passenger        = "passenger"
+	Passenger string = "passenger"
 )
 
 const (
@@ -81,11 +82,12 @@ func (t Manager) ValidateTopicBySender(topic string, issuer user.Issuer, sub str
 	fields["company"] = t.Company
 	fields["peer"] = peerOfAudience(fields["audience"])
 
-	hashId, err := t.getHashId(topicTemplate.Type, sub, issuer)
+	hashID, err := t.getHashID(topicTemplate.Type, sub, issuer)
 	if err != nil {
 		return false
 	}
-	fields["hashId"] = hashId
+
+	fields["hashId"] = hashID
 
 	if topicTemplate.Type == NodeCallEntry {
 		fields["node"] = strings.Split(topic, "/")[4]
@@ -96,7 +98,7 @@ func (t Manager) ValidateTopicBySender(topic string, issuer user.Issuer, sub str
 	return parsedTopic == topic
 }
 
-func (t Manager) getHashId(topicType, sub string, issuer user.Issuer) (string, error) {
+func (t Manager) getHashID(topicType, sub string, issuer user.Issuer) (string, error) {
 	switch topicType {
 	case CabEvent, SuperappEvent:
 		id, err := t.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
@@ -108,23 +110,25 @@ func (t Manager) getHashId(topicType, sub string, issuer user.Issuer) (string, e
 		if topicType == SuperappEvent {
 			prefix = EmqSuperAppHashPrefix
 		}
-		hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", prefix, strconv.Itoa(id))))
+
+		hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", prefix, strconv.Itoa(id)))) // nolint:gosec
+
 		return fmt.Sprintf("%x", hid), nil
 	default:
 		return sub, nil
 	}
 }
 
-func (t Manager) GetTopicTemplate(input, company string) (Template, bool) {
+func (t Manager) GetTopicTemplate(input, company string) (*Template, bool) {
 	topic := strings.TrimPrefix(input, company)
 
 	for _, each := range t.TopicTemplates {
 		if each.Regex.MatchString(topic) {
-			return each, true
+			return &each, true
 		}
 	}
 
-	return Template{}, false
+	return nil, false
 }
 
 // IsTopicValid returns true if it finds a topic type for the given topic.
