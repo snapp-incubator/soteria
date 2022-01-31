@@ -148,7 +148,7 @@ func (a Authenticator) ACL(
 		return false, ErrSubNotFound
 	}
 
-	sub := fmt.Sprintf("%v", claims["sub"])
+	sub, _ := claims["sub"].(string)
 
 	pk := primaryKey(issuer, sub)
 
