@@ -110,38 +110,8 @@ func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audi
 	return sub, nil
 }
 
-func (t Manager) GetTopicTemplate(input string) (*Template, bool) {
-	topic := strings.TrimPrefix(input, t.Company)
-
-	for _, each := range t.TopicTemplates {
-		if each.Regex.MatchString(topic) {
-			return &each, true
-		}
-	}
-
-	return nil, false
-}
-
-// IsTopicValid returns true if it finds a topic type for the given topic.
-func (t Manager) IsTopicValid(topic string) bool {
-	return len(t.GetTopicType(topic)) != 0
-}
-
-// GetTopicType finds topic type based on regexes.
-func (t Manager) GetTopicType(input string) string {
-	topic := strings.TrimPrefix(input, t.Company)
-
-	for _, each := range t.TopicTemplates {
-		if each.Regex.MatchString(topic) {
-			return each.Type
-		}
-	}
-
-	return ""
-}
-
-// issuerToAudience returns corresponding audience in snappids form.
-func issuerToAudience(issuer user.Issuer) snappids.Audience {
+// IssuerToAudience returns corresponding audience in snappids form.
+func IssuerToAudience(issuer user.Issuer) (snappids.Audience, string) {
 	switch issuer {
 	case user.Passenger:
 		return snappids.PassengerAudience
