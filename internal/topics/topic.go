@@ -3,6 +3,8 @@ package topics
 import (
 	"strings"
 	"text/template"
+
+	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 )
 
 // HashType topic hashID type.
@@ -14,15 +16,17 @@ const (
 )
 
 type Topic struct {
-	Type     string `koanf:"type"`
-	Template string `koanf:"template"`
-	Regex    string `koanf:"regex"`
+	Type     string   `koanf:"type"`
+	Template string   `koanf:"template"`
+	HashType HashType `koanf:"hash_type"`
+	Accesses map[string]acl.AccessType
 }
 
 type Template struct {
 	Type     string
 	Template *template.Template
-	Regex    *regexp.Regexp
+	HashType HashType `koanf:"hash_type"`
+	Accesses map[string]acl.AccessType
 }
 
 func (t Template) Parse(fields map[string]string) string {
