@@ -83,7 +83,6 @@ func TestAuthenticator_Auth(t *testing.T) {
 			user.Driver:    pkey0,
 			user.Passenger: pkey1,
 		},
-		ModelHandler: MockModelHandler{},
 	}
 
 	t.Run("testing driver token auth", func(t *testing.T) {
@@ -141,7 +140,6 @@ func TestAuthenticator_Acl(t *testing.T) {
 			user.Passenger: pkey1,
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
-		ModelHandler:       MockModelHandler{},
 		Company:            "snapp",
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp"),
 	}
@@ -339,7 +337,6 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 	// nolint: exhaustivestruct
 	authenticator := authenticator.Authenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
-		ModelHandler:       MockModelHandler{},
 		Company:            "snapp",
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp"),
 	}
@@ -436,97 +433,6 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 			}
 		})
 	}
-}
-
-type MockModelHandler struct{}
-
-func (rmh MockModelHandler) Get(pk string) user.User {
-	var u user.User
-
-	switch pk {
-	case "passenger":
-		u = user.User{
-			Username: string(user.Passenger),
-			Rules: []user.Rule{
-				{
-					Topic:  topics.CabEvent,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.SuperappEvent,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.PassengerLocation,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.SharedLocation,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.Chat,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.GeneralCallEntry,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.NodeCallEntry,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.CallOutgoing,
-					Access: acl.Sub,
-				},
-			},
-		}
-	case "driver":
-		u = user.User{
-			Username: string(user.Driver),
-			Rules: []user.Rule{
-				{
-					Topic:  topics.DriverLocation,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.CabEvent,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.SuperappEvent,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.PassengerLocation,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.SharedLocation,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.Chat,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.GeneralCallEntry,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.NodeCallEntry,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.CallOutgoing,
-					Access: acl.Sub,
-				},
-			},
-		}
-	}
-
-	return u
 }
 
 func getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
