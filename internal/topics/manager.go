@@ -98,6 +98,9 @@ func (t Manager) ValidateTopic(topic string, audienceStr string, audience snappi
 	return nil
 }
 
+// getHashID calculate hashID based on hashType.
+// most of the topics have hashID type for their hashIDs but some old topics have different hashTypes.
+// if hashType is equal to hashID, sub is returned without any changes.
 func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audience) (string, error) {
 	if hashType == MD5 {
 		id, err := t.HashIDSManager.DecodeHashID(sub, audience)
