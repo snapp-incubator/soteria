@@ -1,9 +1,16 @@
 package topics
 
 import (
-	"regexp"
 	"strings"
 	"text/template"
+)
+
+// HashType topic hashID type.
+type HashType int
+
+const (
+	HashID HashType = iota
+	MD5
 )
 
 type Topic struct {
