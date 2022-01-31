@@ -1,3 +1,6 @@
+// Package topics regular expressions which are used for detecting the topic name.
+// topics are prefix with the company name will be trimed before matching
+// so they regular expressions should not contain the company prefix.
 package topics
 
 import (
@@ -35,10 +38,6 @@ const (
 const EmqCabHashPrefix = "emqch"
 
 var ErrDecodeHashID = errors.New("could not decode hash id")
-
-// Topic regular expressions which are used for detecting the topic name.
-// topics are prefix with the company name will be trimed before matching
-// so they regular expressions should not contain the company prefix.
 
 type Manager struct {
 	HashIDSManager *snappids.HashIDSManager
