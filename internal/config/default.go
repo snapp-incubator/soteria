@@ -44,7 +44,7 @@ func Default() Config {
 		Topics: []topics.Topic{
 			{
 				Type:     "cab_event",
-				Template: "{{.audience}}-event-{{.hashId}}",
+				Template: "^{{.audience}}-event-{{.hashId}}$",
 				HashType: topics.MD5,
 				Accesses: map[string]acl.AccessType{
 					topics.Driver:    acl.Sub,
@@ -53,7 +53,7 @@ func Default() Config {
 			},
 			{
 				Type:     "driver_location",
-				Template: "{{.company}}/driver/{{.hashId}}/location",
+				Template: "^{{.company}}/driver/{{.hashId}}/location$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.Driver:    acl.Pub,
@@ -62,7 +62,7 @@ func Default() Config {
 			},
 			{
 				Type:     "passenger_location",
-				Template: "{{.company}}/passenger/{{.hashId}}/location",
+				Template: "^{{.company}}/passenger/{{.hashId}}/location$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.Driver:    acl.Pub,
@@ -71,7 +71,7 @@ func Default() Config {
 			},
 			{
 				Type:     "superapp_event",
-				Template: "{{.company}}/{{.audience}}/{{.hashId}}/superapp",
+				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/superapp$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.Driver:    acl.Sub,
@@ -80,7 +80,7 @@ func Default() Config {
 			},
 			{
 				Type:     "box_event",
-				Template: "bucks",
+				Template: "^bucks$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.Driver:    acl.None,
@@ -89,7 +89,7 @@ func Default() Config {
 			},
 			{
 				Type:     "shared_location",
-				Template: "{{.company}}/{{.audience}}/{{.hashId}}/{{.peer}}-location",
+				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/{{.peer}}-location$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.Driver:    acl.Sub,
@@ -98,7 +98,7 @@ func Default() Config {
 			},
 			{
 				Type:     "chat",
-				Template: "{{.company}}/{{.audience}}/{{.hashId}}/chat",
+				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/chat$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.Driver:    acl.Sub,
@@ -107,7 +107,7 @@ func Default() Config {
 			},
 			{
 				Type:     "general_call_entry",
-				Template: "shared/{{.company}}/{{.audience}}/{{.hashId}}/call/send",
+				Template: "^shared/{{.company}}/{{.audience}}/{{.hashId}}/call/send$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.Driver:    acl.Pub,
@@ -116,7 +116,7 @@ func Default() Config {
 			},
 			{
 				Type:     "node_call_entry",
-				Template: "{{.company}}/{{.audience}}/{{.hashId}}/call/[a-zA-Z0-9-]+/send",
+				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/call/[a-zA-Z0-9-]+/send$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.Driver:    acl.Pub,
@@ -125,7 +125,7 @@ func Default() Config {
 			},
 			{
 				Type:     "call_outgoing",
-				Template: "{{.company}}/{{.audience}}/{{.hashId}}/call/receive",
+				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/call/receive$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.Driver:    acl.Sub,
