@@ -114,23 +114,11 @@ func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audi
 func IssuerToAudience(issuer user.Issuer) (snappids.Audience, string) {
 	switch issuer {
 	case user.Passenger:
-		return snappids.PassengerAudience
+		return snappids.PassengerAudience, Passenger
 	case user.Driver:
-		return snappids.DriverAudience
+		return snappids.DriverAudience, Driver
 	default:
-		return -1
-	}
-}
-
-// issuerToAudienceStr returns corresponding audience in string form.
-func issuerToAudienceStr(issuer user.Issuer) string {
-	switch issuer {
-	case user.Passenger:
-		return Passenger
-	case user.Driver:
-		return Driver
-	default:
-		return ""
+		return -1, ""
 	}
 }
 
