@@ -20,9 +20,11 @@ type Template struct {
 
 func (t Template) Parse(fields map[string]string) string {
 	writer := new(strings.Builder)
+
 	err := t.Template.Execute(writer, fields)
 	if err != nil {
 		return ""
 	}
+
 	return writer.String()
 }
