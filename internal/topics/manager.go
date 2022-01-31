@@ -88,8 +88,6 @@ func (t Manager) ValidateTopic(topic string, audienceStr string, audience snappi
 			return nil
 		}
 
-		// TODO: must be the exact topic
-		// if didn't match go to next template
 		if regexp.MustCompile(regex.String()).MatchString(topic) {
 			return &topicTemplate
 		}
