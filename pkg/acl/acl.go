@@ -1,6 +1,6 @@
 package acl
 
-// Access Types for EMQ contains subscribe, publish and publish-subscribe.
+// AccessType Types for EMQ contains subscribe, publish and publish-subscribe.
 type AccessType string
 
 const (
