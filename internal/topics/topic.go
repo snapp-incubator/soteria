@@ -16,10 +16,10 @@ const (
 )
 
 type Topic struct {
-	Type     string   `koanf:"type"`
-	Template string   `koanf:"template"`
-	HashType HashType `koanf:"hash_type"`
-	Accesses map[string]acl.AccessType
+	Type     string                    `koanf:"type"`
+	Template string                    `koanf:"template"`
+	HashType HashType                  `koanf:"hash_type"`
+	Accesses map[string]acl.AccessType `koanf:"accesses"`
 }
 
 type Template struct {
