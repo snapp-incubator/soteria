@@ -150,17 +150,21 @@ func (a Authenticator) ACL(
 
 	sub, _ := claims["sub"].(string)
 
-	pk := primaryKey(issuer, sub)
+	audience, audienceStr := topics.IssuerToAudience(issuer)
 
-	user := a.ModelHandler.Get(pk)
-
-	if !a.TopicManager.ValidateTopicBySender(topic, issuer, sub) {
+	topicTemplate := a.TopicManager.ValidateTopic(topic, audienceStr, audience, sub)
+	if topicTemplate == nil {
 		return false, InvalidTopicError{Topic: topic}
 	}
 
-	if ok := user.CheckTopicAllowance(a.TopicManager.GetTopicType(topic), accessType); !ok {
-		return false,
-			TopicNotAllowedError{issuer, sub, accessType, topic, a.TopicManager.GetTopicType(topic)}
+	if !topicTemplate.HasAccess(audienceStr, accessType) {
+		return false, TopicNotAllowedError{
+			issuer,
+			sub,
+			accessType,
+			topic,
+			topicTemplate.Type,
+		}
 	}
 
 	return true, nil
