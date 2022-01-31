@@ -67,32 +67,35 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 	}
 }
 
-func (t Manager) ValidateTopicBySender(topic string, issuer user.Issuer, sub string) bool {
-	topicTemplate, ok := t.GetTopicTemplate(topic)
-	if !ok {
-		return false
-	}
-
+// ValidateTopic checks if a topic is valid based on the given parameters.
+func (t Manager) ValidateTopic(topic string, audienceStr string, audience snappids.Audience, sub string) *Template {
 	fields := make(map[string]string)
-	audience := issuerToAudienceStr(issuer)
-	fields["audience"] = audience
+	fields["audience"] = audienceStr
 	fields["company"] = t.Company
-	fields["peer"] = peerOfAudience(fields["audience"])
+	fields["peer"] = peerOfAudience(audienceStr)
 
-	hashID, err := t.getHashID(topicTemplate.Type, sub, issuer)
-	if err != nil {
-		return false
+	for _, topicTemplate := range t.TopicTemplates {
+		hashID, err := t.getHashID(topicTemplate.HashType, sub, audience)
+		if err != nil {
+			return nil
+		}
+
+		fields["hashId"] = hashID
+
+		regex := new(strings.Builder)
+		err = topicTemplate.Template.Execute(regex, fields)
+		if err != nil {
+			return nil
+		}
+
+		// TODO: must be the exact topic
+		// if didn't match go to next template
+		if regexp.MustCompile(regex.String()).MatchString(topic) {
+			return &topicTemplate
+		}
 	}
 
-	fields["hashId"] = hashID
-
-	if topicTemplate.Type == NodeCallEntry {
-		fields["node"] = strings.Split(topic, "/")[4]
-	}
-
-	parsedTopic := topicTemplate.Parse(fields)
-
-	return parsedTopic == topic
+	return nil
 }
 
 func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audience) (string, error) {
