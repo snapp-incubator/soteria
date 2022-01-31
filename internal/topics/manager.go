@@ -13,6 +13,7 @@ import (
 	"text/template"
 
 	"gitlab.snapp.ir/dispatching/snappids/v2"
+
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
 
@@ -117,7 +118,7 @@ func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audi
 
 // IssuerToAudience returns corresponding audience in snappids form.
 func IssuerToAudience(issuer user.Issuer) (snappids.Audience, string) {
-	switch issuer {
+	switch issuer { // nolint:exhaustive
 	case user.Passenger:
 		return snappids.PassengerAudience, Passenger
 	case user.Driver:

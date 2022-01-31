@@ -5,6 +5,6 @@ type Issuer string
 
 const (
 	Driver    Issuer = "0"
-	Passenger        = "1"
-	None             = "-1"
+	Passenger Issuer = "1"
+	None      Issuer = "-1"
 )
