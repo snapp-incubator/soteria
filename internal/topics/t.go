@@ -54,7 +54,8 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 		each := Template{
 			Type:     topic.Type,
 			Template: template.Must(template.New(topic.Type).Parse(topic.Template)),
-			Regex:    regexp.MustCompile(topic.Regex),
+			HashType: topic.HashType,
+			Accesses: topic.Accesses,
 		}
 		templates = append(templates, each)
 	}
