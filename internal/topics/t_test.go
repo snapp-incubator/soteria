@@ -108,13 +108,14 @@ func TestTopic_GetType(t1 *testing.T) {
 
 	cfg := config.New()
 	auth := authenticator.Authenticator{
+		Company:      "snapp",
 		TopicManager: topics.NewTopicManager(cfg.Topics, nil, "snapp"),
 	}
 
 	for i, tt := range tests {
 		t1.Run(fmt.Sprintf("#%d %s", i, tt.name), func(t1 *testing.T) {
 			t := tt.arg
-			if got := auth.TopicManager.GetTopicType(t, "snapp"); got != tt.want {
+			if got := auth.TopicManager.GetTopicType(t); got != tt.want {
 				t1.Errorf("GetType() = %v, want %v", got, tt.want)
 			}
 		})
