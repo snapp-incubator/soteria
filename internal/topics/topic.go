@@ -43,5 +43,6 @@ func (t Template) Parse(fields map[string]string) string {
 // HasAccess check if user has access on topic.
 func (t Template) HasAccess(audience string, accessType acl.AccessType) bool {
 	access := t.Accesses[audience]
+
 	return access == acl.PubSub || access == accessType
 }

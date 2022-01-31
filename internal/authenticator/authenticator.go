@@ -177,13 +177,3 @@ func (a Authenticator) ValidateAccessType(accessType acl.AccessType) bool {
 
 	return false
 }
-
-func primaryKey(issuer user.Issuer, sub string) string {
-	if issuer == user.Passenger {
-		return "passenger"
-	} else if issuer == user.Driver {
-		return "driver"
-	}
-
-	return sub
-}

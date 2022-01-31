@@ -86,7 +86,7 @@ func New() Config {
 func (a *Config) ReadPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
 	var fileName string
 
-	switch u {
+	switch u { // nolint:exhaustive
 	case user.Driver:
 		fileName = fmt.Sprintf("%s%s", a.JWT.Path, "0.pem")
 	case user.Passenger:
