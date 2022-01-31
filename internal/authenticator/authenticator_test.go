@@ -10,7 +10,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
-	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
+	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
@@ -28,11 +28,11 @@ const (
 	validDriverLocationTopic   = "snapp/driver/DXKgaNQa7N5Y7bo/location"
 	invalidDriverLocationTopic = "snapp/driver/DXKgaNQa9Q5Y7bo/location"
 
-	validPassengerSuperappEventTopic   = "snapp/passenger/0956923be632d673560af9adadd2f78a/superapp"
-	invalidPassengerSuperappEventTopic = "snapp/passenger/0959623be632d673560af9adadd2f78a/superapp"
+	validPassengerSuperappEventTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/superapp"
+	invalidPassengerSuperappEventTopic = "snapp/passenger/DXKgaNQa9Q5Y7bo/superapp"
 
-	validDriverSuperappEventTopic   = "snapp/driver/0956923be632d673560af9adadd2f78a/superapp"
-	invalidDriverSuperappEventTopic = "snapp/driver/0596923be632d673560af9adadd2f78a/superapp"
+	validDriverSuperappEventTopic   = "snapp/driver/DXKgaNQa7N5Y7bo/superapp"
+	invalidDriverSuperappEventTopic = "snapp/driver/DXKgaNQa9Q5Y7bo/superapp"
 
 	validDriverSharedTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/passenger-location"
 	validPassengerSharedTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/driver-location"
@@ -345,8 +345,9 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
-		ok := authenticator.TopicManager.ValidateTopicBySender(validDriverCabEventTopic, user.Driver, "DXKgaNQa7N5Y7bo")
-		assert.True(t, ok)
+		audience, audienceStr := topics.IssuerToAudience(user.Driver)
+		topicTemplate := authenticator.TopicManager.ValidateTopic(validDriverCabEventTopic, audienceStr, audience, "DXKgaNQa7N5Y7bo")
+		assert.True(t, topicTemplate != nil)
 	})
 }
 
