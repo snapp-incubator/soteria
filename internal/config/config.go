@@ -39,7 +39,6 @@ type (
 		HTTPPort            int            `koanf:"http_port"`
 		Tracer              tracing.Config `koanf:"tracer"`
 		Company             string         `koanf:"company"`
-		Users               []user.User    `koanf:"users"`
 		Topics              []topics.Topic `koanf:"topics"`
 	}
 
