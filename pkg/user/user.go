@@ -10,6 +10,7 @@ type Issuer string
 const (
 	Driver    Issuer = "0"
 	Passenger Issuer = "1"
+	None             = "-1"
 )
 
 // User is Soteria's users db model.
