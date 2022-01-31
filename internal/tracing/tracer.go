@@ -12,8 +12,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// nolint: ireturn
-func New(cfg Config) trace.Tracer {
+func New(cfg Config) trace.Tracer { //nolint: ireturn
 	if !cfg.Enabled {
 		return trace.NewNoopTracerProvider().Tracer("snapp.dispatching")
 	}

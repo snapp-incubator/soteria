@@ -13,7 +13,6 @@ import (
 	"text/template"
 
 	"gitlab.snapp.ir/dispatching/snappids/v2"
-
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
 
@@ -83,6 +82,7 @@ func (t Manager) ValidateTopic(topic string, audienceStr string, audience snappi
 		fields["hashId"] = hashID
 
 		regex := new(strings.Builder)
+
 		err = topicTemplate.Template.Execute(regex, fields)
 		if err != nil {
 			return nil
