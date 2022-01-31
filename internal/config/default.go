@@ -5,7 +5,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/tracing"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 )
 
 const (
@@ -42,86 +41,6 @@ func Default() Config {
 			},
 		},
 		Company: "snapp",
-		Users: []user.User{
-			{
-				Username: string(user.Driver),
-				Rules: []user.Rule{
-					{
-						Topic:  topics.DriverLocation,
-						Access: acl.Pub,
-					},
-					{
-						Topic:  topics.CabEvent,
-						Access: acl.Sub,
-					},
-					{
-						Topic:  topics.SuperappEvent,
-						Access: acl.Sub,
-					},
-					{
-						Topic:  topics.PassengerLocation,
-						Access: acl.Pub,
-					},
-					{
-						Topic:  topics.SharedLocation,
-						Access: acl.Sub,
-					},
-					{
-						Topic:  topics.Chat,
-						Access: acl.Sub,
-					},
-					{
-						Topic:  topics.GeneralCallEntry,
-						Access: acl.Pub,
-					},
-					{
-						Topic:  topics.NodeCallEntry,
-						Access: acl.Pub,
-					},
-					{
-						Topic:  topics.CallOutgoing,
-						Access: acl.Sub,
-					},
-				},
-			},
-			{
-				Username: string(user.Passenger),
-				Rules: []user.Rule{
-					{
-						Topic:  topics.CabEvent,
-						Access: acl.Sub,
-					},
-					{
-						Topic:  topics.SuperappEvent,
-						Access: acl.Sub,
-					},
-					{
-						Topic:  topics.PassengerLocation,
-						Access: acl.Pub,
-					},
-					{
-						Topic:  topics.SharedLocation,
-						Access: acl.Sub,
-					},
-					{
-						Topic:  topics.Chat,
-						Access: acl.Sub,
-					},
-					{
-						Topic:  topics.GeneralCallEntry,
-						Access: acl.Pub,
-					},
-					{
-						Topic:  topics.NodeCallEntry,
-						Access: acl.Pub,
-					},
-					{
-						Topic:  topics.CallOutgoing,
-						Access: acl.Sub,
-					},
-				},
-			},
-		},
 		Topics: []topics.Topic{
 			{
 				Type:     "cab_event",
