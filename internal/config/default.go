@@ -126,52 +126,92 @@ func Default() Config {
 			{
 				Type:     "cab_event",
 				Template: "{{.audience}}-event-{{.hashId}}",
-				Regex:    `(\w+)-event-[a-zA-Z0-9]+`,
+				HashType: topics.MD5,
+				Accesses: map[string]acl.AccessType{
+					topics.Driver:    acl.Sub,
+					topics.Passenger: acl.Sub,
+				},
 			},
 			{
 				Type:     "driver_location",
 				Template: "{{.company}}/driver/{{.hashId}}/location",
-				Regex:    `/driver/[a-zA-Z0-9]+/location`,
+				HashType: topics.HashID,
+				Accesses: map[string]acl.AccessType{
+					topics.Driver:    acl.Pub,
+					topics.Passenger: acl.None,
+				},
 			},
 			{
 				Type:     "passenger_location",
 				Template: "{{.company}}/passenger/{{.hashId}}/location",
-				Regex:    "/passenger/[a-zA-Z0-9]+/location",
+				HashType: topics.HashID,
+				Accesses: map[string]acl.AccessType{
+					topics.Driver:    acl.Pub,
+					topics.Passenger: acl.Pub,
+				},
 			},
 			{
 				Type:     "superapp_event",
 				Template: "{{.company}}/{{.audience}}/{{.hashId}}/superapp",
-				Regex:    `/(driver|passenger)/[a-zA-Z0-9]+/(superapp)`,
+				HashType: topics.HashID,
+				Accesses: map[string]acl.AccessType{
+					topics.Driver:    acl.Sub,
+					topics.Passenger: acl.Sub,
+				},
 			},
 			{
 				Type:     "box_event",
 				Template: "bucks",
-				Regex:    "bucks",
+				HashType: topics.HashID,
+				Accesses: map[string]acl.AccessType{
+					topics.Driver:    acl.None,
+					topics.Passenger: acl.None,
+				},
 			},
 			{
 				Type:     "shared_location",
 				Template: "{{.company}}/{{.audience}}/{{.hashId}}/{{.peer}}-location",
-				Regex:    `/(driver|passenger)/[a-zA-Z0-9]+/(driver-location|passenger-location)`,
+				HashType: topics.HashID,
+				Accesses: map[string]acl.AccessType{
+					topics.Driver:    acl.Sub,
+					topics.Passenger: acl.Sub,
+				},
 			},
 			{
 				Type:     "chat",
 				Template: "{{.company}}/{{.audience}}/{{.hashId}}/chat",
-				Regex:    `/(driver|passenger)/[a-zA-Z0-9]+/chat`,
+				HashType: topics.HashID,
+				Accesses: map[string]acl.AccessType{
+					topics.Driver:    acl.Sub,
+					topics.Passenger: acl.Sub,
+				},
 			},
 			{
 				Type:     "general_call_entry",
 				Template: "shared/{{.company}}/{{.audience}}/{{.hashId}}/call/send",
-				Regex:    `/(driver|passenger)/[a-zA-Z0-9]+/call/send`,
+				HashType: topics.HashID,
+				Accesses: map[string]acl.AccessType{
+					topics.Driver:    acl.Pub,
+					topics.Passenger: acl.Pub,
+				},
 			},
 			{
 				Type:     "node_call_entry",
-				Template: "{{.company}}/{{.audience}}/{{.hashId}}/call/{{.node}}/send",
-				Regex:    `/(driver|passenger)/[a-zA-Z0-9]+/call/[a-zA-Z0-9-]+/send`,
+				Template: "{{.company}}/{{.audience}}/{{.hashId}}/call/[a-zA-Z0-9-]+/send",
+				HashType: topics.HashID,
+				Accesses: map[string]acl.AccessType{
+					topics.Driver:    acl.Pub,
+					topics.Passenger: acl.Pub,
+				},
 			},
 			{
 				Type:     "call_outgoing",
 				Template: "{{.company}}/{{.audience}}/{{.hashId}}/call/receive",
-				Regex:    `/(driver|passenger)/[a-zA-Z0-9]+/call/receive`,
+				HashType: topics.HashID,
+				Accesses: map[string]acl.AccessType{
+					topics.Driver:    acl.Sub,
+					topics.Passenger: acl.Sub,
+				},
 			},
 		},
 	}
