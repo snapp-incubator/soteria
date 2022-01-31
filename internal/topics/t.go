@@ -31,12 +31,8 @@ const (
 	Passenger string = "passenger"
 )
 
-const (
-	// EmqCabHashPrefix is the default prefix for hashing part of cab topic, default value is 'emqch'.
-	EmqCabHashPrefix = "emqch"
-	// EmqSuperAppHashPrefix is the default prefix for hashing part of super app topic, default value is 'superapp'.
-	EmqSuperAppHashPrefix = "superapp"
-)
+// EmqCabHashPrefix is the default prefix for hashing part of cab topic, default value is 'emqch'.
+const EmqCabHashPrefix = "emqch"
 
 var ErrDecodeHashID = errors.New("could not decode hash id")
 
@@ -99,24 +95,18 @@ func (t Manager) ValidateTopicBySender(topic string, issuer user.Issuer, sub str
 }
 
 func (t Manager) getHashID(topicType, sub string, issuer user.Issuer) (string, error) {
-	switch topicType {
-	case CabEvent, SuperappEvent:
+	if topicType == CabEvent {
 		id, err := t.HashIDSManager.DecodeHashID(sub, issuerToAudience(issuer))
 		if err != nil {
 			return "", ErrDecodeHashID
 		}
 
-		prefix := EmqCabHashPrefix
-		if topicType == SuperappEvent {
-			prefix = EmqSuperAppHashPrefix
-		}
-
-		hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", prefix, strconv.Itoa(id)))) // nolint:gosec
+		hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", EmqCabHashPrefix, strconv.Itoa(id)))) // nolint:gosec
 
 		return fmt.Sprintf("%x", hid), nil
-	default:
-		return sub, nil
 	}
+
+	return sub, nil
 }
 
 func (t Manager) GetTopicTemplate(input string) (*Template, bool) {
