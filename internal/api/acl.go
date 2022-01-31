@@ -61,20 +61,6 @@ func ACL(c *fiber.Ctx) error {
 	)
 
 	topic := request.Topic
-	isTopicValid := app.GetInstance().Authenticator.TopicManager.IsTopicValid(topic)
-
-	if !isTopicValid {
-		zap.L().
-			Warn("acl bad request",
-				zap.String("access", request.Access.String()),
-				zap.String("topic", request.Topic),
-				zap.String("token", request.Token),
-				zap.String("username", request.Password),
-				zap.String("password", request.Username),
-			)
-
-		return c.Status(http.StatusBadRequest).SendString("bad request")
-	}
 
 	ok, err := app.GetInstance().Authenticator.ACL(request.Access, tokenString, topic)
 	if err != nil || !ok {
