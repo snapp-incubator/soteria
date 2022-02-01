@@ -25,7 +25,7 @@ type Topic struct {
 type Template struct {
 	Type     string
 	Template *template.Template
-	HashType HashType `koanf:"hash_type"`
+	HashType HashType
 	Accesses map[string]acl.AccessType
 }
 
