@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v4"
-
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
