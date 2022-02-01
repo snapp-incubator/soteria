@@ -4,7 +4,7 @@
 package topics
 
 import (
-	"crypto/md5" // nolint:gosec
+	"crypto/md5"
 	"errors"
 	"fmt"
 	"regexp"

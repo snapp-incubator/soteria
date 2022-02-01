@@ -13,3 +13,8 @@ linters:
     - scopelint
     - golint
     - interfacer
+linters-settings:
+  gosec:
+    excludes:
+      # crypto/md5
+      - G501
