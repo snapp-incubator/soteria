@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )

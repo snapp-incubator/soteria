@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/cmd"
+	"gitlab.snapp.ir/dispatching/soteria/internal/cmd"
 	_ "go.uber.org/automaxprocs"
 )
 
