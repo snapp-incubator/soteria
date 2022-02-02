@@ -4,7 +4,7 @@ import (
 	"strings"
 	"text/template"
 
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 )
 
 // HashType topic hashID type.

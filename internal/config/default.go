@@ -1,10 +1,10 @@
 package config
 
 import (
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/logger"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/tracing"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
+	"gitlab.snapp.ir/dispatching/soteria/internal/logger"
+	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/internal/tracing"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 )
 
 const (

@@ -13,7 +13,7 @@ import (
 	"text/template"
 
 	"gitlab.snapp.ir/dispatching/snappids/v2"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 )
 
 const (
