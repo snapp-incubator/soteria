@@ -10,12 +10,12 @@ import (
 
 	"github.com/spf13/cobra"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/api"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
+	"gitlab.snapp.ir/dispatching/soteria/internal/api"
+	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/internal/config"
+	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )

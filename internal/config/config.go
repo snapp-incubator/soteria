@@ -16,11 +16,11 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/structs"
 	"github.com/tidwall/pretty"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/logger"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/tracing"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
+	"gitlab.snapp.ir/dispatching/soteria/internal/logger"
+	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/internal/tracing"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 )
 
 const (

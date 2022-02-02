@@ -3,7 +3,7 @@ package app
 import (
 	"sync"
 
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"go.opentelemetry.io/otel/trace"
 )
 

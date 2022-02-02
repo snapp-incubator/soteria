@@ -4,10 +4,10 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/cmd/serve"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/logger"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/tracing"
+	"gitlab.snapp.ir/dispatching/soteria/internal/cmd/serve"
+	"gitlab.snapp.ir/dispatching/soteria/internal/config"
+	"gitlab.snapp.ir/dispatching/soteria/internal/logger"
+	"gitlab.snapp.ir/dispatching/soteria/internal/tracing"
 	"go.uber.org/zap"
 )
 
