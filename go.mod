@@ -50,6 +50,7 @@ require (
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/speps/go-hashids/v2 v2.0.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.32.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
