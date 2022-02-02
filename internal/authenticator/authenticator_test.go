@@ -3,15 +3,16 @@ package authenticator_test
 import (
 	"crypto/rsa"
 	"fmt"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"io/ioutil"
 	"testing"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
@@ -56,70 +57,40 @@ const (
 	invalidPassengerCallOutgoingTopic = "snapp/passenger/0596923be632d673560af9adadd2f78a/call/receive"
 )
 
-func TestAuthenticator_Auth(t *testing.T) {
-	driverToken, err := getSampleToken(user.Driver, false)
-	if err != nil {
-		t.Fatal(err)
+type AuthenticatorTestSuite struct {
+	suite.Suite
+
+	Tokens struct {
+		Passenger string
+		Driver    string
 	}
 
-	passengerToken, err := getSampleToken(user.Passenger, false)
-	if err != nil {
-		t.Fatal(err)
+	PublicKeys struct {
+		Passenger *rsa.PublicKey
+		Driver    *rsa.PublicKey
 	}
 
-	pkey0, err := getPublicKey(user.Driver)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	pkey1, err := getPublicKey(user.Passenger)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// nolint: exhaustivestruct
-	authenticator := authenticator.Authenticator{
-		PublicKeys: map[user.Issuer]*rsa.PublicKey{
-			user.Driver:    pkey0,
-			user.Passenger: pkey1,
-		},
-	}
-
-	t.Run("testing driver token auth", func(t *testing.T) {
-		err := authenticator.Auth(driverToken)
-		assert.NoError(t, err)
-	})
-
-	t.Run("testing passenger token auth", func(t *testing.T) {
-		err := authenticator.Auth(passengerToken)
-		assert.NoError(t, err)
-	})
-
-	t.Run("testing invalid token auth", func(t *testing.T) {
-		err := authenticator.Auth(invalidToken)
-		assert.Error(t, err)
-	})
+	Authenticator authenticator.Authenticator
 }
 
-func TestAuthenticator_Acl(t *testing.T) {
-	pkey0, err := getPublicKey(user.Driver)
-	if err != nil {
-		t.Fatal(err)
-	}
-	pkey1, err := getPublicKey(user.Passenger)
-	if err != nil {
-		t.Fatal(err)
-	}
-	passengerToken, err := getSampleToken(user.Passenger, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	driverToken, err := getSampleToken(user.Driver, false)
-	if err != nil {
-		t.Fatal(err)
-	}
+func (suite *AuthenticatorTestSuite) SetupSuite() {
+	require := suite.Require()
 
-	cfg := config.New()
+	driverToken, err := suite.getSampleToken(user.Driver, false)
+	require.NoError(err)
+	suite.Tokens.Driver = driverToken
+
+	passengerToken, err := suite.getSampleToken(user.Passenger, false)
+	require.NoError(err)
+	suite.Tokens.Passenger = passengerToken
+
+	pkey0, err := suite.getPublicKey(user.Driver)
+	require.NoError(err)
+	suite.PublicKeys.Driver = pkey0
+
+	pkey1, err := suite.getPublicKey(user.Passenger)
+	require.NoError(err)
+	suite.PublicKeys.Passenger = pkey1
 
 	hid := &snappids.HashIDSManager{
 		Salts: map[snappids.Audience]string{
@@ -134,191 +105,226 @@ func TestAuthenticator_Acl(t *testing.T) {
 		},
 	}
 
-	auth := authenticator.Authenticator{
+	suite.Authenticator = authenticator.Authenticator{
 		PublicKeys: map[user.Issuer]*rsa.PublicKey{
 			user.Driver:    pkey0,
 			user.Passenger: pkey1,
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
-		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp"),
+		TopicManager:       topics.NewTopicManager(config.Default().Topics, hid, "snapp"),
 	}
-	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := auth.ACL("invalid-access", passengerToken, "test")
-		assert.Error(t, err)
-		assert.False(t, ok)
-		assert.Equal(t, authenticator.ErrInvalidAccessType.Error(), err.Error())
-	})
-	t.Run("testing acl with invalid token", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Pub, invalidToken, validDriverCabEventTopic)
-		assert.False(t, ok)
-		assert.Error(t, err)
-		assert.Equal(t, "token is invalid illegal base64 data at input byte 36", err.Error())
-	})
-	t.Run("testing acl with valid inputs", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, passengerToken, validPassengerCabEventTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
-	})
-	t.Run("testing acl with invalid topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, passengerToken, invalidPassengerCabEventTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
-	})
-	t.Run("testing acl with invalid access type", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Pub, passengerToken, validPassengerCabEventTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+}
+
+func (suite *AuthenticatorTestSuite) TestAuth() {
+	require := suite.Require()
+
+	suite.Run("testing driver token auth", func() {
+		require.NoError(suite.Authenticator.Auth(suite.Tokens.Driver))
 	})
 
-	t.Run("testing driver publish on its location topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Pub, driverToken, validDriverLocationTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing passenger token auth", func() {
+		require.NoError(suite.Authenticator.Auth(suite.Tokens.Passenger))
 	})
 
-	t.Run("testing driver publish on invalid location topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Pub, driverToken, invalidDriverLocationTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing invalid token auth", func() {
+		require.Error(suite.Authenticator.Auth(invalidToken))
+	})
+}
+
+func (suite *AuthenticatorTestSuite) TestACL_Basics() {
+	require := suite.Require()
+
+	suite.Run("testing acl with invalid access type", func() {
+		ok, err := suite.Authenticator.ACL("invalid-access", suite.Tokens.Passenger, "test")
+		require.Error(err)
+		require.False(ok)
+		require.ErrorIs(err, authenticator.ErrInvalidAccessType)
 	})
 
-	t.Run("testing driver subscribe on invalid cab event topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, driverToken, invalidDriverCabEventTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing acl with invalid token", func() {
+		ok, err := suite.Authenticator.ACL(acl.Pub, invalidToken, validDriverCabEventTopic)
+		require.False(ok)
+		require.Error(err)
+		require.Equal("token is invalid illegal base64 data at input byte 36", err.Error())
 	})
 
-	t.Run("testing passenger subscribe on valid superapp event topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, passengerToken, validPassengerSuperappEventTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing acl with valid inputs", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, suite.Tokens.Passenger, validPassengerCabEventTopic)
+		require.NoError(err)
+		require.True(ok)
 	})
 
-	t.Run("testing passenger subscribe on invalid superapp event topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, passengerToken, invalidPassengerSuperappEventTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing acl with invalid topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, suite.Tokens.Passenger, invalidPassengerCabEventTopic)
+		require.Error(err)
+		require.False(ok)
 	})
 
-	t.Run("testing driver subscribe on valid superapp event topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, driverToken, validDriverSuperappEventTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing acl with invalid access type", func() {
+		ok, err := suite.Authenticator.ACL(acl.Pub, suite.Tokens.Passenger, validPassengerCabEventTopic)
+		require.Error(err)
+		require.False(ok)
+	})
+}
+
+func (suite *AuthenticatorTestSuite) TestACL_Passenger() {
+	require := suite.Require()
+	token := suite.Tokens.Passenger
+
+	suite.Run("testing passenger subscribe on valid superapp event topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, validPassengerSuperappEventTopic)
+		require.NoError(err)
+		require.True(ok)
 	})
 
-	t.Run("testing driver subscribe on invalid superapp event topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, driverToken, invalidDriverSuperappEventTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing passenger subscribe on invalid superapp event topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidPassengerSuperappEventTopic)
+		require.Error(err)
+		require.False(ok)
 	})
 
-	t.Run("testing driver subscribe on valid shared location topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, driverToken, validDriverSharedTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing passenger subscribe on valid shared location topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, validPassengerSharedTopic)
+		require.NoError(err)
+		require.True(ok)
 	})
 
-	t.Run("testing passenger subscribe on valid shared location topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, passengerToken, validPassengerSharedTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing passenger subscribe on invalid shared location topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidPassengerSharedTopic)
+		require.Error(err)
+		require.False(ok)
 	})
 
-	t.Run("testing driver subscribe on invalid shared location topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, driverToken, invalidDriverSharedTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing passenger subscribe on valid chat topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, validPassengerChatTopic)
+		require.NoError(err)
+		require.True(ok)
 	})
 
-	t.Run("testing passenger subscribe on invalid shared location topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, passengerToken, invalidPassengerSharedTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing passenger subscribe on invalid chat topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidPassengerChatTopic)
+		require.Error(err)
+		require.False(ok)
 	})
 
-	t.Run("testing driver subscribe on valid chat topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, driverToken, validDriverChatTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing passenger subscribe on valid entry call topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Pub, token, validPassengerCallEntryTopic)
+		require.NoError(err)
+		require.True(ok)
 	})
 
-	t.Run("testing passenger subscribe on valid chat topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, passengerToken, validPassengerChatTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing passenger subscribe on invalid call entry topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Pub, token, invalidPassengerCallEntryTopic)
+		require.Error(err)
+		require.False(ok)
 	})
 
-	t.Run("testing driver subscribe on invalid chat topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, driverToken, invalidDriverChatTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing passenger subscribe on valid outgoing call topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, validPassengerCallOutgoingTopic)
+		require.NoError(err)
+		require.True(ok)
 	})
 
-	t.Run("testing passenger subscribe on invalid chat topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, passengerToken, invalidPassengerChatTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing passenger subscribe on valid outgoing call node topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Pub, token, validPassengerNodeCallEntryTopic)
+		require.NoError(err)
+		require.True(ok)
 	})
 
-	t.Run("testing driver subscribe on valid call entry topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Pub, driverToken, validDriverCallEntryTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing passenger subscribe on invalid call outgoing topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidPassengerCallOutgoingTopic)
+		require.Error(err)
+		require.False(ok)
+	})
+}
+
+func (suite *AuthenticatorTestSuite) TestACL_Driver() {
+	require := suite.Require()
+	token := suite.Tokens.Driver
+
+	suite.Run("testing driver publish on its location topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Pub, token, validDriverLocationTopic)
+		require.NoError(err)
+		require.True(ok)
 	})
 
-	t.Run("testing passenger subscribe on valid entry call topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Pub, passengerToken, validPassengerCallEntryTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing driver publish on invalid location topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Pub, token, invalidDriverLocationTopic)
+		require.Error(err)
+		require.False(ok)
 	})
 
-	t.Run("testing driver subscribe on invalid call entry topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Pub, driverToken, invalidDriverCallEntryTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing driver subscribe on invalid cab event topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidDriverCabEventTopic)
+		require.Error(err)
+		require.False(ok)
 	})
 
-	t.Run("testing passenger subscribe on invalid call entry topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Pub, passengerToken, invalidPassengerCallEntryTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing driver subscribe on valid superapp event topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, validDriverSuperappEventTopic)
+		suite.NoError(err)
+		suite.True(ok)
 	})
 
-	t.Run("testing driver subscribe on valid call outgoing topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, driverToken, validDriverCallOutgoingTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing driver subscribe on invalid superapp event topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidDriverSuperappEventTopic)
+		suite.Error(err)
+		suite.False(ok)
 	})
 
-	t.Run("testing passenger subscribe on valid outgoing call topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, passengerToken, validPassengerCallOutgoingTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing driver subscribe on valid shared location topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, validDriverSharedTopic)
+		require.NoError(err)
+		require.True(ok)
 	})
 
-	t.Run("testing driver subscribe on valid call outgoing node topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Pub, driverToken, validDriverNodeCallEntryTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing driver subscribe on invalid shared location topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidDriverSharedTopic)
+		require.Error(err)
+		require.False(ok)
 	})
 
-	t.Run("testing passenger subscribe on valid outgoing call node topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Pub, passengerToken, validPassengerNodeCallEntryTopic)
-		assert.NoError(t, err)
-		assert.True(t, ok)
+	suite.Run("testing driver subscribe on valid chat topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, validDriverChatTopic)
+		require.NoError(err)
+		require.True(ok)
 	})
 
-	t.Run("testing driver subscribe on invalid call outgoing topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, driverToken, invalidDriverCallOutgoingTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing driver subscribe on invalid chat topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidDriverChatTopic)
+		require.Error(err)
+		require.False(ok)
 	})
 
-	t.Run("testing passenger subscribe on invalid call outgoing topic", func(t *testing.T) {
-		ok, err := auth.ACL(acl.Sub, passengerToken, invalidPassengerCallOutgoingTopic)
-		assert.Error(t, err)
-		assert.False(t, ok)
+	suite.Run("testing driver subscribe on valid call entry topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Pub, token, validDriverCallEntryTopic)
+		require.NoError(err)
+		require.True(ok)
+	})
+
+	suite.Run("testing driver subscribe on invalid call entry topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Pub, token, invalidDriverCallEntryTopic)
+		require.Error(err)
+		require.False(ok)
+	})
+
+	suite.Run("testing driver subscribe on valid call outgoing topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, validDriverCallOutgoingTopic)
+		require.NoError(err)
+		require.True(ok)
+	})
+
+	suite.Run("testing driver subscribe on valid call outgoing node topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Pub, token, validDriverNodeCallEntryTopic)
+		require.NoError(err)
+		require.True(ok)
+	})
+
+	suite.Run("testing driver subscribe on invalid call outgoing topic", func() {
+		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidDriverCallOutgoingTopic)
+		require.Error(err)
+		require.False(ok)
 	})
 }
 
@@ -435,7 +441,7 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 	}
 }
 
-func getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
+func (suite *AuthenticatorTestSuite) getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
 	var fileName string
 
 	switch u {
@@ -460,7 +466,7 @@ func getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
 	return publicKey, nil
 }
 
-func getPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
+func (suite *AuthenticatorTestSuite) getPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
 	var fileName string
 	switch u {
 	case user.Driver:
@@ -481,34 +487,25 @@ func getPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func getSampleToken(issuer user.Issuer, isSuperuser bool) (string, error) {
-	key, err := getPrivateKey(issuer)
+func (suite *AuthenticatorTestSuite) getSampleToken(issuer user.Issuer, isSuperuser bool) (string, error) {
+	key, err := suite.getPrivateKey(issuer)
 	if err != nil {
-		panic(err)
+		suite.Require().NoError(err)
 	}
 
 	exp := time.Now().Add(time.Hour * 24 * 365 * 10).Unix()
 	sub := "DXKgaNQa7N5Y7bo"
 
 	var claims jwt.Claims
-	if isSuperuser {
-		claims = jwt.MapClaims{
-			"exp":          exp,
-			"iss":          string(issuer),
-			"sub":          sub,
-			"is_superuser": true,
-		}
-	} else {
-		claims = jwt.StandardClaims{
-			ExpiresAt: exp,
-			Issuer:    string(issuer),
-			Subject:   sub,
-		}
+	claims = jwt.StandardClaims{
+		ExpiresAt: exp,
+		Issuer:    string(issuer),
+		Subject:   sub,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	tokenString, err := token.SignedString(key)
 	if err != nil {
-		panic(err)
+		suite.Require().NoError(err)
 	}
 	return tokenString, nil
 }
