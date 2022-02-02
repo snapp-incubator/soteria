@@ -14,7 +14,7 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/db"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -53,10 +53,8 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 			user.Passenger: publicKey1,
 		},
 		AllowedAccessTypes: allowedAccessTypes,
-		ModelHandler:       db.NewInternal(cfg.Users),
-		HashIDSManager:     hid,
-		EMQTopicManager:    snappids.NewEMQManagerWithCompany(hid, cfg.Company),
 		Company:            cfg.Company,
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, cfg.Company),
 	})
 
 	app.GetInstance().SetTracer(tracer)
