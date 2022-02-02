@@ -11,11 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
-	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/user"
+	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
+	"gitlab.snapp.ir/dispatching/soteria/internal/config"
+	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 )
 
 const (
