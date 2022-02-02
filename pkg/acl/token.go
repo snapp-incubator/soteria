@@ -2,7 +2,6 @@ package acl
 
 import (
 	"github.com/golang-jwt/jwt/v4"
-	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 )
 
 type Claims struct {
@@ -12,8 +11,8 @@ type Claims struct {
 }
 
 type Topic struct {
-	Type       topics.Type `json:"type"`
-	AccessType AccessType  `json:"access_type"`
+	Type       string     `json:"type"`
+	AccessType AccessType `json:"access_type"`
 }
 
 type Endpoint struct {

@@ -77,44 +77,64 @@ envs:
   # company: "baly"
   logger_level: "warn"
 
-users:
-  - username: driver
-    rules:
-      - topic: cab_event
-        access: '1'
-      - topic: driver_location
-        access: '2'
-      - topic: shared_location
-        access: '1'
-      - topic: superapp_event
-        access: '1'
-      - topic: node_call_entry
-        access: '2'
-      - topic: general_call_entry
-        access: '2'
-      - topic: call_outgoing
-        access: '1'
-      - topic: chat
-        access: '1'
-      - topic: chat
-        access: '2'
-  - username: passenger
-    rules:
-      - topic: cab_event
-        access: '1'
-      - topic: superapp_event
-        access: '1'
-      - topic: passenger_location
-        access: '2'
-      - topic: shared_location
-        access: '1'
-      - topic: node_call_entry
-        access: '2'
-      - topic: general_call_entry
-        access: '2'
-      - topic: call_outgoing
-        access: '1'
-      - topic: chat
-        access: '1'
-      - topic: chat
-        access: '2'
+topics:
+  - type: cab_event
+    template: ^{{.audience}}-event-{{.hashId}}$
+    hash_type: 1
+    accesses:
+      driver: '1'
+      passenger: '1'
+  - type: driver_location
+    template: ^{{.company}}/driver/{{.hashId}}/location$
+    hash_type: 0
+    accesses:
+      driver: '2'
+      passenger: '-1'
+  - type: passenger_location
+    template: ^{{.company}}/passenger/{{.hashId}}/location$
+    hash_type: 0
+    accesses:
+      driver: '2'
+      passenger: '2'
+  - type: superapp_event
+    template: ^{{.company}}/{{.audience}}/{{.hashId}}/superapp$
+    hash_type: 0
+    accesses:
+      driver: '1'
+      passenger: '1'
+  - type: box_event
+    template: ^bucks$
+    hash_type: 0
+    accesses:
+      driver: '-1'
+      passenger: '-1'
+  - type: shared_location
+    template: ^{{.company}}/{{.audience}}/{{.hashId}}/{{.peer}}-location$
+    hash_type: 0
+    accesses:
+      driver: '1'
+      passenger: '1'
+  - type: chat
+    template: ^{{.company}}/{{.audience}}/{{.hashId}}/chat$
+    hash_type: 0
+    accesses:
+      driver: '1'
+      passenger: '1'
+  - type: general_call_entry
+    template: ^shared/{{.company}}/{{.audience}}/{{.hashId}}/call/send$
+    hash_type: 0
+    accesses:
+      driver: '2'
+      passenger: '2'
+  - type: node_call_entry
+    template: ^{{.company}}/{{.audience}}/{{.hashId}}/call/[a-zA-Z0-9-]+/send$
+    hash_type: 0
+    accesses:
+      driver: '2'
+      passenger: '2'
+  - type: call_outgoing
+    template: ^{{.company}}/{{.audience}}/{{.hashId}}/call/receive$
+    hash_type: 0
+    accesses:
+      driver: '1'
+      passenger: '1'

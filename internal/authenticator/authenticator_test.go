@@ -3,13 +3,14 @@ package authenticator_test
 import (
 	"crypto/rsa"
 	"fmt"
+	"gitlab.snapp.ir/dispatching/soteria/v3/internal/config"
 	"io/ioutil"
 	"testing"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
-	snappids "gitlab.snapp.ir/dispatching/snappids/v2"
+	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/pkg/acl"
@@ -27,11 +28,11 @@ const (
 	validDriverLocationTopic   = "snapp/driver/DXKgaNQa7N5Y7bo/location"
 	invalidDriverLocationTopic = "snapp/driver/DXKgaNQa9Q5Y7bo/location"
 
-	validPassengerSuperappEventTopic   = "snapp/passenger/0956923be632d673560af9adadd2f78a/superapp"
-	invalidPassengerSuperappEventTopic = "snapp/passenger/0959623be632d673560af9adadd2f78a/superapp"
+	validPassengerSuperappEventTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/superapp"
+	invalidPassengerSuperappEventTopic = "snapp/passenger/DXKgaNQa9Q5Y7bo/superapp"
 
-	validDriverSuperappEventTopic   = "snapp/driver/0956923be632d673560af9adadd2f78a/superapp"
-	invalidDriverSuperappEventTopic = "snapp/driver/0596923be632d673560af9adadd2f78a/superapp"
+	validDriverSuperappEventTopic   = "snapp/driver/DXKgaNQa7N5Y7bo/superapp"
+	invalidDriverSuperappEventTopic = "snapp/driver/DXKgaNQa9Q5Y7bo/superapp"
 
 	validDriverSharedTopic      = "snapp/driver/DXKgaNQa7N5Y7bo/passenger-location"
 	validPassengerSharedTopic   = "snapp/passenger/DXKgaNQa7N5Y7bo/driver-location"
@@ -82,7 +83,6 @@ func TestAuthenticator_Auth(t *testing.T) {
 			user.Driver:    pkey0,
 			user.Passenger: pkey1,
 		},
-		ModelHandler: MockModelHandler{},
 	}
 
 	t.Run("testing driver token auth", func(t *testing.T) {
@@ -119,6 +119,8 @@ func TestAuthenticator_Acl(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	cfg := config.New()
+
 	hid := &snappids.HashIDSManager{
 		Salts: map[snappids.Audience]string{
 			snappids.PassengerAudience:  "secret",
@@ -138,9 +140,8 @@ func TestAuthenticator_Acl(t *testing.T) {
 			user.Passenger: pkey1,
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
-		ModelHandler:       MockModelHandler{},
-		EMQTopicManager:    snappids.NewEMQManager(hid),
-		HashIDSManager:     hid,
+		Company:            "snapp",
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp"),
 	}
 	t.Run("testing acl with invalid access type", func(t *testing.T) {
 		ok, err := auth.ACL("invalid-access", passengerToken, "test")
@@ -331,17 +332,19 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 		},
 	}
 
+	cfg := config.New()
+
 	// nolint: exhaustivestruct
 	authenticator := authenticator.Authenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
-		ModelHandler:       MockModelHandler{},
-		EMQTopicManager:    snappids.NewEMQManager(hid),
-		HashIDSManager:     hid,
+		Company:            "snapp",
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp"),
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
-		ok := authenticator.ValidateTopicBySender(validDriverCabEventTopic, snappids.DriverAudience, 123)
-		assert.True(t, ok)
+		audience, audienceStr := topics.IssuerToAudience(user.Driver)
+		topicTemplate := authenticator.TopicManager.ValidateTopic(validDriverCabEventTopic, audienceStr, audience, "DXKgaNQa7N5Y7bo")
+		assert.True(t, topicTemplate != nil)
 	})
 }
 
@@ -430,97 +433,6 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 			}
 		})
 	}
-}
-
-type MockModelHandler struct{}
-
-func (rmh MockModelHandler) Get(pk string) user.User {
-	var u user.User
-
-	switch pk {
-	case "passenger":
-		u = user.User{
-			Username: string(user.Passenger),
-			Rules: []user.Rule{
-				{
-					Topic:  topics.CabEvent,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.SuperappEvent,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.PassengerLocation,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.SharedLocation,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.Chat,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.GeneralCallEntry,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.NodeCallEntry,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.CallOutgoing,
-					Access: acl.Sub,
-				},
-			},
-		}
-	case "driver":
-		u = user.User{
-			Username: string(user.Driver),
-			Rules: []user.Rule{
-				{
-					Topic:  topics.DriverLocation,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.CabEvent,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.SuperappEvent,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.PassengerLocation,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.SharedLocation,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.Chat,
-					Access: acl.Sub,
-				},
-				{
-					Topic:  topics.GeneralCallEntry,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.NodeCallEntry,
-					Access: acl.Pub,
-				},
-				{
-					Topic:  topics.CallOutgoing,
-					Access: acl.Sub,
-				},
-			},
-		}
-	}
-
-	return u
 }
 
 func getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
