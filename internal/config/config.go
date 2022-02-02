@@ -2,6 +2,7 @@ package config
 
 import (
 	"crypto/rsa"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -14,6 +15,7 @@ import (
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/structs"
+	"github.com/tidwall/pretty"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/logger"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/v3/internal/tracing"
@@ -76,7 +78,18 @@ func New() Config {
 		log.Fatalf("error unmarshalling config: %s", err)
 	}
 
-	log.Printf("following configuration is loaded:\n%+v", instance)
+	indent, err := json.MarshalIndent(instance, "", "\t")
+	if err != nil {
+		log.Fatalf("error marshaling configuration to json: %s", err)
+	}
+
+	indent = pretty.Color(indent, nil)
+	tmpl := `
+	================ Loaded Configuration ================
+	%s
+	======================================================
+	`
+	log.Printf(tmpl, string(indent))
 
 	return instance
 }
