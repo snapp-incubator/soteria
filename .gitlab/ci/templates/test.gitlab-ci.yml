@@ -2,6 +2,9 @@
 lint:
   extends: .easy_ci:lint
 
+handolint:
+  extends: .easy-ci:dockerfile:lint
+
 test:
   image: registry.snapp.tech/docker/golang:1.17-alpine3.14
   stage: test
