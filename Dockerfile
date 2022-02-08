@@ -3,6 +3,7 @@ ARG BUILD_DATE
 ARG VCS_REF
 ARG BUILD_VERSION
 
+# hadolint ignore=DL3018
 RUN echo "https://repo.snapp.tech/repository/alpine/v3.14/main" > /etc/apk/repositories && \
     echo "https://repo.snapp.tech/repository/alpine/v3.14/community" >> /etc/apk/repositories && \
     apk --no-cache --update add ca-certificates tzdata && \
