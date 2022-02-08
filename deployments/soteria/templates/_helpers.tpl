@@ -40,7 +40,7 @@ app: soteria
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .Values.labels.managedby }}
+app.snappcloud.io/managed-by: {{ .Values.labels.managedby }}
 app.snappcloud.io/created-by: {{ .Values.labels.createdby }}
 {{- end }}
 
