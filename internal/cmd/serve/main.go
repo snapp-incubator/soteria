@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/api"
-	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
@@ -47,7 +46,7 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 		logger.Fatal("error while getting allowed access types", zap.Error(err))
 	}
 
-	app := app.App{
+	api2 := api.API{
 		Authenticator: &authenticator.Authenticator{
 			PublicKeys: map[user.Issuer]*rsa.PublicKey{
 				user.Driver:    publicKey0,
@@ -60,11 +59,7 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 		Tracer: tracer,
 	}
 
-	api := api.API{
-		App: app,
-	}
-
-	rest := api.ReSTServer()
+	rest := api2.ReSTServer()
 
 	go func() {
 		if err := rest.Listen(fmt.Sprintf(":%d", cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {

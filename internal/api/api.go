@@ -4,12 +4,14 @@ import (
 	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/contrib/fiberzap"
 	"github.com/gofiber/fiber/v2"
-	"gitlab.snapp.ir/dispatching/soteria/internal/app"
+	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
 type API struct {
-	App app.App
+	Authenticator *authenticator.Authenticator
+	Tracer        trace.Tracer
 }
 
 // ReSTServer will return fiber app.
