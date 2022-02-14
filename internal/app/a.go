@@ -18,6 +18,7 @@ var (
 	once      sync.Once
 )
 
+// TODO: We need to get this removed!
 func GetInstance() *App {
 	once.Do(func() {
 		singleton = new(App)
