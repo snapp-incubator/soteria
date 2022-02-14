@@ -4,8 +4,13 @@ import (
 	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/contrib/fiberzap"
 	"github.com/gofiber/fiber/v2"
+	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"go.uber.org/zap"
 )
+
+type API struct {
+	App *app.App
+}
 
 // ReSTServer will return fiber app.
 func ReSTServer() *fiber.App {
