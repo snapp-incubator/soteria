@@ -9,7 +9,7 @@ import (
 )
 
 type API struct {
-	App *app.App
+	App app.App
 }
 
 // ReSTServer will return fiber app.
