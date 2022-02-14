@@ -13,7 +13,7 @@ type API struct {
 }
 
 // ReSTServer will return fiber app.
-func ReSTServer() *fiber.App {
+func (a API) ReSTServer() *fiber.App {
 	app := fiber.New()
 
 	// nolint: exhaustivestruct
@@ -25,9 +25,8 @@ func ReSTServer() *fiber.App {
 	prometheus.RegisterAt(app, "/metrics")
 	app.Use(prometheus.Middleware)
 
-	// TODO: you can set the api struct somewhere here
-	app.Post("/auth", Auth)
-	app.Post("/acl", ACL)
+	app.Post("/auth", a.Auth)
+	app.Post("/acl", a.ACL)
 
 	return app
 }
