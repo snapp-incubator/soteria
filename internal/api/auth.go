@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
-	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
@@ -18,9 +17,8 @@ type authRequest struct {
 
 // Auth is the handler responsible for authentication.
 // nolint: wrapcheck
-func Auth(c *fiber.Ctx) error {
-	// TODO: use the type for app to fix this problem
-	_, span := app.GetInstance().Tracer.Start(c.Context(), "api.auth")
+func (a API) Auth(c *fiber.Ctx) error {
+	_, span := a.App.Tracer.Start(c.Context(), "api.auth")
 	defer span.End()
 
 	request := new(authRequest)
@@ -51,8 +49,7 @@ func Auth(c *fiber.Ctx) error {
 		attribute.String("password", request.Username),
 	)
 
-	// TODO: also remove it from here
-	if err := app.GetInstance().Authenticator.Auth(tokenString); err != nil {
+	if err := a.App.Authenticator.Auth(tokenString); err != nil {
 		span.RecordError(err)
 
 		zap.L().
