@@ -19,6 +19,7 @@ type authRequest struct {
 // Auth is the handler responsible for authentication.
 // nolint: wrapcheck
 func Auth(c *fiber.Ctx) error {
+	// TODO: use the type for app to fix this problem
 	_, span := app.GetInstance().Tracer.Start(c.Context(), "api.auth")
 	defer span.End()
 
@@ -50,6 +51,7 @@ func Auth(c *fiber.Ctx) error {
 		attribute.String("password", request.Username),
 	)
 
+	// TODO: also remove it from here
 	if err := app.GetInstance().Authenticator.Auth(tokenString); err != nil {
 		span.RecordError(err)
 

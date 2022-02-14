@@ -47,6 +47,7 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 		logger.Fatal("error while getting allowed access types", zap.Error(err))
 	}
 
+	// TODO: After generating the app type struct, set the two following attributes
 	app.GetInstance().SetAuthenticator(&authenticator.Authenticator{
 		PublicKeys: map[user.Issuer]*rsa.PublicKey{
 			user.Driver:    publicKey0,

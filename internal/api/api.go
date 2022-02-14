@@ -20,6 +20,7 @@ func ReSTServer() *fiber.App {
 	prometheus.RegisterAt(app, "/metrics")
 	app.Use(prometheus.Middleware)
 
+	// TODO: you can set the api struct somewhere here
 	app.Post("/auth", Auth)
 	app.Post("/acl", ACL)
 

@@ -24,6 +24,7 @@ type aclRequest struct {
 // ACL is the handler responsible for ACL requests.
 // nolint: wrapcheck, funlen
 func ACL(c *fiber.Ctx) error {
+	// TODO: use a type for ACL and Auth to remove the global app
 	_, span := app.GetInstance().Tracer.Start(c.Context(), "api.acl")
 	defer span.End()
 
@@ -62,6 +63,7 @@ func ACL(c *fiber.Ctx) error {
 
 	topic := request.Topic
 
+	// TODO: Also remove it from here
 	ok, err := app.GetInstance().Authenticator.ACL(request.Access, tokenString, topic)
 	if err != nil || !ok {
 		if err != nil {
