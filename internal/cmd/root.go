@@ -19,7 +19,7 @@ const ExitFailure = 1
 func Execute() {
 	cfg := config.New()
 
-	logger := logger.New(cfg.Logger).Named("cmd")
+	logger := logger.New(cfg.Logger).Named("root")
 
 	tracer := tracing.New(cfg.Tracer, logger.Named("tracer"))
 
