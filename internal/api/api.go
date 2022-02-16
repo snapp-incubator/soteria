@@ -12,6 +12,7 @@ import (
 type API struct {
 	Authenticator *authenticator.Authenticator
 	Tracer        trace.Tracer
+	Logger        zap.Logger
 }
 
 // ReSTServer will return fiber app.
@@ -20,7 +21,7 @@ func (a API) ReSTServer() *fiber.App {
 
 	// nolint: exhaustivestruct
 	app.Use(fiberzap.New(fiberzap.Config{
-		Logger: zap.L(),
+		Logger: a.Logger.Named("fiber"),
 	}))
 
 	prometheus := fiberprometheus.NewWith("http", "dispatching", "soteria")

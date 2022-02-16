@@ -28,7 +28,7 @@ func (a API) ACL(c *fiber.Ctx) error {
 
 	request := new(aclRequest)
 	if err := c.BodyParser(request); err != nil {
-		zap.L().
+		a.Logger.
 			Warn("acl bad request",
 				zap.Error(err),
 				zap.String("access", request.Access.String()),
@@ -69,11 +69,11 @@ func (a API) ACL(c *fiber.Ctx) error {
 
 		// nolint: exhaustivestruct
 		if errors.Is(err, authenticator.TopicNotAllowedError{}) {
-			zap.L().
+			a.Logger.
 				Warn("acl request is not authorized",
 					zap.Error(err))
 		} else {
-			zap.L().
+			a.Logger.
 				Error("acl request is not authorized",
 					zap.Error(err))
 		}
@@ -81,7 +81,7 @@ func (a API) ACL(c *fiber.Ctx) error {
 		return c.Status(http.StatusUnauthorized).SendString("request is not authorized")
 	}
 
-	zap.L().
+	a.Logger.
 		Info("acl ok",
 			zap.String("access", request.Access.String()),
 			zap.String("topic", request.Topic),
