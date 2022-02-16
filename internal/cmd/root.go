@@ -19,8 +19,7 @@ const ExitFailure = 1
 func Execute() {
 	cfg := config.New()
 
-	logger := logger.New(cfg.Logger)
-	zap.ReplaceGlobals(logger)
+	l := logger.New(cfg.Logger).Named("cmd")
 
 	tracer := tracing.New(cfg.Tracer)
 
@@ -34,10 +33,10 @@ func Execute() {
 		},
 	}
 
-	serve.Register(root, cfg, logger, tracer)
+	serve.Register(root, cfg, l.Named("serve"), tracer)
 
 	if err := root.Execute(); err != nil {
-		logger.Error("failed to execute root command", zap.Error(err))
+		l.Error("failed to execute root command", zap.Error(err))
 
 		os.Exit(ExitFailure)
 	}
