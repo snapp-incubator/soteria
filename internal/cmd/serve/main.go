@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/api"
-	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
@@ -47,19 +46,20 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 		logger.Fatal("error while getting allowed access types", zap.Error(err))
 	}
 
-	app.GetInstance().SetAuthenticator(&authenticator.Authenticator{
-		PublicKeys: map[user.Issuer]*rsa.PublicKey{
-			user.Driver:    publicKey0,
-			user.Passenger: publicKey1,
+	api2 := api.API{
+		Authenticator: &authenticator.Authenticator{
+			PublicKeys: map[user.Issuer]*rsa.PublicKey{
+				user.Driver:    publicKey0,
+				user.Passenger: publicKey1,
+			},
+			AllowedAccessTypes: allowedAccessTypes,
+			Company:            cfg.Company,
+			TopicManager:       topics.NewTopicManager(cfg.Topics, hid, cfg.Company),
 		},
-		AllowedAccessTypes: allowedAccessTypes,
-		Company:            cfg.Company,
-		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, cfg.Company),
-	})
+		Tracer: tracer,
+	}
 
-	app.GetInstance().SetTracer(tracer)
-
-	rest := api.ReSTServer()
+	rest := api2.ReSTServer()
 
 	go func() {
 		if err := rest.Listen(fmt.Sprintf(":%d", cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
