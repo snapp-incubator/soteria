@@ -19,31 +19,37 @@ import (
 	"go.uber.org/zap"
 )
 
-func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
-	publicKey0, err := cfg.ReadPublicKey(user.Driver)
+type Serve struct {
+	Cfg    config.Config
+	Logger zap.Logger
+	Tracer trace.Tracer
+}
+
+func (s Serve) main() {
+	publicKey0, err := s.Cfg.ReadPublicKey(user.Driver)
 	if err != nil {
-		logger.Fatal("could not read driver public key")
+		s.Logger.Fatal("could not read driver public key")
 	}
 
-	publicKey1, err := cfg.ReadPublicKey(user.Passenger)
+	publicKey1, err := s.Cfg.ReadPublicKey(user.Passenger)
 	if err != nil {
-		logger.Fatal("could not read passenger public key")
+		s.Logger.Fatal("could not read passenger public key")
 	}
 
 	hid := &snappids.HashIDSManager{
 		Salts: map[snappids.Audience]string{
-			snappids.DriverAudience:    cfg.DriverSalt,
-			snappids.PassengerAudience: cfg.PassengerSalt,
+			snappids.DriverAudience:    s.Cfg.DriverSalt,
+			snappids.PassengerAudience: s.Cfg.PassengerSalt,
 		},
 		Lengths: map[snappids.Audience]int{
-			snappids.DriverAudience:    cfg.DriverHashLength,
-			snappids.PassengerAudience: cfg.PassengerHashLength,
+			snappids.DriverAudience:    s.Cfg.DriverHashLength,
+			snappids.PassengerAudience: s.Cfg.PassengerHashLength,
 		},
 	}
 
-	allowedAccessTypes, err := cfg.GetAllowedAccessTypes()
+	allowedAccessTypes, err := s.Cfg.GetAllowedAccessTypes()
 	if err != nil {
-		logger.Fatal("error while getting allowed access types", zap.Error(err))
+		s.Logger.Fatal("error while getting allowed access types", zap.Error(err))
 	}
 
 	rest := api.API{
@@ -53,15 +59,16 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 				user.Passenger: publicKey1,
 			},
 			AllowedAccessTypes: allowedAccessTypes,
-			Company:            cfg.Company,
-			TopicManager:       topics.NewTopicManager(cfg.Topics, hid, cfg.Company),
+			Company:            s.Cfg.Company,
+			TopicManager:       topics.NewTopicManager(s.Cfg.Topics, hid, s.Cfg.Company),
 		},
-		Tracer: tracer,
+		Tracer: s.Tracer,
+		Logger: *s.Logger.Named("api"),
 	}.ReSTServer()
 
 	go func() {
-		if err := rest.Listen(fmt.Sprintf(":%d", cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.Fatal("failed to run REST HTTP server", zap.Error(err))
+		if err := rest.Listen(fmt.Sprintf(":%d", s.Cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			s.Logger.Fatal("failed to run REST HTTP server", zap.Error(err))
 		}
 	}()
 
@@ -70,12 +77,12 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 	<-c
 
 	if err := rest.Shutdown(); err != nil {
-		logger.Error("error happened during REST API shutdown", zap.Error(err))
+		s.Logger.Error("error happened during REST API shutdown", zap.Error(err))
 	}
 }
 
 // Register serve command.
-func Register(root *cobra.Command, cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
+func (s Serve) Register(root *cobra.Command) {
 	root.AddCommand(
 		// nolint: exhaustivestruct
 		&cobra.Command{
@@ -83,7 +90,7 @@ func Register(root *cobra.Command, cfg config.Config, logger *zap.Logger, tracer
 			Short: "serve runs the application",
 			Long:  `serve will run Soteria ReST server and waits until user disrupts.`,
 			Run: func(cmd *cobra.Command, args []string) {
-				main(cfg, logger, tracer)
+				s.main()
 			},
 		},
 	)
