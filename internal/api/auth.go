@@ -26,7 +26,7 @@ func (a API) Auth(c *fiber.Ctx) error {
 	if err := c.BodyParser(request); err != nil {
 		span.RecordError(err)
 
-		zap.L().
+		a.Logger.
 			Warn("bad request",
 				zap.Error(err),
 			)
@@ -52,7 +52,7 @@ func (a API) Auth(c *fiber.Ctx) error {
 	if err := a.Authenticator.Auth(tokenString); err != nil {
 		span.RecordError(err)
 
-		zap.L().
+		a.Logger.
 			Error("auth request is not authorized",
 				zap.Error(err),
 				zap.String("token", request.Token),
@@ -63,7 +63,7 @@ func (a API) Auth(c *fiber.Ctx) error {
 		return c.Status(http.StatusUnauthorized).SendString("request is not authorized")
 	}
 
-	zap.L().
+	a.Logger.
 		Info("auth ok",
 			zap.String("token", request.Token),
 			zap.String("username", request.Password),
