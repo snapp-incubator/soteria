@@ -46,7 +46,7 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 		logger.Fatal("error while getting allowed access types", zap.Error(err))
 	}
 
-	api2 := api.API{
+	rest := api.API{
 		Authenticator: &authenticator.Authenticator{
 			PublicKeys: map[user.Issuer]*rsa.PublicKey{
 				user.Driver:    publicKey0,
@@ -57,9 +57,7 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 			TopicManager:       topics.NewTopicManager(cfg.Topics, hid, cfg.Company),
 		},
 		Tracer: tracer,
-	}
-
-	rest := api2.ReSTServer()
+	}.ReSTServer()
 
 	go func() {
 		if err := rest.Listen(fmt.Sprintf(":%d", cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
