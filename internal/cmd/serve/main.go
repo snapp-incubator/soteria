@@ -57,6 +57,7 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 			TopicManager:       topics.NewTopicManager(cfg.Topics, hid, cfg.Company),
 		},
 		Tracer: tracer,
+		Logger: *logger.Named("api"),
 	}.ReSTServer()
 
 	go func() {
