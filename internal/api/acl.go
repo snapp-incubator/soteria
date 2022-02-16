@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
-	"gitlab.snapp.ir/dispatching/soteria/internal/app"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"go.opentelemetry.io/otel/attribute"
@@ -23,8 +22,8 @@ type aclRequest struct {
 
 // ACL is the handler responsible for ACL requests.
 // nolint: wrapcheck, funlen
-func ACL(c *fiber.Ctx) error {
-	_, span := app.GetInstance().Tracer.Start(c.Context(), "api.acl")
+func (a API) ACL(c *fiber.Ctx) error {
+	_, span := a.Tracer.Start(c.Context(), "api.acl")
 	defer span.End()
 
 	request := new(aclRequest)
@@ -62,7 +61,7 @@ func ACL(c *fiber.Ctx) error {
 
 	topic := request.Topic
 
-	ok, err := app.GetInstance().Authenticator.ACL(request.Access, tokenString, topic)
+	ok, err := a.Authenticator.ACL(request.Access, tokenString, topic)
 	if err != nil || !ok {
 		if err != nil {
 			span.RecordError(err)
