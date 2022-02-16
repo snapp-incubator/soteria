@@ -33,7 +33,11 @@ func Execute() {
 		},
 	}
 
-	serve.Register(root, cfg, logger.Named("serve"), tracer)
+	serve.Serve{
+		Cfg:    cfg,
+		Logger: *logger.Named("serve"),
+		Tracer: tracer,
+	}.Register(root)
 
 	if err := root.Execute(); err != nil {
 		logger.Error("failed to execute root command", zap.Error(err))
