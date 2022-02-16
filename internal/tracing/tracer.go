@@ -1,7 +1,6 @@
 package tracing
 
 import (
-	"fmt"
 	"go.uber.org/zap"
 
 	"go.opentelemetry.io/otel"
@@ -22,7 +21,7 @@ func New(cfg Config, logger *zap.Logger) trace.Tracer { //nolint: ireturn
 		jaeger.WithAgentEndpoint(jaeger.WithAgentHost(cfg.Agent.Host), jaeger.WithAgentPort(cfg.Agent.Port)),
 	)
 	if err != nil {
-		logger.Fatal(fmt.Errorf("failed to initialize export pipeline: %v", err).Error())
+		logger.Fatal("failed to initialize export pipeline", zap.Error(err))
 	}
 
 	res, err := resource.Merge(
