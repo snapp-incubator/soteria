@@ -19,9 +19,9 @@ const ExitFailure = 1
 func Execute() {
 	cfg := config.New()
 
-	l := logger.New(cfg.Logger).Named("cmd")
+	logger := logger.New(cfg.Logger).Named("cmd")
 
-	tracer := tracing.New(cfg.Tracer, l.Named("tracer"))
+	tracer := tracing.New(cfg.Tracer, logger.Named("tracer"))
 
 	// nolint: exhaustivestruct
 	root := &cobra.Command{
@@ -33,10 +33,10 @@ func Execute() {
 		},
 	}
 
-	serve.Register(root, cfg, l.Named("serve"), tracer)
+	serve.Register(root, cfg, logger.Named("serve"), tracer)
 
 	if err := root.Execute(); err != nil {
-		l.Error("failed to execute root command", zap.Error(err))
+		logger.Error("failed to execute root command", zap.Error(err))
 
 		os.Exit(ExitFailure)
 	}
