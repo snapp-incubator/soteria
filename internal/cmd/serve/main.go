@@ -19,7 +19,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
+type Serve struct {
+	Cfg    config.Config
+	Logger zap.Logger
+	Tracer trace.Tracer
+}
+
+func (s Serve) main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 	publicKey0, err := cfg.ReadPublicKey(user.Driver)
 	if err != nil {
 		logger.Fatal("could not read driver public key")
@@ -76,7 +82,7 @@ func main(cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 }
 
 // Register serve command.
-func Register(root *cobra.Command, cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
+func (s Serve) Register(root *cobra.Command, cfg config.Config, logger *zap.Logger, tracer trace.Tracer) {
 	root.AddCommand(
 		// nolint: exhaustivestruct
 		&cobra.Command{
@@ -84,7 +90,7 @@ func Register(root *cobra.Command, cfg config.Config, logger *zap.Logger, tracer
 			Short: "serve runs the application",
 			Long:  `serve will run Soteria ReST server and waits until user disrupts.`,
 			Run: func(cmd *cobra.Command, args []string) {
-				main(cfg, logger, tracer)
+				s.main(cfg, logger, tracer)
 			},
 		},
 	)
