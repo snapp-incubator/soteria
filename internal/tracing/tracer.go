@@ -1,7 +1,8 @@
 package tracing
 
 import (
-	"log"
+	"fmt"
+	"go.uber.org/zap"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
@@ -12,7 +13,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func New(cfg Config) trace.Tracer { //nolint: ireturn
+func New(cfg Config, logger *zap.Logger) trace.Tracer { //nolint: ireturn
 	if !cfg.Enabled {
 		return trace.NewNoopTracerProvider().Tracer("snapp.dispatching")
 	}
@@ -21,7 +22,7 @@ func New(cfg Config) trace.Tracer { //nolint: ireturn
 		jaeger.WithAgentEndpoint(jaeger.WithAgentHost(cfg.Agent.Host), jaeger.WithAgentPort(cfg.Agent.Port)),
 	)
 	if err != nil {
-		log.Fatalf("failed to initialize export pipeline: %v", err)
+		logger.Fatal(fmt.Errorf("failed to initialize export pipeline: %v", err).Error())
 	}
 
 	res, err := resource.Merge(

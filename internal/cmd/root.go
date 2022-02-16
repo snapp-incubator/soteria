@@ -21,7 +21,7 @@ func Execute() {
 
 	l := logger.New(cfg.Logger).Named("cmd")
 
-	tracer := tracing.New(cfg.Tracer)
+	tracer := tracing.New(cfg.Tracer, l.Named("tracer"))
 
 	// nolint: exhaustivestruct
 	root := &cobra.Command{
