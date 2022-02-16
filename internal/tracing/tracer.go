@@ -1,8 +1,6 @@
 package tracing
 
 import (
-	"go.uber.org/zap"
-
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/propagation"
@@ -10,6 +8,7 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
 	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
 
 func New(cfg Config, logger *zap.Logger) trace.Tracer { //nolint: ireturn
