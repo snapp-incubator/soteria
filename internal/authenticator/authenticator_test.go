@@ -2,7 +2,7 @@ package authenticator_test
 
 import (
 	"crypto/rsa"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -19,6 +19,7 @@ import (
 )
 
 const (
+	// nolint: gosec, lll
 	invalidToken = "ey1JhbGciOiJSUzI1NiIsInR5cCI56kpXVCJ9.eyJzdWIiOiJCRzdScDFkcnpWRE5RcjYiLCJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwiaXNzIjowLCJpYXQiOjE1MTYyMzkwMjJ9.1cYXFEhcewOYFjGJYhB8dsaFO9uKEXwlM8954rkt4Tsu0lWMITbRf_hHh1l9QD4MFqD-0LwRPUYaiaemy0OClMu00G2sujLCWaquYDEP37iIt8RoOQAh8Jb5vT8LX5C3PEKvbW_i98u8HHJoFUR9CXJmzrKi48sAcOYvXVYamN0S9KoY38H-Ze37Mdu3o6B58i73krk7QHecsc2_PkCJisvUVAzb0tiInIalBc8-zI3QZSxwNLr_hjlBg1sUxTUvH5SCcRR7hxI8TxJzkOHqAHWDRO84NC_DSAoO2p04vrHpqglN9XPJ8RC2YWpfefvD2ttH554RJWu_0RlR2kAYvQ"
 
 	validPassengerCabEventTopic   = "passenger-event-152384980615c2bd16143cff29038b67"
@@ -79,18 +80,22 @@ func (suite *AuthenticatorTestSuite) SetupSuite() {
 
 	driverToken, err := suite.getSampleToken(user.Driver, false)
 	require.NoError(err)
+
 	suite.Tokens.Driver = driverToken
 
 	passengerToken, err := suite.getSampleToken(user.Passenger, false)
 	require.NoError(err)
+
 	suite.Tokens.Passenger = passengerToken
 
 	pkey0, err := suite.getPublicKey(user.Driver)
 	require.NoError(err)
+
 	suite.PublicKeys.Driver = pkey0
 
 	pkey1, err := suite.getPublicKey(user.Passenger)
 	require.NoError(err)
+
 	suite.PublicKeys.Passenger = pkey1
 
 	hid := &snappids.HashIDSManager{
@@ -169,6 +174,7 @@ func (suite *AuthenticatorTestSuite) TestACL_Basics() {
 	})
 }
 
+// nolint: funlen
 func (suite *AuthenticatorTestSuite) TestACL_Passenger() {
 	require := suite.Require()
 	token := suite.Tokens.Passenger
@@ -240,6 +246,7 @@ func (suite *AuthenticatorTestSuite) TestACL_Passenger() {
 	})
 }
 
+// nolint: funlen
 func (suite *AuthenticatorTestSuite) TestACL_Driver() {
 	require := suite.Require()
 	token := suite.Tokens.Driver
@@ -330,6 +337,8 @@ func (suite *AuthenticatorTestSuite) TestACL_Driver() {
 }
 
 func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
+	t.Parallel()
+
 	hid := &snappids.HashIDSManager{
 		Salts: map[snappids.Audience]string{
 			snappids.DriverAudience: "secret",
@@ -341,7 +350,7 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 
 	cfg := config.New()
 
-	// nolint: exhaustivestruct
+	// nolint: exhaustruct
 	authenticator := authenticator.Authenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",
@@ -350,12 +359,16 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
 		audience, audienceStr := topics.IssuerToAudience(user.Driver)
-		topicTemplate := authenticator.TopicManager.ValidateTopic(validDriverCabEventTopic, audienceStr, audience, "DXKgaNQa7N5Y7bo")
+		topicTemplate := authenticator.TopicManager.ValidateTopic(
+			validDriverCabEventTopic, audienceStr, audience, "DXKgaNQa7N5Y7bo")
 		assert.True(t, topicTemplate != nil)
 	})
 }
 
+// nolint: funlen
 func TestAuthenticator_validateAccessType(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
 		AllowedAccessTypes []acl.AccessType
 	}
@@ -431,7 +444,7 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			// nolint: exhaustivestruct
+			// nolint: exhaustruct
 			a := authenticator.Authenticator{
 				AllowedAccessTypes: tt.fields.AllowedAccessTypes,
 			}
@@ -442,6 +455,7 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 	}
 }
 
+// nolint: goerr113, wrapcheck
 func (suite *AuthenticatorTestSuite) getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
 	var fileName string
 
@@ -450,8 +464,10 @@ func (suite *AuthenticatorTestSuite) getPublicKey(u user.Issuer) (*rsa.PublicKey
 		fileName = "../../test/1.pem"
 	case user.Driver:
 		fileName = "../../test/0.pem"
+	case user.None:
+		fallthrough
 	default:
-		return nil, fmt.Errorf("invalid user, public key not found")
+		return nil, errors.New("invalid user, public key not found")
 	}
 
 	pem, err := ioutil.ReadFile(fileName)
@@ -467,24 +483,31 @@ func (suite *AuthenticatorTestSuite) getPublicKey(u user.Issuer) (*rsa.PublicKey
 	return publicKey, nil
 }
 
+// nolint: goerr113, wrapcheck
 func (suite *AuthenticatorTestSuite) getPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
 	var fileName string
+
 	switch u {
 	case user.Driver:
 		fileName = "../../test/0.private.pem"
 	case user.Passenger:
 		fileName = "../../test/1.private.pem"
+	case user.None:
+		fallthrough
 	default:
-		return nil, fmt.Errorf("invalid user, private key not found")
+		return nil, errors.New("invalid user, private key not found")
 	}
+
 	pem, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
+
 	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(pem)
 	if err != nil {
 		return nil, err
 	}
+
 	return privateKey, nil
 }
 
@@ -494,19 +517,21 @@ func (suite *AuthenticatorTestSuite) getSampleToken(issuer user.Issuer, isSuperu
 		suite.Require().NoError(err)
 	}
 
-	exp := time.Now().Add(time.Hour * 24 * 365 * 10).Unix()
+	exp := time.Now().Add(time.Hour * 24 * 365 * 10)
 	sub := "DXKgaNQa7N5Y7bo"
 
-	var claims jwt.Claims
-	claims = jwt.StandardClaims{
-		ExpiresAt: exp,
+	// nolint: exhaustruct
+	claims := jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(exp),
 		Issuer:    string(issuer),
 		Subject:   sub,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+
 	tokenString, err := token.SignedString(key)
 	if err != nil {
 		suite.Require().NoError(err)
 	}
+
 	return tokenString, nil
 }

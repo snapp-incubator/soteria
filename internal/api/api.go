@@ -19,7 +19,7 @@ type API struct {
 func (a API) ReSTServer() *fiber.App {
 	app := fiber.New()
 
-	// nolint: exhaustivestruct
+	// nolint: exhaustruct
 	app.Use(fiberzap.New(fiberzap.Config{
 		Logger: a.Logger.Named("fiber"),
 	}))

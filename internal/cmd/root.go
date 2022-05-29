@@ -23,7 +23,7 @@ func Execute() {
 
 	tracer := tracing.New(cfg.Tracer, logger.Named("tracer"))
 
-	// nolint: exhaustivestruct
+	// nolint: exhaustruct
 	root := &cobra.Command{
 		Use:   "soteria",
 		Short: "Soteria is the authentication service.",
