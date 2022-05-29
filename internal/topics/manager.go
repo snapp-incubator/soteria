@@ -4,7 +4,7 @@
 package topics
 
 import (
-	"crypto/md5"
+	"crypto/md5" // nolint: gosec
 	"errors"
 	"fmt"
 	"regexp"
@@ -116,11 +116,13 @@ func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audi
 
 // IssuerToAudience returns corresponding audience in snappids form.
 func IssuerToAudience(issuer user.Issuer) (snappids.Audience, string) {
-	switch issuer { // nolint:exhaustive
+	switch issuer {
 	case user.Passenger:
 		return snappids.PassengerAudience, Passenger
 	case user.Driver:
 		return snappids.DriverAudience, Driver
+	case user.None:
+		fallthrough
 	default:
 		return -1, ""
 	}
