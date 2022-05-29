@@ -1,16 +1,19 @@
 package topics_test
 
 import (
-	"fmt"
+	"testing"
+
 	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
-	"testing"
 )
 
-func TestTopic_GetType(t1 *testing.T) {
+// nolint: funlen
+func TestTopic_GetType(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name   string
 		arg    string
@@ -141,6 +144,7 @@ func TestTopic_GetType(t1 *testing.T) {
 			snappids.ThirdPartyAudience: 15,
 		},
 	}
+	// nolint: exhaustruct
 	auth := authenticator.Authenticator{
 		Company:      "snapp",
 		TopicManager: topics.NewTopicManager(cfg.Topics, hid, "snapp"),
@@ -148,20 +152,23 @@ func TestTopic_GetType(t1 *testing.T) {
 
 	sub := "DXKgaNQa7N5Y7bo"
 
-	for i, tt := range tests {
-		t1.Run(fmt.Sprintf("#%d %s", i, tt.name), func(t1 *testing.T) {
-			t := tt.arg
-			audience, audienceStr := topics.IssuerToAudience(tt.issuer)
-			topicTemplate := auth.TopicManager.ValidateTopic(t, audienceStr, audience, sub)
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			topic := tc.arg
+			audience, audienceStr := topics.IssuerToAudience(tc.issuer)
+			topicTemplate := auth.TopicManager.ValidateTopic(topic, audienceStr, audience, sub)
 			if topicTemplate != nil {
-				if len(tt.want) == 0 {
-					t1.Errorf("topic %s is invalid, must throw error.", tt.arg)
-				} else if topicTemplate.Type != tt.want {
-					t1.Errorf("GetType() = %v, want %v", topicTemplate.Type, tt.want)
+				if len(tc.want) == 0 {
+					t.Errorf("topic %s is invalid, must throw error.", tc.arg)
+				} else if topicTemplate.Type != tc.want {
+					t.Errorf("GetType() = %v, want %v", topicTemplate.Type, tc.want)
 				}
 			} else {
-				if len(tt.want) != 0 {
-					t1.Errorf("failed to find topicTemplate for %s", tt.arg)
+				if len(tc.want) != 0 {
+					t.Errorf("failed to find topicTemplate for %s", tc.arg)
 				}
 			}
 		})
