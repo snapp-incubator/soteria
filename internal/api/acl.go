@@ -67,11 +67,12 @@ func (a API) ACL(c *fiber.Ctx) error {
 			span.RecordError(err)
 		}
 
-		// nolint: exhaustivestruct
-		if errors.Is(err, authenticator.TopicNotAllowedError{}) {
+		var tnaErr authenticator.TopicNotAllowedError
+
+		if errors.As(err, &tnaErr) {
 			a.Logger.
 				Warn("acl request is not authorized",
-					zap.Error(err))
+					zap.Error(tnaErr))
 		} else {
 			a.Logger.
 				Error("acl request is not authorized",
