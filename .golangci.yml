@@ -1,6 +1,4 @@
 ---
-run:
-  tests: false
 linters:
   enable-all: true
   disable:
@@ -8,13 +6,10 @@ linters:
     - tagliatelle
     # it should improve to support more known patterns
     - varnamelen
+    - ireturn
     # deprecated linters
     - maligned
     - scopelint
     - golint
     - interfacer
-linters-settings:
-  gosec:
-    excludes:
-      # crypto/md5
-      - G501
+    - exhaustivestruct
