@@ -12,8 +12,7 @@ test:
   before_script:
     - go env -w GOPROXY="https://repo.snapp.tech/repository/goproxy/"
   script:
-    - go test -gcflags=-l -v -coverprofile .coverage.out.tmp ./...
-    - rm -rf .coverage.out.tmp
+    - go test -gcflags=-l -v -coverprofile .coverage.out ./...
     - go tool cover -func .coverage.out
   dependencies:
     - compile
