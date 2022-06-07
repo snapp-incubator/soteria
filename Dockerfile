@@ -1,11 +1,11 @@
-FROM alpine:3.15
+FROM alpine:3.16
 ARG BUILD_DATE
 ARG VCS_REF
 ARG BUILD_VERSION
 
 # hadolint ignore=DL3018
-RUN echo "https://repo.snapp.tech/repository/alpine/v3.15/main" > /etc/apk/repositories && \
-    echo "https://repo.snapp.tech/repository/alpine/v3.15/community" >> /etc/apk/repositories && \
+RUN echo "https://repo.snapp.tech/repository/alpine/v3.16/main" > /etc/apk/repositories && \
+    echo "https://repo.snapp.tech/repository/alpine/v3.16/community" >> /etc/apk/repositories && \
     apk --no-cache --update add ca-certificates tzdata && \
     mkdir /app
 
