@@ -116,7 +116,7 @@ func Default() Config {
 			},
 			{
 				Type:     topics.NodeCallEntry,
-				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/call/[a-zA-Z0-9-]+/send$",
+				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/call/[a-zA-Z0-9-_]+/send$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.Driver:    acl.Pub,

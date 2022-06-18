@@ -127,7 +127,7 @@ topics:
       driver: '2'
       passenger: '2'
   - type: node_call_entry
-    template: ^{{.company}}/{{.audience}}/{{.hashId}}/call/[a-zA-Z0-9-]+/send$
+    template: ^{{.company}}/{{.audience}}/{{.hashId}}/call/[a-zA-Z0-9-_]+/send$
     hash_type: 0
     accesses:
       driver: '2'
