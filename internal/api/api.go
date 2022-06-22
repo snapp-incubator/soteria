@@ -15,12 +15,20 @@ type API struct {
 	Logger        zap.Logger
 }
 
+// MetricLogSkipper check if route is equal "metric" disable log.
+func MetricLogSkipper(ctx *fiber.Ctx) bool {
+	route := string(ctx.Request().URI().Path())
+
+	return route == "/metrics"
+}
+
 // ReSTServer will return fiber app.
 func (a API) ReSTServer() *fiber.App {
 	app := fiber.New()
 
 	// nolint: exhaustruct
 	app.Use(fiberzap.New(fiberzap.Config{
+		Next:   MetricLogSkipper,
 		Logger: a.Logger.Named("fiber"),
 	}))
 
