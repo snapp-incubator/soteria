@@ -61,7 +61,7 @@ func (a API) ACL(c *fiber.Ctx) error {
 
 	topic := request.Topic
 
-	ok, err := a.Authenticator.ACL(request.Access, tokenString, topic)
+	ok, err := a.Authenticator(request.Password).ACL(request.Access, tokenString, topic)
 	if err != nil || !ok {
 		if err != nil {
 			span.RecordError(err)

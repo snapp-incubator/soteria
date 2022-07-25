@@ -10,9 +10,9 @@ import (
 )
 
 type API struct {
-	Authenticator *authenticator.Authenticator
-	Tracer        trace.Tracer
-	Logger        zap.Logger
+	Authenticators map[string]*authenticator.Authenticator
+	Tracer         trace.Tracer
+	Logger         zap.Logger
 }
 
 // MetricLogSkipper check if route is equal "metric" disable log.
@@ -40,4 +40,12 @@ func (a API) ReSTServer() *fiber.App {
 	app.Post("/acl", a.ACL)
 
 	return app
+}
+
+func (a API) Authenticator(vendor string) *authenticator.Authenticator {
+	if vendor == "" {
+		return a.Authenticators[authenticator.DefaultVendor]
+	}
+
+	return a.Authenticators[vendor]
 }
