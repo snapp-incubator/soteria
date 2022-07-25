@@ -42,10 +42,12 @@ func (a API) ReSTServer() *fiber.App {
 	return app
 }
 
-func (a API) Authenticator(vendor string) *authenticator.Authenticator {
+func (a API) Authenticator(vendor string) (*authenticator.Authenticator, bool) {
 	if vendor == "" {
-		return a.Authenticators[authenticator.DefaultVendor]
+		return a.Authenticators[authenticator.DefaultVendor], true
 	}
 
-	return a.Authenticators[vendor]
+	auth, ok := a.Authenticators[vendor]
+
+	return auth, ok
 }
