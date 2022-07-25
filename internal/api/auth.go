@@ -49,7 +49,7 @@ func (a API) Auth(c *fiber.Ctx) error {
 		attribute.String("password", request.Username),
 	)
 
-	if err := a.Authenticator.Auth(tokenString); err != nil {
+	if err := a.Authenticator(request.Password).Auth(tokenString); err != nil {
 		span.RecordError(err)
 
 		a.Logger.
