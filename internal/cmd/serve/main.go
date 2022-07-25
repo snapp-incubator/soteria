@@ -26,6 +26,30 @@ type Serve struct {
 }
 
 func (s Serve) main() {
+	rest := api.API{
+		Authenticators: s.Authenticators(),
+		Tracer:         s.Tracer,
+		Logger:         *s.Logger.Named("api"),
+	}.ReSTServer()
+
+	go func() {
+		if err := rest.Listen(fmt.Sprintf(":%d", s.Cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			s.Logger.Fatal("failed to run REST HTTP server", zap.Error(err))
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
+
+	if err := rest.Shutdown(); err != nil {
+		s.Logger.Error("error happened during REST API shutdown", zap.Error(err))
+	}
+}
+
+func (s Serve) Authenticators() map[string]*authenticator.Authenticator {
+	all := make(map[string]*authenticator.Authenticator)
+
 	publicKey0, err := s.Cfg.ReadPublicKey(user.Driver)
 	if err != nil {
 		s.Logger.Fatal("could not read driver public key")
@@ -52,33 +76,17 @@ func (s Serve) main() {
 		s.Logger.Fatal("error while getting allowed access types", zap.Error(err))
 	}
 
-	rest := api.API{
-		Authenticator: &authenticator.Authenticator{
-			PublicKeys: map[user.Issuer]*rsa.PublicKey{
-				user.Driver:    publicKey0,
-				user.Passenger: publicKey1,
-			},
-			AllowedAccessTypes: allowedAccessTypes,
-			Company:            s.Cfg.Company,
-			TopicManager:       topics.NewTopicManager(s.Cfg.Topics, hid, s.Cfg.Company),
+	all[authenticator.DefaultVendor] = &authenticator.Authenticator{
+		PublicKeys: map[user.Issuer]*rsa.PublicKey{
+			user.Driver:    publicKey0,
+			user.Passenger: publicKey1,
 		},
-		Tracer: s.Tracer,
-		Logger: *s.Logger.Named("api"),
-	}.ReSTServer()
-
-	go func() {
-		if err := rest.Listen(fmt.Sprintf(":%d", s.Cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			s.Logger.Fatal("failed to run REST HTTP server", zap.Error(err))
-		}
-	}()
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	<-c
-
-	if err := rest.Shutdown(); err != nil {
-		s.Logger.Error("error happened during REST API shutdown", zap.Error(err))
+		AllowedAccessTypes: allowedAccessTypes,
+		Company:            s.Cfg.Company,
+		TopicManager:       topics.NewTopicManager(s.Cfg.Topics, hid, s.Cfg.Company),
 	}
+
+	return all
 }
 
 // Register serve command.
