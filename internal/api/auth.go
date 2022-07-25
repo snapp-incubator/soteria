@@ -49,7 +49,14 @@ func (a API) Auth(c *fiber.Ctx) error {
 		attribute.String("password", request.Username),
 	)
 
-	if err := a.Authenticator(request.Password).Auth(tokenString); err != nil {
+	auth, ok := a.Authenticator(request.Password)
+	if !ok {
+		a.Logger.Warn("vendor not supported", zap.String("vendor", request.Password))
+
+		return c.Status(http.StatusBadRequest).SendString("bad request")
+	}
+
+	if err := auth.Auth(tokenString); err != nil {
 		span.RecordError(err)
 
 		a.Logger.
