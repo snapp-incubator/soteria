@@ -120,7 +120,7 @@ func HIDManager(driverSalt string, driverHashLength int, passengerSalt string, p
 	}
 }
 
-func (s Serve) ReadKeys(path string) (*rsa.PublicKey, *rsa.PublicKey) {
+func (s Serve) PublicKeys(path string) map[user.Issuer]*rsa.PublicKey {
 	driverPublicKey, err := ReadPublicKey(path, user.Driver)
 	if err != nil {
 		s.Logger.Fatal("could not read driver public key")
@@ -131,7 +131,10 @@ func (s Serve) ReadKeys(path string) (*rsa.PublicKey, *rsa.PublicKey) {
 		s.Logger.Fatal("could not read passenger public key")
 	}
 
-	return driverPublicKey, passengerPublicKey
+	return map[user.Issuer]*rsa.PublicKey{
+		user.Driver:    driverPublicKey,
+		user.Passenger: passengerPublicKey,
+	}
 }
 
 // ReadPrivateKey will read and return private key that is used for JWT encryption.
