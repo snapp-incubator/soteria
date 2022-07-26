@@ -69,7 +69,7 @@ func (s Serve) Authenticators() map[string]*authenticator.Authenticator {
 	all := make(map[string]*authenticator.Authenticator)
 
 	for _, vendor := range s.Cfg.Vendors {
-		publicKeys := s.PublicKeys(vendor.JWT)
+		publicKeys := s.PublicKeys(s.Cfg.JWT, vendor.Company)
 		hid := HIDManager(vendor.DriverSalt, vendor.DriverHashLength, vendor.PassengerSalt, vendor.PassengerHashLength)
 		allowedAccessTypes := s.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
 
@@ -104,13 +104,13 @@ func HIDManager(
 	}
 }
 
-func (s Serve) PublicKeys(path string) map[user.Issuer]*rsa.PublicKey {
-	driverPublicKey, err := ReadPublicKey(path, user.Driver)
+func (s Serve) PublicKeys(path, company string) map[user.Issuer]*rsa.PublicKey {
+	driverPublicKey, err := ReadPublicKey(path, company, user.Driver)
 	if err != nil {
 		s.Logger.Fatal("could not read driver public key")
 	}
 
-	passengerPublicKey, err := ReadPublicKey(path, user.Passenger)
+	passengerPublicKey, err := ReadPublicKey(path, company, user.Passenger)
 	if err != nil {
 		s.Logger.Fatal("could not read passenger public key")
 	}
@@ -123,14 +123,14 @@ func (s Serve) PublicKeys(path string) map[user.Issuer]*rsa.PublicKey {
 
 // ReadPublicKey will read and return private key that is used for JWT encryption.
 // nolint: wrapcheck, goerr113
-func ReadPublicKey(path string, u user.Issuer) (*rsa.PublicKey, error) {
+func ReadPublicKey(path, company string, u user.Issuer) (*rsa.PublicKey, error) {
 	var fileName string
 
 	switch u { // nolint:exhaustive
 	case user.Driver:
-		fileName = fmt.Sprintf("%s%s", path, "0.pem")
+		fileName = fmt.Sprintf("%s%s%s", path, company, "0.pem")
 	case user.Passenger:
-		fileName = fmt.Sprintf("%s%s", path, "1.pem")
+		fileName = fmt.Sprintf("%s%s%s", path, company, "1.pem")
 	default:
 		return nil, errors.New("invalid issuer, public key not found")
 	}
