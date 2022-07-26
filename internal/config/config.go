@@ -24,15 +24,11 @@ const (
 type (
 	// Config is the main container of Soteria's config.
 	Config struct {
+		JWT      string         `koanf:"jwt"`
 		Vendors  []Vendor       `koanf:"vendors"`
 		Logger   logger.Config  `koanf:"logger"`
 		HTTPPort int            `koanf:"http_port"`
 		Tracer   tracing.Config `koanf:"tracer"`
-	}
-
-	// JWt contains path of the keys for JWT encryption.
-	JWT struct {
-		Path string `koanf:"path"`
 	}
 
 	Vendor struct {
