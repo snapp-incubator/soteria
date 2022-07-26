@@ -121,7 +121,7 @@ func (s Serve) PublicKeys(path string) map[user.Issuer]*rsa.PublicKey {
 	}
 }
 
-// ReadPrivateKey will read and return private key that is used for JWT encryption.
+// ReadPublicKey will read and return private key that is used for JWT encryption.
 // nolint: wrapcheck, goerr113
 func ReadPublicKey(path string, u user.Issuer) (*rsa.PublicKey, error) {
 	var fileName string
