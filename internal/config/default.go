@@ -14,11 +14,11 @@ const (
 )
 
 // Default return default configuration.
-// nolint: funlen, gomnd
+// nolint: gomnd
 func Default() Config {
 	return Config{
 		Vendors: []Vendor{
-			snappVendor(),
+			SnappVendor(),
 		},
 		Logger: logger.Config{
 			Level: "warn",
@@ -35,7 +35,8 @@ func Default() Config {
 	}
 }
 
-func snappVendor() Vendor {
+//nolint:funlen
+func SnappVendor() Vendor {
 	return Vendor{
 		AllowedAccessTypes: []string{
 			"pub",
