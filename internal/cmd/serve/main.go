@@ -162,19 +162,20 @@ func ReadPublicKey(path string, u user.Issuer) (*rsa.PublicKey, error) {
 }
 
 // GetAllowedAccessTypes will return all allowed access types in Soteria.
-func GetAllowedAccessTypes(accessTypes []string) ([]acl.AccessType, error) {
+func (s Serve) GetAllowedAccessTypes(accessTypes []string) []acl.AccessType {
 	allowedAccessTypes := make([]acl.AccessType, 0, len(accessTypes))
 
 	for _, a := range accessTypes {
 		at, err := toUserAccessType(a)
 		if err != nil {
-			return nil, fmt.Errorf("could not convert %s: %w", at, err)
+			err = fmt.Errorf("could not convert %s: %w", at, err)
+			s.Logger.Fatal("error while getting allowed access types", zap.Error(err))
 		}
 
 		allowedAccessTypes = append(allowedAccessTypes, at)
 	}
 
-	return allowedAccessTypes, nil
+	return allowedAccessTypes
 }
 
 // toUserAccessType will convert string access type to it's own type.
