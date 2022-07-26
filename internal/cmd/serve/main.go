@@ -50,11 +50,26 @@ func (s Serve) main() {
 	}
 }
 
+// Register serve command.
+func (s Serve) Register(root *cobra.Command) {
+	root.AddCommand(
+		// nolint: exhaustruct
+		&cobra.Command{
+			Use:   "serve",
+			Short: "serve runs the application",
+			Long:  `serve will run Soteria ReST server and waits until user disrupts.`,
+			Run: func(cmd *cobra.Command, args []string) {
+				s.main()
+			},
+		},
+	)
+}
+
 func (s Serve) Authenticators() map[string]*authenticator.Authenticator {
 	all := make(map[string]*authenticator.Authenticator)
 
 	for _, vendor := range s.Cfg.Vendors {
-		publicKeys := s.PublicKeys(vendor.JWT.Path)
+		publicKeys := s.PublicKeys(vendor.JWT)
 		hid := HIDManager(vendor.DriverSalt, vendor.DriverHashLength, vendor.PassengerSalt, vendor.PassengerHashLength)
 		allowedAccessTypes := s.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
 
@@ -69,21 +84,6 @@ func (s Serve) Authenticators() map[string]*authenticator.Authenticator {
 	}
 
 	return all
-}
-
-// Register serve command.
-func (s Serve) Register(root *cobra.Command) {
-	root.AddCommand(
-		// nolint: exhaustruct
-		&cobra.Command{
-			Use:   "serve",
-			Short: "serve runs the application",
-			Long:  `serve will run Soteria ReST server and waits until user disrupts.`,
-			Run: func(cmd *cobra.Command, args []string) {
-				s.main()
-			},
-		},
-	)
 }
 
 func HIDManager(driverSalt string, driverHashLength int, passengerSalt string, passengerHashLength int) *snappids.HashIDSManager {
