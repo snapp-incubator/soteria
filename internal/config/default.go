@@ -17,16 +17,8 @@ const (
 // nolint: funlen, gomnd
 func Default() Config {
 	return Config{
-		AllowedAccessTypes: []string{
-			"pub",
-			"sub",
-		},
-		PassengerHashLength: DefaultPassengerHashLength,
-		DriverHashLength:    DefaultDriverHashLength,
-		PassengerSalt:       "secret",
-		DriverSalt:          "secret",
-		JWT: &JWT{
-			Path: "test/",
+		Vendors: []Vendor{
+			snappVendor(),
 		},
 		Logger: logger.Config{
 			Level: "warn",
@@ -40,7 +32,21 @@ func Default() Config {
 				Port: "6831",
 			},
 		},
-		Company: "snapp",
+	}
+}
+
+func snappVendor() Vendor {
+	return Vendor{
+		AllowedAccessTypes: []string{
+			"pub",
+			"sub",
+		},
+		PassengerHashLength: DefaultPassengerHashLength,
+		DriverHashLength:    DefaultDriverHashLength,
+		PassengerSalt:       "secret",
+		DriverSalt:          "secret",
+		JWT:                 "test/",
+		Company:             "snapp",
 		Topics: []topics.Topic{
 			{
 				Type:     topics.CabEvent,
