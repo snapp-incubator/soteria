@@ -53,40 +53,19 @@ func (s Serve) main() {
 func (s Serve) Authenticators() map[string]*authenticator.Authenticator {
 	all := make(map[string]*authenticator.Authenticator)
 
-	publicKey0, err := s.Cfg.ReadPublicKey(user.Driver)
-	if err != nil {
-		s.Logger.Fatal("could not read driver public key")
-	}
+	for _, vendor := range s.Cfg.Vendors {
+		publicKeys := s.PublicKeys(vendor.JWT.Path)
+		hid := HIDManager(vendor.DriverSalt, vendor.DriverHashLength, vendor.PassengerSalt, vendor.PassengerHashLength)
+		allowedAccessTypes := s.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
 
-	publicKey1, err := s.Cfg.ReadPublicKey(user.Passenger)
-	if err != nil {
-		s.Logger.Fatal("could not read passenger public key")
-	}
+		auth := &authenticator.Authenticator{
+			PublicKeys:         publicKeys,
+			AllowedAccessTypes: allowedAccessTypes,
+			Company:            vendor.Company,
+			TopicManager:       topics.NewTopicManager(vendor.Topics, hid, vendor.Company),
+		}
 
-	hid := &snappids.HashIDSManager{
-		Salts: map[snappids.Audience]string{
-			snappids.DriverAudience:    s.Cfg.DriverSalt,
-			snappids.PassengerAudience: s.Cfg.PassengerSalt,
-		},
-		Lengths: map[snappids.Audience]int{
-			snappids.DriverAudience:    s.Cfg.DriverHashLength,
-			snappids.PassengerAudience: s.Cfg.PassengerHashLength,
-		},
-	}
-
-	allowedAccessTypes, err := s.Cfg.GetAllowedAccessTypes()
-	if err != nil {
-		s.Logger.Fatal("error while getting allowed access types", zap.Error(err))
-	}
-
-	all[authenticator.DefaultVendor] = &authenticator.Authenticator{
-		PublicKeys: map[user.Issuer]*rsa.PublicKey{
-			user.Driver:    publicKey0,
-			user.Passenger: publicKey1,
-		},
-		AllowedAccessTypes: allowedAccessTypes,
-		Company:            s.Cfg.Company,
-		TopicManager:       topics.NewTopicManager(s.Cfg.Topics, hid, s.Cfg.Company),
+		all[vendor.Company] = auth
 	}
 
 	return all
