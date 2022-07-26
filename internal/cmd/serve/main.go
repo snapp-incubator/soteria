@@ -86,7 +86,12 @@ func (s Serve) Authenticators() map[string]*authenticator.Authenticator {
 	return all
 }
 
-func HIDManager(driverSalt string, driverHashLength int, passengerSalt string, passengerHashLength int) *snappids.HashIDSManager {
+func HIDManager(
+	driverSalt string,
+	driverHashLength int,
+	passengerSalt string,
+	passengerHashLength int,
+) *snappids.HashIDSManager {
 	return &snappids.HashIDSManager{
 		Salts: map[snappids.Audience]string{
 			snappids.DriverAudience:    driverSalt,
