@@ -41,7 +41,7 @@ type (
 		DriverHashLength    int            `koanf:"driver_hash_length"`
 		PassengerSalt       string         `koanf:"passenger_salt"`
 		DriverSalt          string         `koanf:"driver_salt"`
-		JWT                 *JWT           `koanf:"jwt"`
+		JWT                 string         `koanf:"jwt"`
 		Company             string         `koanf:"company"`
 		Topics              []topics.Topic `koanf:"topics"`
 	}
