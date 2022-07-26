@@ -4,16 +4,19 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/spf13/cobra"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/api"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
+	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -102,4 +105,89 @@ func (s Serve) Register(root *cobra.Command) {
 			},
 		},
 	)
+}
+
+func HIDManager(driverSalt string, driverHashLength int, passengerSalt string, passengerHashLength int) *snappids.HashIDSManager {
+	return &snappids.HashIDSManager{
+		Salts: map[snappids.Audience]string{
+			snappids.DriverAudience:    driverSalt,
+			snappids.PassengerAudience: passengerSalt,
+		},
+		Lengths: map[snappids.Audience]int{
+			snappids.DriverAudience:    driverHashLength,
+			snappids.PassengerAudience: passengerHashLength,
+		},
+	}
+}
+
+func (s Serve) ReadKeys(path string) (*rsa.PublicKey, *rsa.PublicKey) {
+	driverPublicKey, err := ReadPublicKey(path, user.Driver)
+	if err != nil {
+		s.Logger.Fatal("could not read driver public key")
+	}
+
+	passengerPublicKey, err := ReadPublicKey(path, user.Passenger)
+	if err != nil {
+		s.Logger.Fatal("could not read passenger public key")
+	}
+
+	return driverPublicKey, passengerPublicKey
+}
+
+// ReadPrivateKey will read and return private key that is used for JWT encryption.
+// nolint: wrapcheck, goerr113
+func ReadPublicKey(path string, u user.Issuer) (*rsa.PublicKey, error) {
+	var fileName string
+
+	switch u { // nolint:exhaustive
+	case user.Driver:
+		fileName = fmt.Sprintf("%s%s", path, "0.pem")
+	case user.Passenger:
+		fileName = fmt.Sprintf("%s%s", path, "1.pem")
+	default:
+		return nil, errors.New("invalid issuer, public key not found")
+	}
+
+	pem, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(pem)
+	if err != nil {
+		return nil, err
+	}
+
+	return publicKey, nil
+}
+
+// GetAllowedAccessTypes will return all allowed access types in Soteria.
+func GetAllowedAccessTypes(accessTypes []string) ([]acl.AccessType, error) {
+	allowedAccessTypes := make([]acl.AccessType, 0, len(accessTypes))
+
+	for _, a := range accessTypes {
+		at, err := toUserAccessType(a)
+		if err != nil {
+			return nil, fmt.Errorf("could not convert %s: %w", at, err)
+		}
+
+		allowedAccessTypes = append(allowedAccessTypes, at)
+	}
+
+	return allowedAccessTypes, nil
+}
+
+// toUserAccessType will convert string access type to it's own type.
+// nolint: goerr113
+func toUserAccessType(access string) (acl.AccessType, error) {
+	switch access {
+	case "pub":
+		return acl.Pub, nil
+	case "sub":
+		return acl.Sub, nil
+	case "pubsub":
+		return acl.PubSub, nil
+	}
+
+	return "", fmt.Errorf("%v is a invalid acces type", access)
 }
