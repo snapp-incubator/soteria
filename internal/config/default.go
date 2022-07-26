@@ -17,6 +17,7 @@ const (
 // nolint: gomnd
 func Default() Config {
 	return Config{
+		JWT: "test/",
 		Vendors: []Vendor{
 			SnappVendor(),
 		},
@@ -46,7 +47,6 @@ func SnappVendor() Vendor {
 		DriverHashLength:    DefaultDriverHashLength,
 		PassengerSalt:       "secret",
 		DriverSalt:          "secret",
-		JWT:                 "test/",
 		Company:             "snapp",
 		Topics: []topics.Topic{
 			{
