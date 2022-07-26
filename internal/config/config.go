@@ -24,7 +24,6 @@ const (
 type (
 	// Config is the main container of Soteria's config.
 	Config struct {
-		JWT      string         `koanf:"jwt"`
 		Vendors  []Vendor       `koanf:"vendors"`
 		Logger   logger.Config  `koanf:"logger"`
 		HTTPPort int            `koanf:"http_port"`
@@ -37,9 +36,10 @@ type (
 		DriverHashLength    int            `koanf:"driver_hash_length"`
 		PassengerSalt       string         `koanf:"passenger_salt"`
 		DriverSalt          string         `koanf:"driver_salt"`
-		JWT                 string         `koanf:"jwt"`
 		Company             string         `koanf:"company"`
 		Topics              []topics.Topic `koanf:"topics"`
+		DriverKey           string         `koanf:"driver_key"`
+		PassengerKey        string         `koanf:"passenger_key"`
 	}
 )
 

@@ -17,7 +17,6 @@ const (
 // nolint: gomnd
 func Default() Config {
 	return Config{
-		JWT: "test/",
 		Vendors: []Vendor{
 			SnappVendor(),
 		},
@@ -140,5 +139,23 @@ func SnappVendor() Vendor {
 				},
 			},
 		},
+		DriverKey: `-----BEGIN PUBLIC KEY-----
+MIIBITANBgkqhkiG9w0BAQEFAAOCAQ4AMIIBCQKCAQBk7O6M5p4eYNAwtVU2beGa
+W4mhFG94OtYUWDl1E7UUrhUNGf97Eb/45NjQszu0YPERnApJc2RUm2TrS7iq0mHz
+Xbwf+CbNF54Q5mjuHcpBKgvFwUUSCCYBftmRc4xbFIH4Oh3nHC2GeukUS9TmJwjM
+tJKyU0Ve8BK5BgjhagM7XSs+scE2mxemoWtcs6mJLtBuEgRGMgHW00mSdOcLp/+l
+oHpSzRYN92/DomwmmjGVy8Ji0faeHx+r79ZzE0E8Rcc29Yhrg1ymrjfkXg98WjAb
+TSv4UAN20lsBDejpnGEZKJrxHZ56gHgaJn6PKKCD6ItJA7y7iraCdBhCfAIUIz/z
+AgMBAAE=
+-----END PUBLIC KEY-----`,
+		PassengerKey: `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1lNRwyNsDieWs6LvHOJ+
+GyehhRC4Pn5yL5edKP3565F3LtRDMrkzwDRsQbqnUtTea9HCdTdBv+lI8vE17qRi
+RQn10IMaIH6e4Aa3OWNClFhuqNOag7VmffsjTOgxHgHpfGAKVF/4BwqOHrdHFbAD
+VOiWB1hv9Uc0C5laffGAub7fj+EAI02zlrsNDxYW8vyF2H47N7VWcvgd3RhZpxlG
+8bq9phl7Ja55YmQiT2Ic3/K5tsazg5z9lz6OTrx+JvWbefHFlJpjCLz5yefEaRmX
+9L/zyDMi4jgFTZEWNXC2vIrxwZMFwFhBXEp0PcCbuHJgJIucbRrbwukQC16uHJwP
+zQIDAQAB
+-----END PUBLIC KEY-----`,
 	}
 }
