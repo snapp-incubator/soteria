@@ -61,14 +61,7 @@ func (a API) ACL(c *fiber.Ctx) error {
 
 	topic := request.Topic
 
-	auth, ok := a.Authenticator(request.Password)
-	if !ok {
-		a.Logger.Warn("vendor not supported", zap.String("vendor", request.Password))
-
-		return c.Status(http.StatusBadRequest).SendString("bad request")
-	}
-
-	ok, err := auth.ACL(request.Access, tokenString, topic)
+	ok, err := a.Authenticator(request.Password).ACL(request.Access, tokenString, topic)
 	if err != nil || !ok {
 		if err != nil {
 			span.RecordError(err)
