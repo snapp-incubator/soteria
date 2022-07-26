@@ -44,7 +44,7 @@ serviceMonitor:
   enabled: false
 
 jwtKeys:
-  0.pem: |-
+  snapp-0.pem: |-
     -----BEGIN PUBLIC KEY-----
     MIIBITANBgkqhkiG9w0BAQEFAAOCAQ4AMIIBCQKCAQBk7O6M5p4eYNAwtVU2beGa
     W4mhFG94OtYUWDl1E7UUrhUNGf97Eb/45NjQszu0YPERnApJc2RUm2TrS7iq0mHz
@@ -54,7 +54,7 @@ jwtKeys:
     TSv4UAN20lsBDejpnGEZKJrxHZ56gHgaJn6PKKCD6ItJA7y7iraCdBhCfAIUIz/z
     AgMBAAE=
     -----END PUBLIC KEY-----
-  1.pem: |-
+  snapp-1.pem: |-
     -----BEGIN PUBLIC KEY-----
     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1lNRwyNsDieWs6LvHOJ+
     GyehhRC4Pn5yL5edKP3565F3LtRDMrkzwDRsQbqnUtTea9HCdTdBv+lI8vE17qRi
@@ -65,83 +65,20 @@ jwtKeys:
     zQIDAQAB
     -----END PUBLIC KEY-----
 
-authEnvs:
-  jwt_keys_path: "/jwt_pems/"
-  driver_salt: "secret"
-  passenger_salt: "secret"
-  driver_hash_length: 15
-  passenger_hash_length: 15
-
-envs:
-  allowed_access_types: [ "pub", "sub" ]
-  # company: "baly"
-  logger_level: "warn"
-
-topics:
-  - type: cab_event
-    template: ^{{.audience}}-event-{{.hashId}}$
-    hash_type: 1
-    accesses:
-      driver: '1'
-      passenger: '1'
-  - type: driver_location
-    template: ^{{.company}}/driver/{{.hashId}}/location$
-    hash_type: 0
-    accesses:
-      driver: '2'
-      passenger: '-1'
-  - type: passenger_location
-    template: ^{{.company}}/passenger/{{.hashId}}/location$
-    hash_type: 0
-    accesses:
-      driver: '2'
-      passenger: '2'
-  - type: superapp_event
-    template: ^{{.company}}/{{.audience}}/{{.hashId}}/superapp$
-    hash_type: 0
-    accesses:
-      driver: '1'
-      passenger: '1'
-  - type: box_event
-    template: ^bucks$
-    hash_type: 0
-    accesses:
-      driver: '-1'
-      passenger: '-1'
-  - type: shared_location
-    template: ^{{.company}}/{{.audience}}/{{.hashId}}/{{.peer}}-location$
-    hash_type: 0
-    accesses:
-      driver: '1'
-      passenger: '1'
-  - type: chat
-    template: ^{{.company}}/{{.audience}}/{{.hashId}}/chat$
-    hash_type: 0
-    accesses:
-      driver: '1'
-      passenger: '1'
-  - type: general_call_entry
-    template: ^shared/{{.company}}/{{.audience}}/{{.hashId}}/call/send$
-    hash_type: 0
-    accesses:
-      driver: '2'
-      passenger: '2'
-  - type: node_call_entry
-    template: ^{{.company}}/{{.audience}}/{{.hashId}}/call/[a-zA-Z0-9-_]+/send$
-    hash_type: 0
-    accesses:
-      driver: '2'
-      passenger: '2'
-  - type: call_outgoing
-    template: ^{{.company}}/{{.audience}}/{{.hashId}}/call/receive$
-    hash_type: 0
-    accesses:
-      driver: '1'
-      passenger: '1'
+config:
+  jwt: "/jwt_pems/"
+  http_port: 9999
+  logger:
+    level: "warn"
+  tracer:
+    enabled: false
+    ratio: 0.1
+    agent:
+      host: 127.0.0.1
+      port: 6831
 
 snapp:
   company: "snapp"
-  jwt: "/jwt_pems/"
   driver_salt: "secret"
   passenger_salt: "secret"
   driver_hash_length: 15
