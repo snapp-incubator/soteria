@@ -1,32 +1,5 @@
 # Soteria
-
-# What is Soteria?
-
 Soteria is responsible for Authentication and Authorization of every request sent to EMQ and Herald.
-
-# How to compile?
-
-- [Install Golang](https://golang.org/doc/install)
-
-- Set `snapp goproxy`
-
-`go env -w GOPROXY="https://repo.snapp.tech/repository/goproxy/"`
-
-- Run the following command to compile the application
-
-`make compile`
-
-# How to run it locally?
-
-By executing the following command Herald will be up with EMQX and RabbitMQ brokers.
-
-`make up`
-
-# How to test?
-
-## Unit testing
-
-`make test`
 
 # Deployment
 
