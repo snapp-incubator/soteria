@@ -31,22 +31,26 @@ const (
 type (
 	// Config is the main container of Soteria's config.
 	Config struct {
+		Vendors  []Vendor       `koanf:"vendors"`
+		Logger   logger.Config  `koanf:"logger"`
+		HTTPPort int            `koanf:"http_port"`
+		Tracer   tracing.Config `koanf:"tracer"`
+	}
+
+	// JWt contains path of the keys for JWT encryption.
+	JWT struct {
+		Path string `koanf:"path"`
+	}
+
+	Vendor struct {
 		AllowedAccessTypes  []string       `koanf:"allowed_access_types"`
 		PassengerHashLength int            `koanf:"passenger_hash_length"`
 		DriverHashLength    int            `koanf:"driver_hash_length"`
 		PassengerSalt       string         `koanf:"passenger_salt"`
 		DriverSalt          string         `koanf:"driver_salt"`
 		JWT                 *JWT           `koanf:"jwt"`
-		Logger              logger.Config  `koanf:"logger"`
-		HTTPPort            int            `koanf:"http_port"`
-		Tracer              tracing.Config `koanf:"tracer"`
 		Company             string         `koanf:"company"`
 		Topics              []topics.Topic `koanf:"topics"`
-	}
-
-	// JWt contains path of the keys for JWT encryption.
-	JWT struct {
-		Path string `koanf:"path"`
 	}
 )
 
