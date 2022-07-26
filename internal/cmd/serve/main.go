@@ -4,7 +4,6 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -69,7 +68,7 @@ func (s Serve) Authenticators() map[string]*authenticator.Authenticator {
 	all := make(map[string]*authenticator.Authenticator)
 
 	for _, vendor := range s.Cfg.Vendors {
-		publicKeys := s.PublicKeys(s.Cfg.JWT, vendor.Company)
+		publicKeys := s.PublicKeys(vendor.DriverKey, vendor.PassengerKey)
 		hid := HIDManager(vendor.DriverSalt, vendor.DriverHashLength, vendor.PassengerSalt, vendor.PassengerHashLength)
 		allowedAccessTypes := s.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
 
@@ -104,13 +103,13 @@ func HIDManager(
 	}
 }
 
-func (s Serve) PublicKeys(path, company string) map[user.Issuer]*rsa.PublicKey {
-	driverPublicKey, err := ReadPublicKey(path, company, user.Driver)
+func (s Serve) PublicKeys(driverKey, passengerKey string) map[user.Issuer]*rsa.PublicKey {
+	driverPublicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(driverKey))
 	if err != nil {
 		s.Logger.Fatal("could not read driver public key")
 	}
 
-	passengerPublicKey, err := ReadPublicKey(path, company, user.Passenger)
+	passengerPublicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(passengerKey))
 	if err != nil {
 		s.Logger.Fatal("could not read passenger public key")
 	}
@@ -119,33 +118,6 @@ func (s Serve) PublicKeys(path, company string) map[user.Issuer]*rsa.PublicKey {
 		user.Driver:    driverPublicKey,
 		user.Passenger: passengerPublicKey,
 	}
-}
-
-// ReadPublicKey will read and return private key that is used for JWT encryption.
-// nolint: wrapcheck, goerr113
-func ReadPublicKey(path, company string, u user.Issuer) (*rsa.PublicKey, error) {
-	var fileName string
-
-	switch u { // nolint:exhaustive
-	case user.Driver:
-		fileName = fmt.Sprintf("%s%s%s", path, company, "0.pem")
-	case user.Passenger:
-		fileName = fmt.Sprintf("%s%s%s", path, company, "1.pem")
-	default:
-		return nil, errors.New("invalid issuer, public key not found")
-	}
-
-	pem, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		return nil, err
-	}
-
-	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(pem)
-	if err != nil {
-		return nil, err
-	}
-
-	return publicKey, nil
 }
 
 // GetAllowedAccessTypes will return all allowed access types in Soteria.
