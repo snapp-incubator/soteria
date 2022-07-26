@@ -72,7 +72,7 @@ spec:
               readOnly: true
             {{- range $key, $value := .Values.jwtKeys }}
             - name: {{ include "soteria.fullname" $ }}-jwt-keys
-              mountPath: "{{ $.Values.authEnvs.jwt_keys_path }}{{ $key }}"
+              mountPath: "{{ $.Values.config.jwt }}{{ $key }}"
               subPath: {{ $key }}
               readOnly: true
             {{ end }}
