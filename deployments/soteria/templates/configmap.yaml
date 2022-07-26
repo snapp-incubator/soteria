@@ -8,31 +8,6 @@ metadata:
     {{- include "soteria.labels" . | nindent 4 }}
 data:
   config.yaml: |
-    {{ with .Values.envs.allowed_access_types }}
-    allowed_access_types:
-      {{ toYaml . | nindent 8 }}
-    {{ end }}
-    passenger_hash_length: {{ .Values.authEnvs.passenger_hash_length }}
-    driver_hash_length: {{ .Values.authEnvs.driver_hash_length }}
-    passenger_salt: {{ .Values.authEnvs.passenger_salt }}
-    driver_salt: {{ .Values.authEnvs.driver_salt }}
-    jwt:
-      path: {{ .Values.authEnvs.jwt_keys_path }}
-    logger:
-      level: {{ .Values.envs.logger_level }}
-    http_port: 9999
-    {{ with .Values.envs.tracer }}
-    tracer:
-      enabled: {{ .enabled }}
-      ratio: {{ .ratio }}
-      agent:
-        host: {{ .host }}
-        port: {{ .port }}
-    {{ end }}
-    {{ with .Values.envs.company }}
-    company: {{ . }}
-    {{ end }}
-    {{ with .Values.topics }}
-    topics:
-      {{ toYaml . | nindent 8 }}
-    {{ end }}
+    {{- toYaml .Values.config | nindent 4}}
+    vendors:
+      - {{- toYaml .Values.snapp | nindent 8}}
