@@ -11,6 +11,8 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 )
 
+const DefaultVendor = "snapp"
+
 var (
 	ErrInvalidSigningMethod = errors.New("token is not valid, signing method is not RSA")
 	ErrIssNotFound          = errors.New("could not found iss in token claims")
