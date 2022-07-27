@@ -70,20 +70,11 @@ spec:
               mountPath: "/app/config.yml"
               subPath: "config.yaml"
               readOnly: true
-            {{- range $key, $value := .Values.jwtKeys }}
-            - name: {{ include "soteria.fullname" $ }}-jwt-keys
-              mountPath: "{{ $.Values.authEnvs.jwt_keys_path }}{{ $key }}"
-              subPath: {{ $key }}
-              readOnly: true
-            {{ end }}
       volumes:
         - name: configuration
           configMap:
             defaultMode: 0440
             name: {{ include "soteria.fullname" . }}
-        - name: {{ include "soteria.fullname" . }}-jwt-keys
-          secret:
-            secretName: {{ include "soteria.fullname" . }}-jwt-keys
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30

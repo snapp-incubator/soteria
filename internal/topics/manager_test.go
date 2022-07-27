@@ -130,7 +130,7 @@ func TestTopic_GetType(t *testing.T) {
 		},
 	}
 
-	cfg := config.New()
+	cfg := config.SnappVendor()
 
 	hid := &snappids.HashIDSManager{
 		Salts: map[snappids.Audience]string{
