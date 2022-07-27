@@ -34,8 +34,8 @@ func (a API) ACL(c *fiber.Ctx) error {
 				zap.String("access", request.Access.String()),
 				zap.String("topic", request.Topic),
 				zap.String("token", request.Token),
-				zap.String("username", request.Password),
-				zap.String("password", request.Username),
+				zap.String("username", request.Username),
+				zap.String("password", request.Password),
 			)
 
 		return c.Status(http.StatusBadRequest).SendString("bad request")
@@ -55,8 +55,8 @@ func (a API) ACL(c *fiber.Ctx) error {
 		attribute.String("access", request.Access.String()),
 		attribute.String("topic", request.Topic),
 		attribute.String("token", request.Token),
-		attribute.String("username", request.Password),
-		attribute.String("password", request.Username),
+		attribute.String("username", request.Username),
+		attribute.String("password", request.Password),
 	)
 
 	topic := request.Topic
@@ -87,8 +87,8 @@ func (a API) ACL(c *fiber.Ctx) error {
 			zap.String("access", request.Access.String()),
 			zap.String("topic", request.Topic),
 			zap.String("token", request.Token),
-			zap.String("username", request.Password),
-			zap.String("password", request.Username),
+			zap.String("username", request.Username),
+			zap.String("password", request.Password),
 		)
 
 	return c.Status(http.StatusOK).SendString("ok")

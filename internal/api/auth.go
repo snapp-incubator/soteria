@@ -45,8 +45,8 @@ func (a API) Auth(c *fiber.Ctx) error {
 
 	span.SetAttributes(
 		attribute.String("token", request.Token),
-		attribute.String("username", request.Password),
-		attribute.String("password", request.Username),
+		attribute.String("username", request.Username),
+		attribute.String("password", request.Password),
 	)
 
 	if err := a.Authenticator(request.Password).Auth(tokenString); err != nil {
@@ -56,8 +56,8 @@ func (a API) Auth(c *fiber.Ctx) error {
 			Error("auth request is not authorized",
 				zap.Error(err),
 				zap.String("token", request.Token),
-				zap.String("username", request.Password),
-				zap.String("password", request.Username),
+				zap.String("username", request.Username),
+				zap.String("password", request.Password),
 			)
 
 		return c.Status(http.StatusUnauthorized).SendString("request is not authorized")
@@ -66,8 +66,8 @@ func (a API) Auth(c *fiber.Ctx) error {
 	a.Logger.
 		Info("auth ok",
 			zap.String("token", request.Token),
-			zap.String("username", request.Password),
-			zap.String("password", request.Username),
+			zap.String("username", request.Username),
+			zap.String("password", request.Password),
 		)
 
 	return c.Status(http.StatusOK).SendString("ok")
