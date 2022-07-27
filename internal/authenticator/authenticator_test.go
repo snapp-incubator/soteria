@@ -118,7 +118,7 @@ func (suite *AuthenticatorTestSuite) SetupSuite() {
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
-		TopicManager:       topics.NewTopicManager(config.Default().Topics, hid, "snapp"),
+		TopicManager:       topics.NewTopicManager(config.SnappVendor().Topics, hid, "snapp"),
 	}
 }
 
@@ -348,7 +348,7 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 		},
 	}
 
-	cfg := config.New()
+	cfg := config.SnappVendor()
 
 	// nolint: exhaustruct
 	authenticator := authenticator.Authenticator{
