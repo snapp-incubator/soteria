@@ -2,12 +2,12 @@ package api
 
 import (
 	"errors"
+	"go.opentelemetry.io/otel/attribute"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
-	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
 
@@ -51,17 +51,19 @@ func (a API) ACL(c *fiber.Ctx) error {
 		tokenString = request.Password
 	}
 
+	topic := request.Topic
+	auth := a.Authenticator(request.Password)
+
 	span.SetAttributes(
 		attribute.String("access", request.Access.String()),
 		attribute.String("topic", request.Topic),
 		attribute.String("token", request.Token),
 		attribute.String("username", request.Username),
 		attribute.String("password", request.Password),
+		attribute.String("authenticator", auth.Company),
 	)
 
-	topic := request.Topic
-
-	ok, err := a.Authenticator(request.Password).ACL(request.Access, tokenString, topic)
+	ok, err := auth.ACL(request.Access, tokenString, topic)
 	if err != nil || !ok {
 		if err != nil {
 			span.RecordError(err)
@@ -72,11 +74,13 @@ func (a API) ACL(c *fiber.Ctx) error {
 		if errors.As(err, &tnaErr) {
 			a.Logger.
 				Warn("acl request is not authorized",
-					zap.Error(tnaErr))
+					zap.Error(tnaErr),
+					zap.String("authenticator", auth.Company))
 		} else {
 			a.Logger.
 				Error("acl request is not authorized",
-					zap.Error(err))
+					zap.Error(err),
+					zap.String("authenticator", auth.Company))
 		}
 
 		return c.Status(http.StatusUnauthorized).SendString("request is not authorized")
@@ -89,6 +93,7 @@ func (a API) ACL(c *fiber.Ctx) error {
 			zap.String("token", request.Token),
 			zap.String("username", request.Username),
 			zap.String("password", request.Password),
+			zap.String("authenticator", auth.Company),
 		)
 
 	return c.Status(http.StatusOK).SendString("ok")
