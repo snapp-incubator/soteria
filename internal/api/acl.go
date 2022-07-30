@@ -75,11 +75,23 @@ func (a API) ACL(c *fiber.Ctx) error {
 			a.Logger.
 				Warn("acl request is not authorized",
 					zap.Error(tnaErr),
+					zap.String("access", request.Access.String()),
+					zap.String("topic", request.Topic),
+					zap.String("token", request.Token),
+					zap.String("username", request.Username),
+					zap.String("password", request.Password),
+					zap.String("authenticator", auth.Company),
 					zap.String("authenticator", auth.Company))
 		} else {
 			a.Logger.
 				Error("acl request is not authorized",
 					zap.Error(err),
+					zap.String("access", request.Access.String()),
+					zap.String("topic", request.Topic),
+					zap.String("token", request.Token),
+					zap.String("username", request.Username),
+					zap.String("password", request.Password),
+					zap.String("authenticator", auth.Company),
 					zap.String("authenticator", auth.Company))
 		}
 
