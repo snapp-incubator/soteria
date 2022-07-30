@@ -37,6 +37,7 @@ for production deployments on Cloud (okd).
 
 # Add Vendor
 Soteria is a multivendor authenticator for EMQX. to add a vendor for authentication, go to chart directory and in the`values.yaml`, add the following template named after the desired vendor:
+
 ```yaml
 snapp:
   company: "snapp"
@@ -61,8 +62,9 @@ snapp:
 
 # Generate JWT Token
 replace `driver` and `0` for issuer and id respectively.
-```curl
-curl -s -u 'admin:admin' -L https://doago-snapp-ode-020.apps.private.teh-1.snappcloud.io/api/snapp/driver/0
+
+```sh
+curl -s -u 'admin:admin' -L https://doago-snapp-ode-020.apps.private.teh-1.snappcloud.io/api/snapp/driver/0  | jq '.Token' -r
 ```
 
 # Folder Structure
