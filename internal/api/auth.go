@@ -1,13 +1,12 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
-	"net/http"
 )
-
-const VendorTokenSeparator = ":"
 
 // authRequest is the body payload structure of the auth endpoint.
 type authRequest struct {
