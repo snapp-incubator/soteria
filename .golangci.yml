@@ -13,3 +13,6 @@ linters:
     - golint
     - interfacer
     - exhaustivestruct
+run:
+  skip-files:
+    - ".*_test.go"
