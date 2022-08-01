@@ -1,6 +1,9 @@
-package api
+package api_test
 
-import "testing"
+import (
+	"gitlab.snapp.ir/dispatching/soteria/internal/api"
+	"testing"
+)
 
 func TestExtractVendorToken(t *testing.T) {
 	type fields struct {
@@ -57,7 +60,7 @@ func TestExtractVendorToken(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			vendor, token := ExtractVendorToken(tt.fields.Token, tt.fields.Username, tt.fields.Password)
+			vendor, token := api.ExtractVendorToken(tt.fields.Token, tt.fields.Username, tt.fields.Password)
 			if vendor != tt.vendor {
 				t.Errorf("ExtractVendorToken() vendor = %v, vendor %v", vendor, tt.vendor)
 			}

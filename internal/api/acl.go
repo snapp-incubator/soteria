@@ -2,12 +2,13 @@ package api
 
 import (
 	"errors"
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 // aclRequest is the body payload structure of the ACL endpoint.
