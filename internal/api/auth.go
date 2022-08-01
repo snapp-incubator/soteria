@@ -1,12 +1,13 @@
 package api
 
 import (
-	"net/http"
-
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
+	"net/http"
 )
+
+const VendorTokenSeparator = ":"
 
 // authRequest is the body payload structure of the auth endpoint.
 type authRequest struct {
@@ -34,16 +35,9 @@ func (a API) Auth(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).SendString("bad request")
 	}
 
-	tokenString := request.Token
-	if len(tokenString) == 0 {
-		tokenString = request.Username
-	}
+	vendor, token := ExtractVendorToken(request.Token, request.Username, request.Password)
 
-	if len(tokenString) == 0 {
-		tokenString = request.Password
-	}
-
-	authenticator := a.Authenticator(request.Password)
+	authenticator := a.Authenticator(vendor)
 
 	span.SetAttributes(
 		attribute.String("token", request.Token),
@@ -52,7 +46,7 @@ func (a API) Auth(c *fiber.Ctx) error {
 		attribute.String("authenticator", authenticator.Company),
 	)
 
-	if err := authenticator.Auth(tokenString); err != nil {
+	if err := authenticator.Auth(token); err != nil {
 		span.RecordError(err)
 
 		a.Logger.
