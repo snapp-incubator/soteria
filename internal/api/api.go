@@ -1,6 +1,8 @@
 package api
 
 import (
+	"strings"
+
 	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/contrib/fiberzap"
 	"github.com/gofiber/fiber/v2"
@@ -8,6 +10,8 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
+
+const VendorTokenSeparator = ":"
 
 type API struct {
 	Authenticators map[string]*authenticator.Authenticator
@@ -50,4 +54,29 @@ func (a API) Authenticator(vendor string) *authenticator.Authenticator {
 	}
 
 	return a.Authenticators[authenticator.DefaultVendor]
+}
+
+func ExtractVendorToken(rawToken, username, password string) (string, string) {
+	split := strings.Split(username, VendorTokenSeparator)
+
+	var vendor, usernameToken string
+
+	if len(split) == 2 { //nolint:gomnd
+		vendor = split[0]
+		usernameToken = split[1]
+	} else {
+		vendor = ""
+		usernameToken = split[0]
+	}
+
+	tokenString := rawToken
+	if len(tokenString) == 0 {
+		tokenString = usernameToken
+	}
+
+	if len(tokenString) == 0 {
+		tokenString = password
+	}
+
+	return vendor, tokenString
 }

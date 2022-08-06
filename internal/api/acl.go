@@ -41,18 +41,10 @@ func (a API) ACL(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).SendString("bad request")
 	}
 
-	tokenString := request.Token
-
-	if len(request.Token) == 0 {
-		tokenString = request.Username
-	}
-
-	if len(tokenString) == 0 {
-		tokenString = request.Password
-	}
+	vendor, token := ExtractVendorToken(request.Token, request.Username, request.Password)
 
 	topic := request.Topic
-	auth := a.Authenticator(request.Password)
+	auth := a.Authenticator(vendor)
 
 	span.SetAttributes(
 		attribute.String("access", request.Access.String()),
@@ -63,7 +55,7 @@ func (a API) ACL(c *fiber.Ctx) error {
 		attribute.String("authenticator", auth.Company),
 	)
 
-	ok, err := auth.ACL(request.Access, tokenString, topic)
+	ok, err := auth.ACL(request.Access, token, topic)
 	if err != nil || !ok {
 		if err != nil {
 			span.RecordError(err)
