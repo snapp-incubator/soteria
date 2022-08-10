@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"gitlab.snapp.ir/dispatching/snappids/v2"
-	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
@@ -17,7 +16,7 @@ func TestTopic_GetType(t *testing.T) {
 	tests := []struct {
 		name   string
 		arg    string
-		issuer user.Issuer
+		issuer string
 		want   string
 	}{
 		{
@@ -145,10 +144,7 @@ func TestTopic_GetType(t *testing.T) {
 		},
 	}
 	// nolint: exhaustruct
-	auth := authenticator.Authenticator{
-		Company:      "snapp",
-		TopicManager: topics.NewTopicManager(cfg.Topics, hid, "snapp"),
-	}
+	topicManager := topics.NewTopicManager(cfg.Topics, hid, "snapp")
 
 	sub := "DXKgaNQa7N5Y7bo"
 
@@ -158,8 +154,7 @@ func TestTopic_GetType(t *testing.T) {
 			t.Parallel()
 
 			topic := tc.arg
-			audience, audienceStr := topics.IssuerToAudience(tc.issuer)
-			topicTemplate := auth.TopicManager.ValidateTopic(topic, audienceStr, audience, sub)
+			topicTemplate := topicManager.ValidateTopic(topic, tc.issuer, sub)
 			if topicTemplate != nil {
 				if len(tc.want) == 0 {
 					t.Errorf("topic %s is invalid, must throw error.", tc.arg)
