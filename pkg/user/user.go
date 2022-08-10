@@ -4,7 +4,7 @@ package user
 type Issuer string
 
 const (
-	Driver    Issuer = "0"
-	Passenger Issuer = "1"
-	None      Issuer = "-1"
+	Driver    string = "0"
+	Passenger string = "1"
+	None      string = "-1"
 )

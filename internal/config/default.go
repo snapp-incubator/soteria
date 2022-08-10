@@ -53,8 +53,8 @@ func SnappVendor() Vendor {
 				Template: "^{{.audience}}-event-{{.hashId}}$",
 				HashType: topics.MD5,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Sub,
-					topics.Passenger: acl.Sub,
+					topics.DriverIss:    acl.Sub,
+					topics.PassengerIss: acl.Sub,
 				},
 			},
 			{
@@ -62,8 +62,8 @@ func SnappVendor() Vendor {
 				Template: "^{{.company}}/driver/{{.hashId}}/location$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Pub,
-					topics.Passenger: acl.None,
+					topics.DriverIss:    acl.Pub,
+					topics.PassengerIss: acl.None,
 				},
 			},
 			{
@@ -71,8 +71,8 @@ func SnappVendor() Vendor {
 				Template: "^{{.company}}/passenger/{{.hashId}}/location$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Pub,
-					topics.Passenger: acl.Pub,
+					topics.DriverIss:    acl.Pub,
+					topics.PassengerIss: acl.Pub,
 				},
 			},
 			{
@@ -80,8 +80,8 @@ func SnappVendor() Vendor {
 				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/superapp$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Sub,
-					topics.Passenger: acl.Sub,
+					topics.DriverIss:    acl.Sub,
+					topics.PassengerIss: acl.Sub,
 				},
 			},
 			{
@@ -89,8 +89,8 @@ func SnappVendor() Vendor {
 				Template: "^bucks$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.None,
-					topics.Passenger: acl.None,
+					topics.DriverIss:    acl.None,
+					topics.PassengerIss: acl.None,
 				},
 			},
 			{
@@ -98,8 +98,8 @@ func SnappVendor() Vendor {
 				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/{{.peer}}-location$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Sub,
-					topics.Passenger: acl.Sub,
+					topics.DriverIss:    acl.Sub,
+					topics.PassengerIss: acl.Sub,
 				},
 			},
 			{
@@ -107,8 +107,8 @@ func SnappVendor() Vendor {
 				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/chat$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Sub,
-					topics.Passenger: acl.Sub,
+					topics.DriverIss:    acl.Sub,
+					topics.PassengerIss: acl.Sub,
 				},
 			},
 			{
@@ -116,8 +116,8 @@ func SnappVendor() Vendor {
 				Template: "^shared/{{.company}}/{{.audience}}/{{.hashId}}/call/send$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Pub,
-					topics.Passenger: acl.Pub,
+					topics.DriverIss:    acl.Pub,
+					topics.PassengerIss: acl.Pub,
 				},
 			},
 			{
@@ -125,8 +125,8 @@ func SnappVendor() Vendor {
 				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/call/[a-zA-Z0-9-_]+/send$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Pub,
-					topics.Passenger: acl.Pub,
+					topics.DriverIss:    acl.Pub,
+					topics.PassengerIss: acl.Pub,
 				},
 			},
 			{
@@ -134,8 +134,8 @@ func SnappVendor() Vendor {
 				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/call/receive$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Sub,
-					topics.Passenger: acl.Sub,
+					topics.DriverIss:    acl.Sub,
+					topics.PassengerIss: acl.Sub,
 				},
 			},
 		},
