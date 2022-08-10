@@ -40,7 +40,7 @@ func (err TopicNotAllowedError) Error() string {
 }
 
 type PublicKeyNotFoundError struct {
-	Issuer user.Issuer
+	Issuer string
 }
 
 func (err PublicKeyNotFoundError) Error() string {
@@ -57,7 +57,7 @@ func (err InvalidTopicError) Error() string {
 
 // Authenticator is responsible for Acl/Auth/Token of users.
 type Authenticator struct {
-	PublicKeys         map[user.Issuer]*rsa.PublicKey
+	PublicKeys         map[string]*rsa.PublicKey
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       topics.Manager
 	Company            string
@@ -79,7 +79,7 @@ func (a Authenticator) Auth(tokenString string) error {
 			return nil, ErrIssNotFound
 		}
 
-		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
+		issuer := fmt.Sprintf("%v", claims["iss"])
 
 		key := a.PublicKeys[issuer]
 		if key == nil {
@@ -122,7 +122,7 @@ func (a Authenticator) ACL(
 			return nil, ErrSubNotFound
 		}
 
-		issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
+		issuer := fmt.Sprintf("%v", claims["iss"])
 		key := a.PublicKeys[issuer]
 		if key == nil {
 			return nil, PublicKeyNotFoundError{Issuer: issuer}
