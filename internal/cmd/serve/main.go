@@ -16,7 +16,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
@@ -68,7 +67,7 @@ func (s Serve) Authenticators() map[string]*authenticator.Authenticator {
 	all := make(map[string]*authenticator.Authenticator)
 
 	for _, vendor := range s.Cfg.Vendors {
-		publicKeys := s.PublicKeys(vendor.DriverKey, vendor.PassengerKey)
+		publicKeys := s.PublicKeys(vendor.Keys)
 		hid := HIDManager(vendor.DriverSalt, vendor.DriverHashLength, vendor.PassengerSalt, vendor.PassengerHashLength)
 		allowedAccessTypes := s.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
 
@@ -103,21 +102,19 @@ func HIDManager(
 	}
 }
 
-func (s Serve) PublicKeys(driverKey, passengerKey string) map[user.Issuer]*rsa.PublicKey {
-	driverPublicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(driverKey))
-	if err != nil {
-		s.Logger.Fatal("could not read driver public key")
+func (s Serve) PublicKeys(keys map[string]string) map[string]*rsa.PublicKey {
+	rsaKeys := make(map[string]*rsa.PublicKey)
+
+	for iss, publicKey := range keys {
+		rsaKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicKey))
+		if err != nil {
+			s.Logger.Fatal("could not read public key", zap.String("issuer", iss))
+		}
+
+		rsaKeys[iss] = rsaKey
 	}
 
-	passengerPublicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(passengerKey))
-	if err != nil {
-		s.Logger.Fatal("could not read passenger public key")
-	}
-
-	return map[user.Issuer]*rsa.PublicKey{
-		user.Driver:    driverPublicKey,
-		user.Passenger: passengerPublicKey,
-	}
+	return rsaKeys
 }
 
 // GetAllowedAccessTypes will return all allowed access types in Soteria.
