@@ -31,7 +31,10 @@ const (
 
 const (
 	Driver    string = "driver"
-	Passenger string = "passenger"
+	DriverIss string = "0"
+
+	Passenger    string = "passenger"
+	PassengerIss string = "1"
 )
 
 // EmqCabHashPrefix is the default prefix for hashing part of cab topic, default value is 'emqch'.
@@ -67,7 +70,9 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 }
 
 // ValidateTopic checks if a topic is valid based on the given parameters.
-func (t Manager) ValidateTopic(topic string, audienceStr string, audience snappids.Audience, sub string) *Template {
+func (t Manager) ValidateTopic(topic, iss, sub string) *Template {
+	audience, audienceStr := IssuerToAudience(iss)
+
 	fields := make(map[string]string)
 	fields["audience"] = audienceStr
 	fields["company"] = t.Company
@@ -115,7 +120,7 @@ func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audi
 }
 
 // IssuerToAudience returns corresponding audience in snappids form.
-func IssuerToAudience(issuer user.Issuer) (snappids.Audience, string) {
+func IssuerToAudience(issuer string) (snappids.Audience, string) {
 	switch issuer {
 	case user.Passenger:
 		return snappids.PassengerAudience, Passenger
