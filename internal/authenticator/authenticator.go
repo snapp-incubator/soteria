@@ -8,7 +8,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 )
 
 const DefaultVendor = "snapp"
@@ -26,7 +25,7 @@ var (
 )
 
 type TopicNotAllowedError struct {
-	Issuer     user.Issuer
+	Issuer     string
 	Sub        string
 	AccessType acl.AccessType
 	Topic      string
@@ -143,7 +142,7 @@ func (a Authenticator) ACL(
 		return false, ErrIssNotFound
 	}
 
-	issuer := user.Issuer(fmt.Sprintf("%v", claims["iss"]))
+	issuer := fmt.Sprintf("%v", claims["iss"])
 
 	if claims["sub"] == nil {
 		return false, ErrSubNotFound
@@ -151,14 +150,12 @@ func (a Authenticator) ACL(
 
 	sub, _ := claims["sub"].(string)
 
-	audience, audienceStr := topics.IssuerToAudience(issuer)
-
-	topicTemplate := a.TopicManager.ValidateTopic(topic, audienceStr, audience, sub)
+	topicTemplate := a.TopicManager.ValidateTopic(topic, issuer, sub)
 	if topicTemplate == nil {
 		return false, InvalidTopicError{Topic: topic}
 	}
 
-	if !topicTemplate.HasAccess(audienceStr, accessType) {
+	if !topicTemplate.HasAccess(issuer, accessType) {
 		return false, TopicNotAllowedError{
 			issuer,
 			sub,
