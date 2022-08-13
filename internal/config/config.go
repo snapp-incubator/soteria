@@ -39,7 +39,7 @@ type (
 		Company             string            `koanf:"company"`
 		Topics              []topics.Topic    `koanf:"topics"`
 		Keys                map[string]string `koanf:"keys"`
-		IssMapper           map[string]string `koanf:"iss_mapper"`
+		IssEntityMap        map[string]string `koanf:"iss_entity_map"`
 	}
 )
 
