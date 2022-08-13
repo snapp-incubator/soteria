@@ -5,7 +5,6 @@ package topics
 
 import (
 	"crypto/md5" // nolint: gosec
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -39,8 +38,6 @@ const (
 
 // EmqCabHashPrefix is the default prefix for hashing part of cab topic, default value is 'emqch'.
 const EmqCabHashPrefix = "emqch"
-
-var ErrDecodeHashID = errors.New("could not decode hash id")
 
 type Manager struct {
 	HashIDSManager *snappids.HashIDSManager
