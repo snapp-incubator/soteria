@@ -54,23 +54,10 @@ type Manager struct {
 }
 
 // NewTopicManager returns a topic manager to validate topics.
-func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, company string, issEntityMap, issPeerMap map[string]string) Manager {
-	templates := make([]Template, 0)
-
-	for _, topic := range topicList {
-		each := Template{
-			Type:     topic.Type,
-			Template: template.Must(template.New(topic.Type).Parse(topic.Template)),
-			HashType: topic.HashType,
-			Accesses: topic.Accesses,
-		}
-		templates = append(templates, each)
-	}
-
-	manager := Manager{
+func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, company string, issEntityMap, issPeerMap map[string]string) *Manager {
+	manager := &Manager{
 		HashIDSManager: hashIDManager,
 		Company:        company,
-		TopicTemplates: templates,
 		IssEntityMap:   issEntityMap,
 		IssPeerMap:     issPeerMap,
 	}
@@ -81,6 +68,20 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 		"IssToSnappID": manager.IssToSnappID,
 		"IssToPeer":    manager.IssPeerMapper,
 	}
+
+	templates := make([]Template, 0)
+
+	for _, topic := range topicList {
+		each := Template{
+			Type:     topic.Type,
+			Template: template.Must(template.New(topic.Type).Funcs(manager.Functions).Parse(topic.Template)),
+			HashType: topic.HashType,
+			Accesses: topic.Accesses,
+		}
+		templates = append(templates, each)
+	}
+
+	manager.TopicTemplates = templates
 
 	return manager
 }
@@ -99,7 +100,7 @@ func (t Manager) ValidateTopic(topic, iss, sub string) *Template {
 
 		regex := new(strings.Builder)
 
-		err := topicTemplate.Template.Funcs(t.Functions).Execute(regex, fields)
+		err := topicTemplate.Template.Execute(regex, fields)
 		if err != nil {
 			return nil
 		}
