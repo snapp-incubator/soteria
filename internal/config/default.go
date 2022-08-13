@@ -95,7 +95,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.SharedLocation,
-				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/{{IssToPeer .iss}}-location$",
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/{{IssToPeer .iss}}-location$", //nolint:lll
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Sub,
@@ -122,7 +122,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.NodeCallEntry,
-				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/[a-zA-Z0-9-_]+/send$",
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/[a-zA-Z0-9-_]+/send$", //nolint: lll
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Pub,

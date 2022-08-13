@@ -13,7 +13,7 @@ const (
 )
 
 func (a AccessType) String() string {
-	switch a { // nolint:exhaustive
+	switch a { //nolint:exhaustive
 	case Sub:
 		return "subscribe"
 	case Pub:
