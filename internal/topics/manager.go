@@ -145,20 +145,6 @@ func (t *Manager) IssPeerMapper(iss string) string {
 	return iss
 }
 
-// IssuerToAudience returns corresponding audience in snappids form.
-func IssuerToAudience(issuer string) (snappids.Audience, string) {
-	switch issuer {
-	case user.Passenger:
-		return snappids.PassengerAudience, Passenger
-	case user.Driver:
-		return snappids.DriverAudience, Driver
-	case user.None:
-		fallthrough
-	default:
-		return -1, ""
-	}
-}
-
 // IssToSnappID returns corresponding audience in snappids form.
 func (t *Manager) IssToSnappID(iss string) snappids.Audience {
 	switch iss {
@@ -170,16 +156,5 @@ func (t *Manager) IssToSnappID(iss string) snappids.Audience {
 		fallthrough
 	default:
 		return -1
-	}
-}
-
-func peerOfAudience(audience string) string {
-	switch audience {
-	case Driver:
-		return Passenger
-	case Passenger:
-		return Driver
-	default:
-		return ""
 	}
 }
