@@ -151,6 +151,20 @@ func IssuerToAudience(issuer string) (snappids.Audience, string) {
 	}
 }
 
+// IssuerToSnappID returns corresponding audience in snappids form.
+func IssuerToSnappID(issuer string) snappids.Audience {
+	switch issuer {
+	case user.Passenger:
+		return snappids.PassengerAudience
+	case user.Driver:
+		return snappids.DriverAudience
+	case user.None:
+		fallthrough
+	default:
+		return -1
+	}
+}
+
 func peerOfAudience(audience string) string {
 	switch audience {
 	case Driver:
