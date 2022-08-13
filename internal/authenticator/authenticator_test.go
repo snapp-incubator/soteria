@@ -111,14 +111,15 @@ func (suite *AuthenticatorTestSuite) SetupSuite() {
 		},
 	}
 
+	cfg := config.SnappVendor()
 	suite.Authenticator = authenticator.Authenticator{
-		PublicKeys: map[user.Issuer]*rsa.PublicKey{
+		PublicKeys: map[string]*rsa.PublicKey{
 			user.Driver:    pkey0,
 			user.Passenger: pkey1,
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
-		TopicManager:       topics.NewTopicManager(config.SnappVendor().Topics, hid, "snapp"),
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssMapper),
 	}
 }
 
@@ -354,13 +355,11 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 	authenticator := authenticator.Authenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",
-		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp"),
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssMapper),
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
-		audience, audienceStr := topics.IssuerToAudience(user.Driver)
-		topicTemplate := authenticator.TopicManager.ValidateTopic(
-			validDriverCabEventTopic, audienceStr, audience, "DXKgaNQa7N5Y7bo")
+		topicTemplate := authenticator.TopicManager.ValidateTopic(validDriverCabEventTopic, user.Driver, "DXKgaNQa7N5Y7bo")
 		assert.True(t, topicTemplate != nil)
 	})
 }
@@ -456,7 +455,7 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 }
 
 // nolint: goerr113, wrapcheck
-func (suite *AuthenticatorTestSuite) getPublicKey(u user.Issuer) (*rsa.PublicKey, error) {
+func (suite *AuthenticatorTestSuite) getPublicKey(u string) (*rsa.PublicKey, error) {
 	var fileName string
 
 	switch u {
@@ -484,7 +483,7 @@ func (suite *AuthenticatorTestSuite) getPublicKey(u user.Issuer) (*rsa.PublicKey
 }
 
 // nolint: goerr113, wrapcheck
-func (suite *AuthenticatorTestSuite) getPrivateKey(u user.Issuer) (*rsa.PrivateKey, error) {
+func (suite *AuthenticatorTestSuite) getPrivateKey(u string) (*rsa.PrivateKey, error) {
 	var fileName string
 
 	switch u {
@@ -511,7 +510,7 @@ func (suite *AuthenticatorTestSuite) getPrivateKey(u user.Issuer) (*rsa.PrivateK
 	return privateKey, nil
 }
 
-func (suite *AuthenticatorTestSuite) getSampleToken(issuer user.Issuer, isSuperuser bool) (string, error) {
+func (suite *AuthenticatorTestSuite) getSampleToken(issuer string, isSuperuser bool) (string, error) {
 	key, err := suite.getPrivateKey(issuer)
 	if err != nil {
 		suite.Require().NoError(err)
