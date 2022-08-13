@@ -49,6 +49,8 @@ type Manager struct {
 	IssEntityMap   map[string]string
 	IssPeerMap     map[string]string
 	Functions      template.FuncMap
+
+	currentIss string
 }
 
 // NewTopicManager returns a topic manager to validate topics.
@@ -76,7 +78,7 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 	manager.Functions = template.FuncMap{
 		"IssToEntity":  manager.IssEntityMapper,
 		"HashID":       manager.getHashID,
-		"IssToSnappID": IssToSnappID,
+		"IssToSnappID": manager.IssToSnappID,
 		"IssToPeer":    manager.IssPeerMapper,
 	}
 
@@ -89,6 +91,8 @@ func (t Manager) ValidateTopic(topic, iss, sub string) *Template {
 	fields["iss"] = iss
 	fields["company"] = t.Company
 	fields["sub"] = sub
+
+	t.currentIss = iss
 
 	for _, topicTemplate := range t.TopicTemplates {
 		fields["hashType"] = topicTemplate.HashType
@@ -126,7 +130,9 @@ func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audi
 	return sub
 }
 
-func (t Manager) IssEntityMapper(iss string) string {
+func (t Manager) IssEntityMapper() string {
+	iss := t.currentIss
+
 	result, ok := t.IssEntityMap[iss]
 	if ok {
 		return result
@@ -135,7 +141,9 @@ func (t Manager) IssEntityMapper(iss string) string {
 	return iss
 }
 
-func (t Manager) IssPeerMapper(iss string) string {
+func (t Manager) IssPeerMapper() string {
+	iss := t.currentIss
+
 	result, ok := t.IssPeerMap[iss]
 	if ok {
 		return result
@@ -159,8 +167,8 @@ func IssuerToAudience(issuer string) (snappids.Audience, string) {
 }
 
 // IssToSnappID returns corresponding audience in snappids form.
-func IssToSnappID(issuer string) snappids.Audience {
-	switch issuer {
+func (t Manager) IssToSnappID() snappids.Audience {
+	switch t.currentIss {
 	case user.Passenger:
 		return snappids.PassengerAudience
 	case user.Driver:
