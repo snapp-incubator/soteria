@@ -144,7 +144,7 @@ func TestTopic_GetType(t *testing.T) {
 		},
 	}
 	// nolint: exhaustruct
-	topicManager := topics.NewTopicManager(cfg.Topics, hid, "snapp")
+	topicManager := topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssMapper)
 
 	sub := "DXKgaNQa7N5Y7bo"
 
