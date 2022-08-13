@@ -154,7 +154,7 @@ func TestTopic_GetType(t *testing.T) {
 			t.Parallel()
 
 			topic := tc.arg
-			topicTemplate := topicManager.ValidateTopic(topic, tc.issuer, sub)
+			topicTemplate := topicManager.ParseTopic(topic, tc.issuer, sub)
 			if topicTemplate != nil {
 				if len(tc.want) == 0 {
 					t.Errorf("topic %s is invalid, must throw error.", tc.arg)
