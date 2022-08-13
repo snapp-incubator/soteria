@@ -40,6 +40,7 @@ type (
 		Topics              []topics.Topic    `koanf:"topics"`
 		Keys                map[string]string `koanf:"keys"`
 		IssEntityMap        map[string]string `koanf:"iss_entity_map"`
+		IssPeerMap          map[string]string `koanf:"iss_peer_map"`
 	}
 )
 
