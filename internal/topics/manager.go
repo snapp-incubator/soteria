@@ -86,8 +86,8 @@ func NewTopicManager(
 	return manager
 }
 
-// ValidateTopic checks if a topic is valid based on the given parameters.
-func (t *Manager) ValidateTopic(topic, iss, sub string) *Template {
+// ParseTopic checks if a topic is valid based on the given parameters.
+func (t *Manager) ParseTopic(topic, iss, sub string) *Template {
 	fields := make(map[string]any)
 	fields["iss"] = iss
 	fields["company"] = t.Company
