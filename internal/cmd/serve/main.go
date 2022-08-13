@@ -46,7 +46,7 @@ func (s Serve) main() {
 // Register serve command.
 func (s Serve) Register(root *cobra.Command) {
 	root.AddCommand(
-		// nolint: exhaustruct
+		//nolint: exhaustruct
 		&cobra.Command{
 			Use:   "serve",
 			Short: "serve runs the application",

@@ -4,7 +4,7 @@
 package topics
 
 import (
-	"crypto/md5" // nolint: gosec
+	"crypto/md5" //nolint: gosec
 	"fmt"
 	"regexp"
 	"strconv"
@@ -49,8 +49,13 @@ type Manager struct {
 }
 
 // NewTopicManager returns a topic manager to validate topics.
-func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, company string, issEntityMap, issPeerMap map[string]string) *Manager {
-	manager := &Manager{
+func NewTopicManager(
+	topicList []Topic,
+	hashIDManager *snappids.HashIDSManager,
+	company string,
+	issEntityMap, issPeerMap map[string]string,
+) *Manager {
+	manager := &Manager{ //nolint: exhaustruct
 		HashIDSManager: hashIDManager,
 		Company:        company,
 		IssEntityMap:   issEntityMap,
@@ -116,7 +121,7 @@ func (t *Manager) getHashID(hashType HashType, sub string, audience snappids.Aud
 			return ""
 		}
 
-		hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", EmqCabHashPrefix, strconv.Itoa(id)))) // nolint:gosec
+		hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", EmqCabHashPrefix, strconv.Itoa(id)))) //nolint:gosec
 
 		return fmt.Sprintf("%x", hid)
 	}
