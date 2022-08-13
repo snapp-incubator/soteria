@@ -160,7 +160,7 @@ VOiWB1hv9Uc0C5laffGAub7fj+EAI02zlrsNDxYW8vyF2H47N7VWcvgd3RhZpxlG
 zQIDAQAB
 -----END PUBLIC KEY-----`,
 		},
-		IssMapper: map[string]string{
+		IssEntityMap: map[string]string{
 			"0": "driver",
 			"1": "passenger",
 		},
