@@ -77,7 +77,7 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 		"IssToEntity":  manager.IssEntityMapper,
 		"HashID":       manager.getHashID,
 		"IssToSnappID": IssuerToSnappID,
-		"IssToPeer":    peerOfAudience,
+		"IssToPeer":    manager.IssPeerMapper,
 	}
 
 	return manager
@@ -135,6 +135,15 @@ func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audi
 
 func (t Manager) IssEntityMapper(iss string) string {
 	result, ok := t.IssEntityMap[iss]
+	if ok {
+		return result
+	}
+
+	return iss
+}
+
+func (t Manager) IssPeerMapper(iss string) string {
+	result, ok := t.IssPeerMap[iss]
 	if ok {
 		return result
 	}
