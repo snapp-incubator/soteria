@@ -359,7 +359,7 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
-		topicTemplate := authenticator.TopicManager.ValidateTopic(validDriverCabEventTopic, user.Driver, "DXKgaNQa7N5Y7bo")
+		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, user.Driver, "DXKgaNQa7N5Y7bo")
 		assert.True(t, topicTemplate != nil)
 	})
 }

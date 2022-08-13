@@ -150,7 +150,7 @@ func (a Authenticator) ACL(
 
 	sub, _ := claims["sub"].(string)
 
-	topicTemplate := a.TopicManager.ValidateTopic(topic, issuer, sub)
+	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub)
 	if topicTemplate == nil {
 		return false, InvalidTopicError{Topic: topic}
 	}
