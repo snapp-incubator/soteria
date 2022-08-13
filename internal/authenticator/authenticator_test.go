@@ -119,7 +119,7 @@ func (suite *AuthenticatorTestSuite) SetupSuite() {
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
-		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap),
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap),
 	}
 }
 
@@ -355,7 +355,7 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 	authenticator := authenticator.Authenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",
-		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap),
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap),
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
