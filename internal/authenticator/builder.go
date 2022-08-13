@@ -28,7 +28,7 @@ func (b Builder) Authenticators() map[string]*Authenticator {
 			PublicKeys:         publicKeys,
 			AllowedAccessTypes: allowedAccessTypes,
 			Company:            vendor.Company,
-			TopicManager:       topics.NewTopicManager(vendor.Topics, hid, vendor.Company),
+			TopicManager:       topics.NewTopicManager(vendor.Topics, hid, vendor.Company, vendor.IssMapper),
 		}
 
 		all[vendor.Company] = auth
