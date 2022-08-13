@@ -93,16 +93,13 @@ func (t Manager) ValidateTopic(topic, iss, sub string) *Template {
 	fields["peer"] = peerOfAudience(audienceStr)
 
 	for _, topicTemplate := range t.TopicTemplates {
-		hashID, err := t.getHashID(topicTemplate.HashType, sub, audience)
-		if err != nil {
-			return nil
-		}
+		hashID := t.getHashID(topicTemplate.HashType, sub, audience)
 
 		fields["hashId"] = hashID
 
 		regex := new(strings.Builder)
 
-		err = topicTemplate.Template.Execute(regex, fields)
+		err := topicTemplate.Template.Execute(regex, fields)
 		if err != nil {
 			return nil
 		}
@@ -118,19 +115,19 @@ func (t Manager) ValidateTopic(topic, iss, sub string) *Template {
 // getHashID calculate hashID based on hashType.
 // most of the topics have hashID type for their hashIDs but some old topics have different hashTypes.
 // if hashType is equal to hashID, sub is returned without any changes.
-func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audience) (string, error) {
+func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audience) string {
 	if hashType == MD5 {
 		id, err := t.HashIDSManager.DecodeHashID(sub, audience)
 		if err != nil {
-			return "", ErrDecodeHashID
+			return ""
 		}
 
 		hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", EmqCabHashPrefix, strconv.Itoa(id)))) // nolint:gosec
 
-		return fmt.Sprintf("%x", hid), nil
+		return fmt.Sprintf("%x", hid)
 	}
 
-	return sub, nil
+	return sub
 }
 
 func (t Manager) IssEntityMapper(iss string) string {
