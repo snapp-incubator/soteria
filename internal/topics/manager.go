@@ -46,10 +46,12 @@ type Manager struct {
 	HashIDSManager *snappids.HashIDSManager
 	Company        string
 	TopicTemplates []Template
+	IssMap         map[string]string
+	Functions      template.FuncMap
 }
 
 // NewTopicManager returns a topic manager to validate topics.
-func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, company string) Manager {
+func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, company string, issMap map[string]string) Manager {
 	templates := make([]Template, 0)
 
 	for _, topic := range topicList {
@@ -62,11 +64,18 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 		templates = append(templates, each)
 	}
 
-	return Manager{
+	manager := Manager{
 		HashIDSManager: hashIDManager,
 		Company:        company,
 		TopicTemplates: templates,
+		IssMap:         issMap,
 	}
+
+	manager.Functions = template.FuncMap{
+		"IssMapper": manager.IssMapper,
+	}
+
+	return manager
 }
 
 // ValidateTopic checks if a topic is valid based on the given parameters.
@@ -117,6 +126,15 @@ func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audi
 	}
 
 	return sub, nil
+}
+
+func (t Manager) IssMapper(iss string) string {
+	result, ok := t.IssMap[iss]
+	if ok {
+		return result
+	}
+
+	return iss
 }
 
 // IssuerToAudience returns corresponding audience in snappids form.
