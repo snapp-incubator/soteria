@@ -72,7 +72,10 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 	}
 
 	manager.Functions = template.FuncMap{
-		"IssMapper": manager.IssMapper,
+		"IssToEntity":  manager.IssMapper,
+		"HashID":       manager.getHashID,
+		"IssToSnappID": IssuerToSnappID,
+		"IssToPeer":    peerOfAudience,
 	}
 
 	return manager
