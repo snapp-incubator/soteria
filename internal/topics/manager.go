@@ -85,21 +85,17 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 
 // ValidateTopic checks if a topic is valid based on the given parameters.
 func (t Manager) ValidateTopic(topic, iss, sub string) *Template {
-	audience, audienceStr := IssuerToAudience(iss)
-
-	fields := make(map[string]string)
-	fields["audience"] = audienceStr
+	fields := make(map[string]any)
+	fields["iss"] = iss
 	fields["company"] = t.Company
-	fields["peer"] = peerOfAudience(audienceStr)
+	fields["sub"] = sub
 
 	for _, topicTemplate := range t.TopicTemplates {
-		hashID := t.getHashID(topicTemplate.HashType, sub, audience)
-
-		fields["hashId"] = hashID
+		fields["hashType"] = topicTemplate.HashType
 
 		regex := new(strings.Builder)
 
-		err := topicTemplate.Template.Execute(regex, fields)
+		err := topicTemplate.Template.Funcs(t.Functions).Execute(regex, fields)
 		if err != nil {
 			return nil
 		}
