@@ -47,11 +47,12 @@ type Manager struct {
 	Company        string
 	TopicTemplates []Template
 	IssEntityMap   map[string]string
+	IssPeerMap     map[string]string
 	Functions      template.FuncMap
 }
 
 // NewTopicManager returns a topic manager to validate topics.
-func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, company string, issEntityMap map[string]string) Manager {
+func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, company string, issEntityMap, issPeerMap map[string]string) Manager {
 	templates := make([]Template, 0)
 
 	for _, topic := range topicList {
@@ -69,6 +70,7 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 		Company:        company,
 		TopicTemplates: templates,
 		IssEntityMap:   issEntityMap,
+		IssPeerMap:     issPeerMap,
 	}
 
 	manager.Functions = template.FuncMap{
