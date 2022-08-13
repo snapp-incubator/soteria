@@ -76,7 +76,7 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 	manager.Functions = template.FuncMap{
 		"IssToEntity":  manager.IssEntityMapper,
 		"HashID":       manager.getHashID,
-		"IssToSnappID": IssuerToSnappID,
+		"IssToSnappID": IssToSnappID,
 		"IssToPeer":    manager.IssPeerMapper,
 	}
 
@@ -158,8 +158,8 @@ func IssuerToAudience(issuer string) (snappids.Audience, string) {
 	}
 }
 
-// IssuerToSnappID returns corresponding audience in snappids form.
-func IssuerToSnappID(issuer string) snappids.Audience {
+// IssToSnappID returns corresponding audience in snappids form.
+func IssToSnappID(issuer string) snappids.Audience {
 	switch issuer {
 	case user.Passenger:
 		return snappids.PassengerAudience
