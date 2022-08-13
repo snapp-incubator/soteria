@@ -85,7 +85,7 @@ func NewTopicManager(topicList []Topic, hashIDManager *snappids.HashIDSManager, 
 }
 
 // ValidateTopic checks if a topic is valid based on the given parameters.
-func (t Manager) ValidateTopic(topic, iss, sub string) *Template {
+func (t *Manager) ValidateTopic(topic, iss, sub string) *Template {
 	fields := make(map[string]any)
 	fields["iss"] = iss
 	fields["company"] = t.Company
@@ -112,7 +112,7 @@ func (t Manager) ValidateTopic(topic, iss, sub string) *Template {
 // getHashID calculate hashID based on hashType.
 // most of the topics have hashID type for their hashIDs but some old topics have different hashTypes.
 // if hashType is equal to hashID, sub is returned without any changes.
-func (t Manager) getHashID(hashType HashType, sub string, audience snappids.Audience) string {
+func (t *Manager) getHashID(hashType HashType, sub string, audience snappids.Audience) string {
 	if hashType == MD5 {
 		id, err := t.HashIDSManager.DecodeHashID(sub, audience)
 		if err != nil {

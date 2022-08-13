@@ -58,7 +58,7 @@ func (err InvalidTopicError) Error() string {
 type Authenticator struct {
 	PublicKeys         map[string]*rsa.PublicKey
 	AllowedAccessTypes []acl.AccessType
-	TopicManager       topics.Manager
+	TopicManager       *topics.Manager
 	Company            string
 }
 
