@@ -164,5 +164,9 @@ zQIDAQAB
 			"0": "driver",
 			"1": "passenger",
 		},
+		IssPeerMap: map[string]string{
+			"0": "passenger",
+			"1": "driver",
+		},
 	}
 }
