@@ -35,9 +35,12 @@ const (
 	Passenger    string = "passenger"
 	PassengerIss string = "1"
 )
+const (
+	// EmqCabHashPrefix is the default prefix for hashing part of cab topic, default value is 'emqch'.
+	EmqCabHashPrefix = "emqch"
 
-// EmqCabHashPrefix is the default prefix for hashing part of cab topic, default value is 'emqch'.
-const EmqCabHashPrefix = "emqch"
+	Default = "default"
+)
 
 type Manager struct {
 	HashIDSManager *snappids.HashIDSManager
@@ -135,7 +138,7 @@ func (t *Manager) IssEntityMapper(iss string) string {
 		return result
 	}
 
-	return iss
+	return t.IssEntityMap[Default]
 }
 
 func (t *Manager) IssPeerMapper(iss string) string {
@@ -144,7 +147,7 @@ func (t *Manager) IssPeerMapper(iss string) string {
 		return result
 	}
 
-	return iss
+	return t.IssPeerMap[Default]
 }
 
 // IssToSnappID returns corresponding audience in snappids form.
