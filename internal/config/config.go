@@ -31,15 +31,16 @@ type (
 	}
 
 	Vendor struct {
-		AllowedAccessTypes  []string       `koanf:"allowed_access_types"`
-		PassengerHashLength int            `koanf:"passenger_hash_length"`
-		DriverHashLength    int            `koanf:"driver_hash_length"`
-		PassengerSalt       string         `koanf:"passenger_salt"`
-		DriverSalt          string         `koanf:"driver_salt"`
-		Company             string         `koanf:"company"`
-		Topics              []topics.Topic `koanf:"topics"`
-		DriverKey           string         `koanf:"driver_key"`
-		PassengerKey        string         `koanf:"passenger_key"`
+		AllowedAccessTypes  []string          `koanf:"allowed_access_types"`
+		PassengerHashLength int               `koanf:"passenger_hash_length"`
+		DriverHashLength    int               `koanf:"driver_hash_length"`
+		PassengerSalt       string            `koanf:"passenger_salt"`
+		DriverSalt          string            `koanf:"driver_salt"`
+		Company             string            `koanf:"company"`
+		Topics              []topics.Topic    `koanf:"topics"`
+		Keys                map[string]string `koanf:"keys"`
+		IssEntityMap        map[string]string `koanf:"iss_entity_map"`
+		IssPeerMap          map[string]string `koanf:"iss_peer_map"`
 	}
 )
 
