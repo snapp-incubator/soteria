@@ -30,7 +30,7 @@ func MetricLogSkipper(ctx *fiber.Ctx) bool {
 func (a API) ReSTServer() *fiber.App {
 	app := fiber.New()
 
-	// nolint: exhaustruct
+	//nolint: exhaustruct
 	app.Use(fiberzap.New(fiberzap.Config{
 		Next:   MetricLogSkipper,
 		Logger: a.Logger.Named("fiber"),

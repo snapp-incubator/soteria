@@ -50,38 +50,38 @@ func SnappVendor() Vendor {
 		Topics: []topics.Topic{
 			{
 				Type:     topics.CabEvent,
-				Template: "^{{.audience}}-event-{{.hashId}}$",
+				Template: "^{{IssToEntity .iss}}-event-{{HashID .hashType .sub (IssToSnappID .iss)}}$",
 				HashType: topics.MD5,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Sub,
-					topics.Passenger: acl.Sub,
+					topics.DriverIss:    acl.Sub,
+					topics.PassengerIss: acl.Sub,
 				},
 			},
 			{
 				Type:     topics.DriverLocation,
-				Template: "^{{.company}}/driver/{{.hashId}}/location$",
+				Template: "^{{.company}}/driver/{{HashID .hashType .sub (IssToSnappID .iss)}}/location$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Pub,
-					topics.Passenger: acl.None,
+					topics.DriverIss:    acl.Pub,
+					topics.PassengerIss: acl.None,
 				},
 			},
 			{
 				Type:     topics.PassengerLocation,
-				Template: "^{{.company}}/passenger/{{.hashId}}/location$",
+				Template: "^{{.company}}/passenger/{{HashID .hashType .sub (IssToSnappID .iss)}}/location$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Pub,
-					topics.Passenger: acl.Pub,
+					topics.DriverIss:    acl.Pub,
+					topics.PassengerIss: acl.Pub,
 				},
 			},
 			{
 				Type:     topics.SuperappEvent,
-				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/superapp$",
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/superapp$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Sub,
-					topics.Passenger: acl.Sub,
+					topics.DriverIss:    acl.Sub,
+					topics.PassengerIss: acl.Sub,
 				},
 			},
 			{
@@ -89,57 +89,58 @@ func SnappVendor() Vendor {
 				Template: "^bucks$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.None,
-					topics.Passenger: acl.None,
+					topics.DriverIss:    acl.None,
+					topics.PassengerIss: acl.None,
 				},
 			},
 			{
 				Type:     topics.SharedLocation,
-				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/{{.peer}}-location$",
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/{{IssToPeer .iss}}-location$", //nolint:lll
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Sub,
-					topics.Passenger: acl.Sub,
+					topics.DriverIss:    acl.Sub,
+					topics.PassengerIss: acl.Sub,
 				},
 			},
 			{
 				Type:     topics.Chat,
-				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/chat$",
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/chat$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Sub,
-					topics.Passenger: acl.Sub,
+					topics.DriverIss:    acl.Sub,
+					topics.PassengerIss: acl.Sub,
 				},
 			},
 			{
 				Type:     topics.GeneralCallEntry,
-				Template: "^shared/{{.company}}/{{.audience}}/{{.hashId}}/call/send$",
+				Template: "^shared/{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/send$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Pub,
-					topics.Passenger: acl.Pub,
+					topics.DriverIss:    acl.Pub,
+					topics.PassengerIss: acl.Pub,
 				},
 			},
 			{
 				Type:     topics.NodeCallEntry,
-				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/call/[a-zA-Z0-9-_]+/send$",
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/[a-zA-Z0-9-_]+/send$", //nolint: lll
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Pub,
-					topics.Passenger: acl.Pub,
+					topics.DriverIss:    acl.Pub,
+					topics.PassengerIss: acl.Pub,
 				},
 			},
 			{
 				Type:     topics.CallOutgoing,
-				Template: "^{{.company}}/{{.audience}}/{{.hashId}}/call/receive$",
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/receive$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
-					topics.Driver:    acl.Sub,
-					topics.Passenger: acl.Sub,
+					topics.DriverIss:    acl.Sub,
+					topics.PassengerIss: acl.Sub,
 				},
 			},
 		},
-		DriverKey: `-----BEGIN PUBLIC KEY-----
+		Keys: map[string]string{
+			"0": `-----BEGIN PUBLIC KEY-----
 MIIBITANBgkqhkiG9w0BAQEFAAOCAQ4AMIIBCQKCAQBk7O6M5p4eYNAwtVU2beGa
 W4mhFG94OtYUWDl1E7UUrhUNGf97Eb/45NjQszu0YPERnApJc2RUm2TrS7iq0mHz
 Xbwf+CbNF54Q5mjuHcpBKgvFwUUSCCYBftmRc4xbFIH4Oh3nHC2GeukUS9TmJwjM
@@ -148,7 +149,8 @@ oHpSzRYN92/DomwmmjGVy8Ji0faeHx+r79ZzE0E8Rcc29Yhrg1ymrjfkXg98WjAb
 TSv4UAN20lsBDejpnGEZKJrxHZ56gHgaJn6PKKCD6ItJA7y7iraCdBhCfAIUIz/z
 AgMBAAE=
 -----END PUBLIC KEY-----`,
-		PassengerKey: `-----BEGIN PUBLIC KEY-----
+
+			"1": `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1lNRwyNsDieWs6LvHOJ+
 GyehhRC4Pn5yL5edKP3565F3LtRDMrkzwDRsQbqnUtTea9HCdTdBv+lI8vE17qRi
 RQn10IMaIH6e4Aa3OWNClFhuqNOag7VmffsjTOgxHgHpfGAKVF/4BwqOHrdHFbAD
@@ -157,5 +159,14 @@ VOiWB1hv9Uc0C5laffGAub7fj+EAI02zlrsNDxYW8vyF2H47N7VWcvgd3RhZpxlG
 9L/zyDMi4jgFTZEWNXC2vIrxwZMFwFhBXEp0PcCbuHJgJIucbRrbwukQC16uHJwP
 zQIDAQAB
 -----END PUBLIC KEY-----`,
+		},
+		IssEntityMap: map[string]string{
+			"0": "driver",
+			"1": "passenger",
+		},
+		IssPeerMap: map[string]string{
+			"0": "passenger",
+			"1": "driver",
+		},
 	}
 }
