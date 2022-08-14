@@ -21,6 +21,8 @@ func (b Builder) Authenticators() map[string]*Authenticator {
 	all := make(map[string]*Authenticator)
 
 	for _, vendor := range b.Vendors {
+		b.ValidateMappers(vendor.IssEntityMap, vendor.IssPeerMap)
+
 		publicKeys := b.PublicKeys(vendor.Keys)
 		hid := HIDManager(vendor.DriverSalt, vendor.DriverHashLength, vendor.PassengerSalt, vendor.PassengerHashLength)
 		allowedAccessTypes := b.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
@@ -107,4 +109,14 @@ func toUserAccessType(access string) (acl.AccessType, error) {
 	}
 
 	return "", fmt.Errorf("%v is a invalid acces type", access)
+}
+
+func (b Builder) ValidateMappers(issEntityMap, issPeerMap map[string]string) {
+	if _, ok := issEntityMap[topics.Default]; !ok {
+		b.Logger.Fatal("default case for iss-entity map is required")
+	}
+
+	if _, ok := issPeerMap[topics.Default]; !ok {
+		b.Logger.Fatal("default case for iss-peer map is required")
+	}
 }

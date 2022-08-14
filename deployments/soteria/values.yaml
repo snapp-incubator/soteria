@@ -147,7 +147,9 @@ vendors:
     iss_entity_map:
       0: "driver"
       1: "passenger"
+      default: "none"
     iss_peer_map:
       0: "passenger"
       1: "driver"
+      default: "none"
 
