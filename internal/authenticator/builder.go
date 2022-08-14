@@ -3,6 +3,7 @@ package authenticator
 import (
 	"crypto/rsa"
 	"fmt"
+
 	"github.com/golang-jwt/jwt/v4"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
