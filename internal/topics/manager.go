@@ -35,6 +35,7 @@ const (
 	Passenger    string = "passenger"
 	PassengerIss string = "1"
 )
+
 const (
 	// EmqCabHashPrefix is the default prefix for hashing part of cab topic, default value is 'emqch'.
 	EmqCabHashPrefix = "emqch"

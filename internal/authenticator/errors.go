@@ -3,6 +3,7 @@ package authenticator
 import (
 	"errors"
 	"fmt"
+
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 )
 
