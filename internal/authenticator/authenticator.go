@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v4"
+	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 )
@@ -17,13 +18,14 @@ type Authenticator struct {
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
 	Company            string
+	JwtConfig          config.JwtInfo
 }
 
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a Authenticator) Auth(tokenString string) error {
 	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+		if token.Method.Alg() != a.JwtConfig.SigningMethod {
 			return nil, ErrInvalidSigningMethod
 		}
 
@@ -31,11 +33,11 @@ func (a Authenticator) Auth(tokenString string) error {
 		if !ok {
 			return nil, ErrInvalidClaims
 		}
-		if claims["iss"] == nil {
+		if claims[a.JwtConfig.IssName] == nil {
 			return nil, ErrIssNotFound
 		}
 
-		issuer := fmt.Sprintf("%v", claims["iss"])
+		issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
 
 		key := a.PublicKeys[issuer]
 		if key == nil {
@@ -63,7 +65,7 @@ func (a Authenticator) ACL(
 	}
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+		if token.Method.Alg() != a.JwtConfig.SigningMethod {
 			return nil, ErrInvalidSigningMethod
 		}
 
@@ -71,14 +73,14 @@ func (a Authenticator) ACL(
 		if !ok {
 			return nil, ErrInvalidClaims
 		}
-		if claims["iss"] == nil {
+		if claims[a.JwtConfig.IssName] == nil {
 			return nil, ErrIssNotFound
 		}
-		if claims["sub"] == nil {
+		if claims[a.JwtConfig.SubName] == nil {
 			return nil, ErrSubNotFound
 		}
 
-		issuer := fmt.Sprintf("%v", claims["iss"])
+		issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
 		key := a.PublicKeys[issuer]
 		if key == nil {
 			return nil, PublicKeyNotFoundError{Issuer: issuer}
@@ -95,17 +97,17 @@ func (a Authenticator) ACL(
 		return false, ErrInvalidClaims
 	}
 
-	if claims["iss"] == nil {
+	if claims[a.JwtConfig.IssName] == nil {
 		return false, ErrIssNotFound
 	}
 
-	issuer := fmt.Sprintf("%v", claims["iss"])
+	issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
 
-	if claims["sub"] == nil {
+	if claims[a.JwtConfig.SubName] == nil {
 		return false, ErrSubNotFound
 	}
 
-	sub, _ := claims["sub"].(string)
+	sub, _ := claims[a.JwtConfig.SubName].(string)
 
 	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub)
 	if topicTemplate == nil {
