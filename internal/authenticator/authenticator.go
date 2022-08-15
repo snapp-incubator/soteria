@@ -18,7 +18,7 @@ type Authenticator struct {
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
 	Company            string
-	JwtConfig          config.JwtInfo
+	JwtConfig          config.Jwt
 }
 
 // Auth check user authentication by checking the user's token
