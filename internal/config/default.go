@@ -168,5 +168,10 @@ zQIDAQAB
 			"0": "passenger",
 			"1": "driver",
 		},
+		JwtInfo: JwtInfo{
+			IssName:       "iss",
+			SubName:       "sub",
+			SigningMethod: "RSA512",
+		},
 	}
 }
