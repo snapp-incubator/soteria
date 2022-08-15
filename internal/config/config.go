@@ -41,10 +41,10 @@ type (
 		Keys                map[string]string `koanf:"keys"`
 		IssEntityMap        map[string]string `koanf:"iss_entity_map"`
 		IssPeerMap          map[string]string `koanf:"iss_peer_map"`
-		JwtInfo             JwtInfo           `koanf:"jwt_info"`
+		Jwt                 Jwt               `koanf:"jwt"`
 	}
 
-	JwtInfo struct {
+	Jwt struct {
 		IssName       string `koanf:"iss_name"`
 		SubName       string `koanf:"sub_name"`
 		SigningMethod string `koanf:"signing_method"`
