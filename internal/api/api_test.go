@@ -20,7 +20,7 @@ func TestExtractVendorToken(t *testing.T) {
 		{
 			name: "token field as token",
 			fields: fields{
-				Token:    "token",
+				Token:    "vendor:token",
 				Username: "vendor:username",
 				Password: "password",
 			},
@@ -52,9 +52,9 @@ func TestExtractVendorToken(t *testing.T) {
 			fields: fields{
 				Token:    "",
 				Username: "",
-				Password: "password",
+				Password: "vendor:password",
 			},
-			vendor: "",
+			vendor: "vendor",
 			token:  "password",
 		},
 	}
