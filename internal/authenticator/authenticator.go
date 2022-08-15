@@ -1,7 +1,6 @@
 package authenticator
 
 import (
-	"crypto/rsa"
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -14,7 +13,7 @@ const DefaultVendor = "snapp"
 
 // Authenticator is responsible for Acl/Auth/Token of users.
 type Authenticator struct {
-	PublicKeys         map[string]*rsa.PublicKey
+	Keys               map[string]any
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
 	Company            string
@@ -39,7 +38,7 @@ func (a Authenticator) Auth(tokenString string) error {
 
 		issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
 
-		key := a.PublicKeys[issuer]
+		key := a.Keys[issuer]
 		if key == nil {
 			return nil, PublicKeyNotFoundError{Issuer: issuer}
 		}
@@ -81,7 +80,7 @@ func (a Authenticator) ACL(
 		}
 
 		issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
-		key := a.PublicKeys[issuer]
+		key := a.Keys[issuer]
 		if key == nil {
 			return nil, PublicKeyNotFoundError{Issuer: issuer}
 		}
