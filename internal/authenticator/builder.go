@@ -38,6 +38,7 @@ func (b Builder) Authenticators() map[string]*Authenticator {
 				vendor.IssEntityMap,
 				vendor.IssPeerMap,
 			),
+			JwtConfig: vendor.JwtInfo,
 		}
 
 		all[vendor.Company] = auth
