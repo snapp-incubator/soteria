@@ -57,26 +57,27 @@ func (a API) Authenticator(vendor string) *authenticator.Authenticator {
 }
 
 func ExtractVendorToken(rawToken, username, password string) (string, string) {
-	split := strings.Split(username, VendorTokenSeparator)
-
-	var vendor, usernameToken string
-
-	if len(split) == 2 { //nolint:gomnd
-		vendor = split[0]
-		usernameToken = split[1]
-	} else {
-		vendor = ""
-		usernameToken = split[0]
-	}
-
 	tokenString := rawToken
+
 	if len(tokenString) == 0 {
-		tokenString = usernameToken
+		tokenString = username
 	}
 
 	if len(tokenString) == 0 {
 		tokenString = password
 	}
 
-	return vendor, tokenString
+	split := strings.Split(tokenString, VendorTokenSeparator)
+
+	var vendor, token string
+
+	if len(split) == 2 { //nolint:gomnd
+		vendor = split[0]
+		token = split[1]
+	} else {
+		vendor = ""
+		token = split[0]
+	}
+
+	return vendor, token
 }
