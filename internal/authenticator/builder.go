@@ -1,10 +1,9 @@
 package authenticator
 
 import (
-	"crypto/rsa"
 	"fmt"
+	"strings"
 
-	"github.com/golang-jwt/jwt/v4"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
@@ -23,12 +22,12 @@ func (b Builder) Authenticators() map[string]*Authenticator {
 	for _, vendor := range b.Vendors {
 		b.ValidateMappers(vendor.IssEntityMap, vendor.IssPeerMap)
 
-		publicKeys := b.PublicKeys(vendor.Keys)
+		keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
 		hid := HIDManager(vendor.DriverSalt, vendor.DriverHashLength, vendor.PassengerSalt, vendor.PassengerHashLength)
 		allowedAccessTypes := b.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
 
 		auth := &Authenticator{
-			PublicKeys:         publicKeys,
+			Keys:               keys,
 			AllowedAccessTypes: allowedAccessTypes,
 			Company:            vendor.Company,
 			TopicManager: topics.NewTopicManager(
@@ -47,19 +46,20 @@ func (b Builder) Authenticators() map[string]*Authenticator {
 	return all
 }
 
-func (b Builder) PublicKeys(keys map[string]string) map[string]*rsa.PublicKey {
-	rsaKeys := make(map[string]*rsa.PublicKey)
+func (b Builder) GenerateKeys(method string, keys map[string]string) map[string]any {
+	var keyList map[string]any
 
-	for iss, publicKey := range keys {
-		rsaKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicKey))
-		if err != nil {
-			b.Logger.Fatal("could not read public key", zap.String("issuer", iss))
-		}
-
-		rsaKeys[iss] = rsaKey
+	// ES RS HS PS EdDSA
+	switch {
+	case strings.HasPrefix(method, "RS"):
+		keyList = b.GenerateRsaKeys(keys)
+	case strings.HasPrefix(method, "HS"):
+		keyList = b.GenerateHMacKeys(keys)
+	default:
+		keyList = make(map[string]any)
 	}
 
-	return rsaKeys
+	return keyList
 }
 
 // GetAllowedAccessTypes will return all allowed access types in Soteria.

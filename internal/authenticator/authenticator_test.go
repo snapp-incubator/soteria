@@ -113,7 +113,7 @@ func (suite *AuthenticatorTestSuite) SetupSuite() {
 
 	cfg := config.SnappVendor()
 	suite.Authenticator = authenticator.Authenticator{
-		PublicKeys: map[string]*rsa.PublicKey{
+		Keys: map[string]any{
 			user.Driver:    pkey0,
 			user.Passenger: pkey1,
 		},
