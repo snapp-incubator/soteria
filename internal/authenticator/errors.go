@@ -33,12 +33,12 @@ func (err TopicNotAllowedError) Error() string {
 	)
 }
 
-type PublicKeyNotFoundError struct {
+type KeyNotFoundError struct {
 	Issuer string
 }
 
-func (err PublicKeyNotFoundError) Error() string {
-	return fmt.Sprintf("cannot find issuer %s public key", err.Issuer)
+func (err KeyNotFoundError) Error() string {
+	return fmt.Sprintf("cannot find issuer %s key", err.Issuer)
 }
 
 type InvalidTopicError struct {
