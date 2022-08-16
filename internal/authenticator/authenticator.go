@@ -40,7 +40,7 @@ func (a Authenticator) Auth(tokenString string) error {
 
 		key := a.Keys[issuer]
 		if key == nil {
-			return nil, PublicKeyNotFoundError{Issuer: issuer}
+			return nil, KeyNotFoundError{Issuer: issuer}
 		}
 
 		return key, nil
@@ -82,7 +82,7 @@ func (a Authenticator) ACL(
 		issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
 		key := a.Keys[issuer]
 		if key == nil {
-			return nil, PublicKeyNotFoundError{Issuer: issuer}
+			return nil, KeyNotFoundError{Issuer: issuer}
 		}
 
 		return key, nil
