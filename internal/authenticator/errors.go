@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrInvalidSigningMethod = errors.New("token is not valid, signing method does not match with authenticator signing method")
+	ErrInvalidSigningMethod = errors.New("signing method does not match with authenticator signing method")
 	ErrIssNotFound          = errors.New("could not found iss in token claims")
 	ErrSubNotFound          = errors.New("could not found sub in token claims")
 	ErrInvalidClaims        = errors.New("invalid claims")
