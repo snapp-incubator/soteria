@@ -155,5 +155,5 @@ vendors:
     jwt:
       iss_name: "iss"
       sub_name: "sub"
-      signing_method: "RSA512"
+      signing_method: "RS512"
 
