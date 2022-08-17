@@ -36,29 +36,7 @@ For VM deployments following 2 steps are required.
 for production deployments on Cloud (okd).
 
 # Add Vendor
-Soteria is a multivendor authenticator for EMQX. to add a vendor for authentication, go to chart directory and in the`values.yaml`, add the following template named after the desired vendor:
-
-```yaml
-snapp:
-  company: "snapp"
-  driver_salt: "secret"
-  passenger_salt: "secret"
-  driver_hash_length: 15
-  passenger_hash_length: 15
-  allowed_access_types: [ "pub", "sub" ]
-  topics:
-    - type: cab_event
-      template: ^{{.audience}}-event-{{.hashId}}$
-      hash_type: 1
-      accesses:
-        driver: '1'
-        passenger: '1'
-    - ...
-  driver_key: |-
-    ...
-  passenger_key: |-
-    ...
-```
+Soteria is a multivendor authenticator for EMQX. Follow instruction from [here](docs/vendor.md)
 
 # Generate JWT Token
 replace `driver` and `0` for issuer and id respectively.
