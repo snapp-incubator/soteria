@@ -67,62 +67,62 @@ vendors:
         template: ^{{IssToEntity .iss}}-event-{{HashID .hashType .sub (IssToSnappID .iss)}}$
         hash_type: 1
         accesses:
-          driver: '1'
-          passenger: '1'
+          0: '1'
+          1: '1'
       - type: driver_location
         template: ^{{.company}}/driver/{{HashID .hashType .sub (IssToSnappID .iss)}}/location$
         hash_type: 0
         accesses:
-          driver: '2'
-          passenger: '-1'
+          0: '2'
+          1: '-1'
       - type: passenger_location
         template: ^{{.company}}/passenger/{{HashID .hashType .sub (IssToSnappID .iss)}}/location$
         hash_type: 0
         accesses:
-          driver: '2'
-          passenger: '2'
+          0: '2'
+          1: '2'
       - type: superapp_event
         template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/superapp$
         hash_type: 0
         accesses:
-          driver: '1'
-          passenger: '1'
+          0: '1'
+          1: '1'
       - type: box_event
         template: ^bucks$
         hash_type: 0
         accesses:
-          driver: '-1'
-          passenger: '-1'
+          0: '-1'
+          1: '-1'
       - type: shared_location
         template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/{{IssToPeer .iss}}-location$
         hash_type: 0
         accesses:
-          driver: '1'
-          passenger: '1'
+          0: '1'
+          1: '1'
       - type: chat
         template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/chat$
         hash_type: 0
         accesses:
-          driver: '1'
-          passenger: '1'
+          0: '1'
+          1: '1'
       - type: general_call_entry
         template: ^shared/{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/send$
         hash_type: 0
         accesses:
-          driver: '2'
-          passenger: '2'
+          0: '2'
+          1: '2'
       - type: node_call_entry
         template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/[a-zA-Z0-9-_]+/send$
         hash_type: 0
         accesses:
-          driver: '2'
-          passenger: '2'
+          0: '2'
+          1: '2'
       - type: call_outgoing
         template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/receive$
         hash_type: 0
         accesses:
-          driver: '1'
-          passenger: '1'
+          0: '1'
+          1: '1'
     keys:
       1: |-
         -----BEGIN PUBLIC KEY-----
