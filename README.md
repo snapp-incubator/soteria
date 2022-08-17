@@ -1,5 +1,6 @@
 # Soteria
-Soteria is responsible for Authentication and Authorization of every request sent to EMQ and Herald.
+
+Soteria is responsible for Authentication and Authorization of every request sent to EMQ.
 
 # Deployment
 
@@ -8,27 +9,14 @@ Soteria is responsible for Authentication and Authorization of every request sen
 You can deploy `soteria` to the staging environments using
 helm charts.
 
-```
-cd deployments
-helm install soteria --generate-name
+```bash
+cd deployments/soteria
+helm install soteria .
 ```
 
 ## Production
 
-We deploy `soteria` on two different infrastructures.
-
-- VM
-- Cloud (okd)
-
-### VM
-
-For VM deployments following 2 steps are required.
-
-- Preparing VMs which is done by `ansible playbooks`. You can find `herald`'s
-  `ansible playbooks` in the following link
-  [bravo/new-ansible-playbook](https://gitlab.snapp.ir/bravo/new-ansible-playbook)
-
-- Deploying `soteria` with CI/CD pipelines.
+We deploy `soteria` on `Cloud (okd)` infrastructures.
 
 ### Cloud (okd)
 
@@ -39,9 +27,9 @@ for production deployments on Cloud (okd).
 Soteria is a multivendor authenticator for EMQX. Follow instruction from [here](docs/vendor.md)
 
 # Generate JWT Token
-replace `driver` and `0` for issuer and id respectively.
+Replace `driver` and `0` for issuer and ID respectively.
 
-```sh
+```bash
 curl -s -u 'admin:admin' -L https://doago-snapp-ode-020.apps.private.teh-1.snappcloud.io/api/snapp/driver/0  | jq '.Token' -r
 ```
 
