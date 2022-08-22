@@ -12,7 +12,6 @@ import (
 	"text/template"
 
 	"gitlab.snapp.ir/dispatching/snappids/v2"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 )
 
 const (
@@ -34,6 +33,8 @@ const (
 
 	Passenger    string = "passenger"
 	PassengerIss string = "1"
+
+	NoneIss string = "-1"
 )
 
 const (
@@ -154,12 +155,10 @@ func (t *Manager) IssPeerMapper(iss string) string {
 // IssToSnappID returns corresponding audience in snappids form.
 func (t *Manager) IssToSnappID(iss string) snappids.Audience {
 	switch iss {
-	case user.Passenger:
+	case PassengerIss:
 		return snappids.PassengerAudience
-	case user.Driver:
+	case DriverIss:
 		return snappids.DriverAudience
-	case user.None:
-		fallthrough
 	default:
 		return -1
 	}
