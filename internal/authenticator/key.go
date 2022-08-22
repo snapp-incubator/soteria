@@ -1,6 +1,9 @@
 package authenticator
 
 import (
+	"encoding/base64"
+	"log"
+
 	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
 )
@@ -24,7 +27,12 @@ func (b Builder) GenerateHMacKeys(raw map[string]string) map[string]any {
 	keys := make(map[string]any)
 
 	for iss, key := range raw {
-		keys[iss] = []byte(key)
+		bytes, err := base64.StdEncoding.DecodeString(key)
+		if err != nil {
+			log.Fatalf("failed to generate hmac key: %v", err)
+		}
+
+		keys[iss] = bytes
 	}
 
 	return keys
