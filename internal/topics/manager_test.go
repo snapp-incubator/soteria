@@ -6,7 +6,6 @@ import (
 	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 )
 
 // nolint: funlen
@@ -22,109 +21,109 @@ func TestTopic_GetType(t *testing.T) {
 		{
 			name:   "testing cab event",
 			arg:    "passenger-event-152384980615c2bd16143cff29038b67",
-			issuer: user.Passenger,
+			issuer: topics.PassengerIss,
 			want:   topics.CabEvent,
 		},
 		{
 			name:   "testing cab event",
 			arg:    "driver-event-152384980615c2bd16143cff29038b67",
-			issuer: user.Driver,
+			issuer: topics.DriverIss,
 			want:   topics.CabEvent,
 		},
 		{
 			name:   "testing invalid event",
 			arg:    "-event-123456789abcdefgABCDEFG",
-			issuer: user.None,
+			issuer: topics.NoneIss,
 			want:   "",
 		},
 		{
 			name:   "testing driver location",
 			arg:    "snapp/driver/DXKgaNQa7N5Y7bo/location",
-			issuer: user.Driver,
+			issuer: topics.DriverIss,
 			want:   topics.DriverLocation,
 		},
 		{
 			name:   "testing passenger location",
 			arg:    "snapp/passenger/DXKgaNQa7N5Y7bo/location",
-			issuer: user.Passenger,
+			issuer: topics.PassengerIss,
 			want:   topics.PassengerLocation,
 		},
 		{
 			name:   "testing invalid location",
 			arg:    "snapp/thirdparty/DXKgaNQa7N5Y7bo/location",
-			issuer: user.None,
+			issuer: topics.NoneIss,
 			want:   "",
 		},
 		{
 			name:   "testing superapp event",
 			arg:    "snapp/passenger/DXKgaNQa7N5Y7bo/superapp",
-			issuer: user.Passenger,
+			issuer: topics.PassengerIss,
 			want:   topics.SuperappEvent,
 		},
 		{
 			name:   "testing shared passenger location",
 			arg:    "snapp/passenger/DXKgaNQa7N5Y7bo/driver-location",
-			issuer: user.Passenger,
+			issuer: topics.PassengerIss,
 			want:   topics.SharedLocation,
 		},
 		{
 			name:   "testing shared driver location",
 			arg:    "snapp/driver/DXKgaNQa7N5Y7bo/passenger-location",
-			issuer: user.Driver,
+			issuer: topics.DriverIss,
 			want:   topics.SharedLocation,
 		},
 		{
 			name:   "testing passenger chat",
 			arg:    "snapp/passenger/DXKgaNQa7N5Y7bo/chat",
-			issuer: user.Passenger,
+			issuer: topics.PassengerIss,
 			want:   topics.Chat,
 		},
 		{
 			name:   "testing driver chat",
 			arg:    "snapp/driver/DXKgaNQa7N5Y7bo/chat",
-			issuer: user.Driver,
+			issuer: topics.DriverIss,
 			want:   topics.Chat,
 		},
 		{
 			name:   "testing passenger general call entry",
 			arg:    "shared/snapp/passenger/DXKgaNQa7N5Y7bo/call/send",
-			issuer: user.Passenger,
+			issuer: topics.PassengerIss,
 			want:   topics.GeneralCallEntry,
 		},
 		{
 			name:   "testing driver general call entry",
 			arg:    "shared/snapp/driver/DXKgaNQa7N5Y7bo/call/send",
-			issuer: user.Driver,
+			issuer: topics.DriverIss,
 			want:   topics.GeneralCallEntry,
 		},
 		{
 			name:   "testing passenger node call entry",
 			arg:    "snapp/passenger/DXKgaNQa7N5Y7bo/call/heliograph-0/send",
-			issuer: user.Passenger,
+			issuer: topics.PassengerIss,
 			want:   topics.NodeCallEntry,
 		},
 		{
 			name:   "testing driver node call entry",
 			arg:    "snapp/driver/DXKgaNQa7N5Y7bo/call/heliograph-1/send",
-			issuer: user.Driver,
+			issuer: topics.DriverIss,
 			want:   topics.NodeCallEntry,
 		},
 		{
 			name:   "testing passenger call",
 			arg:    "snapp/passenger/DXKgaNQa7N5Y7bo/call/receive",
-			issuer: user.Passenger,
+			issuer: topics.PassengerIss,
 			want:   topics.CallOutgoing,
 		},
 		{
 			name:   "testing driver call",
 			arg:    "snapp/driver/DXKgaNQa7N5Y7bo/call/receive",
-			issuer: user.Driver,
+			issuer: topics.DriverIss,
 			want:   topics.CallOutgoing,
 		},
 		{
 			name:   "testing box event",
 			arg:    "bucks",
-			issuer: user.Driver,
+			issuer: topics.DriverIss,
 			want:   topics.BoxEvent,
 		},
 	}
