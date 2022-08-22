@@ -2,6 +2,7 @@ package authenticator
 
 import (
 	"fmt"
+
 	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
