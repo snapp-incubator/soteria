@@ -15,7 +15,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/user"
 )
 
 const (
@@ -78,22 +77,22 @@ type AuthenticatorTestSuite struct {
 func (suite *AuthenticatorTestSuite) SetupSuite() {
 	require := suite.Require()
 
-	driverToken, err := suite.getSampleToken(user.Driver, false)
+	driverToken, err := suite.getSampleToken(topics.DriverIss, false)
 	require.NoError(err)
 
 	suite.Tokens.Driver = driverToken
 
-	passengerToken, err := suite.getSampleToken(user.Passenger, false)
+	passengerToken, err := suite.getSampleToken(topics.PassengerIss, false)
 	require.NoError(err)
 
 	suite.Tokens.Passenger = passengerToken
 
-	pkey0, err := suite.getPublicKey(user.Driver)
+	pkey0, err := suite.getPublicKey(topics.DriverIss)
 	require.NoError(err)
 
 	suite.PublicKeys.Driver = pkey0
 
-	pkey1, err := suite.getPublicKey(user.Passenger)
+	pkey1, err := suite.getPublicKey(topics.PassengerIss)
 	require.NoError(err)
 
 	suite.PublicKeys.Passenger = pkey1
@@ -114,8 +113,8 @@ func (suite *AuthenticatorTestSuite) SetupSuite() {
 	cfg := config.SnappVendor()
 	suite.Authenticator = authenticator.Authenticator{
 		Keys: map[string]any{
-			user.Driver:    pkey0,
-			user.Passenger: pkey1,
+			topics.DriverIss:    pkey0,
+			topics.PassengerIss: pkey1,
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
@@ -359,7 +358,7 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
-		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, user.Driver, "DXKgaNQa7N5Y7bo")
+		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topics.DriverIss, "DXKgaNQa7N5Y7bo")
 		assert.True(t, topicTemplate != nil)
 	})
 }
@@ -459,12 +458,10 @@ func (suite *AuthenticatorTestSuite) getPublicKey(u string) (*rsa.PublicKey, err
 	var fileName string
 
 	switch u {
-	case user.Passenger:
+	case topics.PassengerIss:
 		fileName = "../../test/1.pem"
-	case user.Driver:
+	case topics.DriverIss:
 		fileName = "../../test/0.pem"
-	case user.None:
-		fallthrough
 	default:
 		return nil, errors.New("invalid user, public key not found")
 	}
@@ -487,12 +484,10 @@ func (suite *AuthenticatorTestSuite) getPrivateKey(u string) (*rsa.PrivateKey, e
 	var fileName string
 
 	switch u {
-	case user.Driver:
+	case topics.DriverIss:
 		fileName = "../../test/0.private.pem"
-	case user.Passenger:
+	case topics.PassengerIss:
 		fileName = "../../test/1.private.pem"
-	case user.None:
-		fallthrough
 	default:
 		return nil, errors.New("invalid user, private key not found")
 	}
