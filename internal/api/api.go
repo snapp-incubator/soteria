@@ -17,7 +17,7 @@ type API struct {
 	Authenticators map[string]*authenticator.Authenticator
 	DefaultVendor  string
 	Tracer         trace.Tracer
-	Logger         zap.Logger
+	Logger         *zap.Logger
 }
 
 // MetricLogSkipper check if route is equal "metric" disable log.
