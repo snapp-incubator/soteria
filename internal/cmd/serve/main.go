@@ -23,6 +23,7 @@ type Serve struct {
 
 func (s Serve) main() {
 	rest := api.API{
+		DefaultVendor:  s.Cfg.DefaultVendor,
 		Authenticators: authenticator.Builder{Vendors: s.Cfg.Vendors, Logger: s.Logger}.Authenticators(),
 		Tracer:         s.Tracer,
 		Logger:         *s.Logger.Named("api"),
