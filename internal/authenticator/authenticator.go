@@ -9,8 +9,6 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 )
 
-const DefaultVendor = "snapp"
-
 // Authenticator is responsible for Acl/Auth/Token of users.
 type Authenticator struct {
 	Keys               map[string]any
