@@ -44,6 +44,7 @@ serviceMonitor:
   enabled: false
 
 config:
+  default_vendor: "snapp"
   http_port: 9999
   logger:
     level: "warn"
