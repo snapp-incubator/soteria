@@ -46,6 +46,7 @@ require (
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/speps/go-hashids/v2 v2.0.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.39.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
