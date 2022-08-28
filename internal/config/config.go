@@ -24,10 +24,11 @@ const (
 type (
 	// Config is the main container of Soteria's config.
 	Config struct {
-		Vendors  []Vendor       `koanf:"vendors"`
-		Logger   logger.Config  `koanf:"logger"`
-		HTTPPort int            `koanf:"http_port"`
-		Tracer   tracing.Config `koanf:"tracer"`
+		Vendors       []Vendor       `koanf:"vendors"`
+		Logger        logger.Config  `koanf:"logger"`
+		HTTPPort      int            `koanf:"http_port"`
+		Tracer        tracing.Config `koanf:"tracer"`
+		DefaultVendor string         `koanf:"default_vendor"`
 	}
 
 	Vendor struct {

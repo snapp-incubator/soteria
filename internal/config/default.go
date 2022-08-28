@@ -17,6 +17,7 @@ const (
 // nolint: gomnd
 func Default() Config {
 	return Config{
+		DefaultVendor: "snapp",
 		Vendors: []Vendor{
 			SnappVendor(),
 		},
