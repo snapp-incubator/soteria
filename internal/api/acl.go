@@ -72,7 +72,6 @@ func (a API) ACL(c *fiber.Ctx) error {
 					zap.String("token", request.Token),
 					zap.String("username", request.Username),
 					zap.String("password", request.Password),
-					zap.String("authenticator", auth.Company),
 					zap.String("authenticator", auth.Company))
 		} else {
 			a.Logger.
@@ -83,7 +82,6 @@ func (a API) ACL(c *fiber.Ctx) error {
 					zap.String("token", request.Token),
 					zap.String("username", request.Username),
 					zap.String("password", request.Password),
-					zap.String("authenticator", auth.Company),
 					zap.String("authenticator", auth.Company))
 		}
 
