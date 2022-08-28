@@ -22,12 +22,18 @@ type Serve struct {
 }
 
 func (s Serve) main() {
-	rest := api.API{
+	api := api.API{
 		DefaultVendor:  s.Cfg.DefaultVendor,
 		Authenticators: authenticator.Builder{Vendors: s.Cfg.Vendors, Logger: s.Logger}.Authenticators(),
 		Tracer:         s.Tracer,
-		Logger:         *s.Logger.Named("api"),
-	}.ReSTServer()
+		Logger:         s.Logger.Named("api"),
+	}
+
+	if _, ok := api.Authenticators[s.Cfg.DefaultVendor]; !ok {
+		s.Logger.Fatal("default vendor shouldn't be nil, please set it")
+	}
+
+	rest := api.ReSTServer()
 
 	go func() {
 		if err := rest.Listen(fmt.Sprintf(":%d", s.Cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
