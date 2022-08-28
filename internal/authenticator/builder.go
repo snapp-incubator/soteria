@@ -42,6 +42,10 @@ func (b Builder) Authenticators() map[string]*Authenticator {
 		all[vendor.Company] = auth
 	}
 
+	if len(all) == 0 {
+		b.Logger.Fatal("at least one vendor should be enable to have soteria")
+	}
+
 	return all
 }
 
