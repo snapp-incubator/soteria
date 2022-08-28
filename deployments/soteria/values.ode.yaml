@@ -136,3 +136,8 @@ vendors:
         hash_type: 0
         accesses:
           snpay: '1'
+      - type: cab_event
+        template: ^{{IssToEntity .iss}}-event-{{HashID .hashType .sub (IssToSnappID .iss)}}$
+        hash_type: 1
+        accesses:
+          snpay: '1'
