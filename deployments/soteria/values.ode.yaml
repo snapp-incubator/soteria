@@ -11,3 +11,128 @@ image:
   repository: mozart/soteria
   tag: main
   pullPolicy: Always
+
+vendors:
+  snapp:
+    company: "snapp"
+    driver_salt: "secret"
+    passenger_salt: "secret"
+    driver_hash_length: 15
+    passenger_hash_length: 15
+    allowed_access_types: [ "pub", "sub" ]
+    topics:
+      - type: cab_event
+        template: ^{{IssToEntity .iss}}-event-{{HashID .hashType .sub (IssToSnappID .iss)}}$
+        hash_type: 1
+        accesses:
+          0: '1'
+          1: '1'
+      - type: driver_location
+        template: ^{{.company}}/driver/{{HashID .hashType .sub (IssToSnappID .iss)}}/location$
+        hash_type: 0
+        accesses:
+          0: '2'
+          1: '-1'
+      - type: passenger_location
+        template: ^{{.company}}/passenger/{{HashID .hashType .sub (IssToSnappID .iss)}}/location$
+        hash_type: 0
+        accesses:
+          0: '2'
+          1: '2'
+      - type: superapp_event
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/superapp$
+        hash_type: 0
+        accesses:
+          0: '1'
+          1: '1'
+      - type: box_event
+        template: ^bucks$
+        hash_type: 0
+        accesses:
+          0: '-1'
+          1: '-1'
+      - type: shared_location
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/{{IssToPeer .iss}}-location$
+        hash_type: 0
+        accesses:
+          0: '1'
+          1: '1'
+      - type: chat
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/chat$
+        hash_type: 0
+        accesses:
+          0: '1'
+          1: '1'
+      - type: general_call_entry
+        template: ^shared/{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/send$
+        hash_type: 0
+        accesses:
+          0: '2'
+          1: '2'
+      - type: node_call_entry
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/[a-zA-Z0-9-_]+/send$
+        hash_type: 0
+        accesses:
+          0: '2'
+          1: '2'
+      - type: call_outgoing
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/receive$
+        hash_type: 0
+        accesses:
+          0: '1'
+          1: '1'
+    keys:
+      1: |-
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1lNRwyNsDieWs6LvHOJ+
+        GyehhRC4Pn5yL5edKP3565F3LtRDMrkzwDRsQbqnUtTea9HCdTdBv+lI8vE17qRi
+        RQn10IMaIH6e4Aa3OWNClFhuqNOag7VmffsjTOgxHgHpfGAKVF/4BwqOHrdHFbAD
+        VOiWB1hv9Uc0C5laffGAub7fj+EAI02zlrsNDxYW8vyF2H47N7VWcvgd3RhZpxlG
+        8bq9phl7Ja55YmQiT2Ic3/K5tsazg5z9lz6OTrx+JvWbefHFlJpjCLz5yefEaRmX
+        9L/zyDMi4jgFTZEWNXC2vIrxwZMFwFhBXEp0PcCbuHJgJIucbRrbwukQC16uHJwP
+        zQIDAQAB
+        -----END PUBLIC KEY-----
+      0: |-
+        -----BEGIN PUBLIC KEY-----
+        MIIBITANBgkqhkiG9w0BAQEFAAOCAQ4AMIIBCQKCAQBk7O6M5p4eYNAwtVU2beGa
+        W4mhFG94OtYUWDl1E7UUrhUNGf97Eb/45NjQszu0YPERnApJc2RUm2TrS7iq0mHz
+        Xbwf+CbNF54Q5mjuHcpBKgvFwUUSCCYBftmRc4xbFIH4Oh3nHC2GeukUS9TmJwjM
+        tJKyU0Ve8BK5BgjhagM7XSs+scE2mxemoWtcs6mJLtBuEgRGMgHW00mSdOcLp/+l
+        oHpSzRYN92/DomwmmjGVy8Ji0faeHx+r79ZzE0E8Rcc29Yhrg1ymrjfkXg98WjAb
+        TSv4UAN20lsBDejpnGEZKJrxHZ56gHgaJn6PKKCD6ItJA7y7iraCdBhCfAIUIz/z
+        AgMBAAE=
+        -----END PUBLIC KEY-----
+    iss_entity_map:
+      0: "driver"
+      1: "passenger"
+      default: "none"
+    iss_peer_map:
+      0: "passenger"
+      1: "driver"
+      default: "none"
+    jwt:
+      iss_name: "iss"
+      sub_name: "sub"
+      signing_method: "RS512"
+  snapp_pay:
+    company: "snapp_pay"
+    passenger_hash_length: "20"
+    passenger_salt: "UKjqkklfurigkvoslxp7vi0vcm66w"
+    allowed_access_types: ["pub", "sub"]
+    keys:
+      snpay: "eQsE0XOZWc99gc36Gc7bI750si8UIi"
+    iss_entity_map:
+      snpay: "passenger"
+      default: "none"
+    iss_peer_map:
+      default: "none"
+    jwt:
+      iss_name: "iss"
+      sub_name: "ud"
+      signing_method: "HS512"
+    topics:
+      - type: test
+        template: snapp_pay/passenger/{{HashID .hashType .sub (IssToSnappID .iss)}}/pay
+        hash_type: 0
+        accesses:
+          snpay: '1'
