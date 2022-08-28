@@ -15,8 +15,9 @@ const VendorTokenSeparator = ":"
 
 type API struct {
 	Authenticators map[string]*authenticator.Authenticator
+	DefaultVendor  string
 	Tracer         trace.Tracer
-	Logger         zap.Logger
+	Logger         *zap.Logger
 }
 
 // MetricLogSkipper check if route is equal "metric" disable log.
@@ -53,7 +54,7 @@ func (a API) Authenticator(vendor string) *authenticator.Authenticator {
 		return auth
 	}
 
-	return a.Authenticators[authenticator.DefaultVendor]
+	return a.Authenticators[a.DefaultVendor]
 }
 
 func ExtractVendorToken(rawToken, username, password string) (string, string) {
