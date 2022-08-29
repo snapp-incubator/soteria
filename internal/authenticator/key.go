@@ -47,7 +47,7 @@ func (b Builder) GenerateHMacKeys(raw map[string]string) map[string]any {
 		if err != nil {
 			b.Logger.Error("failed to generate hmac key from base64 fallback to plain", zap.Error(err))
 
-			keys[iss] = key
+			keys[iss] = []byte(key)
 		} else {
 			keys[iss] = bytes
 		}
