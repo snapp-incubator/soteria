@@ -2,7 +2,6 @@ package authenticator
 
 import (
 	"encoding/base64"
-	"log"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -31,7 +30,7 @@ func (b Builder) GenerateRsaKeys(raw map[string]string) map[string]any {
 	for iss, publicKey := range raw {
 		rsaKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicKey))
 		if err != nil {
-			b.Logger.Fatal("could not read public key", zap.String("issuer", iss))
+			b.Logger.Fatal("could not read public key", zap.String("issuer", iss), zap.Error(err))
 		}
 
 		rsaKeys[iss] = rsaKey
@@ -44,12 +43,14 @@ func (b Builder) GenerateHMacKeys(raw map[string]string) map[string]any {
 	keys := make(map[string]any)
 
 	for iss, key := range raw {
-		bytes, err := base64.URLEncoding.DecodeString(key)
+		bytes, err := base64.StdEncoding.DecodeString(key)
 		if err != nil {
-			log.Fatalf("failed to generate hmac key: %v", err)
-		}
+			b.Logger.Error("failed to generate hmac key from base64 fallback to plain", zap.Error(err))
 
-		keys[iss] = bytes
+			keys[iss] = key
+		} else {
+			keys[iss] = bytes
+		}
 	}
 
 	return keys
