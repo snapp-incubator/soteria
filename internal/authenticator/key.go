@@ -44,7 +44,7 @@ func (b Builder) GenerateHMacKeys(raw map[string]string) map[string]any {
 	keys := make(map[string]any)
 
 	for iss, key := range raw {
-		bytes, err := base64.StdEncoding.DecodeString(key)
+		bytes, err := base64.URLEncoding.DecodeString(key)
 		if err != nil {
 			log.Fatalf("failed to generate hmac key: %v", err)
 		}
