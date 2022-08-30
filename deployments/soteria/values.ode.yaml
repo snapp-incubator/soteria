@@ -120,7 +120,7 @@ vendors:
     passenger_salt: "UKjqkklfurigkvoslxp7vi0vcm66w"
     allowed_access_types: ["pub", "sub"]
     keys:
-      snpay: "eQsE0XOZWc99gc36Gc7bI750si8UIi"
+      snpay: "ZVFzRTBYT1pXYzk5Z2MzNkdjN2JJNzUwc2k4VUlp"
     iss_entity_map:
       snpay: "passenger"
       default: "none"
