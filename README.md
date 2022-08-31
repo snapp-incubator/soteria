@@ -24,9 +24,11 @@ We deploy `soteria` on `Cloud (okd)` infrastructures.
 for production deployments on Cloud (okd).
 
 # Add Vendor
+
 Soteria is a multivendor authenticator for EMQX. Follow instruction from [here](docs/vendor.md)
 
 # Generate JWT Token
+
 Replace `driver` and `0` for issuer and ID respectively.
 
 ```bash
