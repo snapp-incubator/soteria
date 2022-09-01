@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/speps/go-hashids/v2"
-	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
@@ -26,12 +25,14 @@ func (b Builder) Authenticators() map[string]*Authenticator {
 		allowedAccessTypes := b.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
 
 		hid := make(map[string]*hashids.HashID)
+
 		for iss, data := range vendor.HashIDMap {
 			var err error
 
 			hd := hashids.NewData()
 			hd.Salt = data.Salt
 			hd.MinLength = data.Length
+
 			if data.Alphabet != "" {
 				hd.Alphabet = data.Alphabet
 			}
@@ -81,24 +82,6 @@ func (b Builder) GetAllowedAccessTypes(accessTypes []string) []acl.AccessType {
 	}
 
 	return allowedAccessTypes
-}
-
-func HIDManager(
-	driverSalt string,
-	driverHashLength int,
-	passengerSalt string,
-	passengerHashLength int,
-) *snappids.HashIDSManager {
-	return &snappids.HashIDSManager{
-		Salts: map[snappids.Audience]string{
-			snappids.DriverAudience:    driverSalt,
-			snappids.PassengerAudience: passengerSalt,
-		},
-		Lengths: map[snappids.Audience]int{
-			snappids.DriverAudience:    driverHashLength,
-			snappids.PassengerAudience: passengerHashLength,
-		},
-	}
 }
 
 // toUserAccessType will convert string access type to it's own type.
