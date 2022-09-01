@@ -11,7 +11,7 @@ import (
 	"strings"
 	"text/template"
 
-	"gitlab.snapp.ir/dispatching/snappids/v2"
+	"github.com/speps/go-hashids/v2"
 )
 
 const (
@@ -45,7 +45,7 @@ const (
 )
 
 type Manager struct {
-	HashIDSManager *snappids.HashIDSManager
+	HashIDSManager map[string]*hashids.HashID
 	Company        string
 	TopicTemplates []Template
 	IssEntityMap   map[string]string
@@ -56,7 +56,7 @@ type Manager struct {
 // NewTopicManager returns a topic manager to validate topics.
 func NewTopicManager(
 	topicList []Topic,
-	hashIDManager *snappids.HashIDSManager,
+	hashIDManager map[string]*hashids.HashID,
 	company string,
 	issEntityMap, issPeerMap map[string]string,
 ) *Manager {
@@ -68,10 +68,9 @@ func NewTopicManager(
 	}
 
 	manager.Functions = template.FuncMap{
-		"IssToEntity":  manager.IssEntityMapper,
-		"HashID":       manager.getHashID,
-		"IssToSnappID": manager.IssToSnappID,
-		"IssToPeer":    manager.IssPeerMapper,
+		"IssToEntity": manager.IssEntityMapper,
+		"HashID":      manager.getHashID,
+		"IssToPeer":   manager.IssPeerMapper,
 	}
 
 	templates := make([]Template, 0)
@@ -119,14 +118,14 @@ func (t *Manager) ParseTopic(topic, iss, sub string) *Template {
 // getHashID calculate hashID based on hashType.
 // most of the topics have hashID type for their hashIDs but some old topics have different hashTypes.
 // if hashType is equal to hashID, sub is returned without any changes.
-func (t *Manager) getHashID(hashType HashType, sub string, audience snappids.Audience) string {
+func (t *Manager) getHashID(hashType HashType, sub string, iss string) string {
 	if hashType == MD5 {
-		id, err := t.HashIDSManager.DecodeHashID(sub, audience)
+		id, err := t.HashIDSManager[iss].DecodeWithError(sub)
 		if err != nil {
 			return ""
 		}
 
-		hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", EmqCabHashPrefix, strconv.Itoa(id)))) //nolint:gosec
+		hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", EmqCabHashPrefix, strconv.Itoa(id[0])))) //nolint:gosec
 
 		return fmt.Sprintf("%x", hid)
 	}
@@ -150,16 +149,4 @@ func (t *Manager) IssPeerMapper(iss string) string {
 	}
 
 	return t.IssPeerMap[Default]
-}
-
-// IssToSnappID returns corresponding audience in snappids form.
-func (t *Manager) IssToSnappID(iss string) snappids.Audience {
-	switch iss {
-	case PassengerIss:
-		return snappids.PassengerAudience
-	case DriverIss:
-		return snappids.DriverAudience
-	default:
-		return -1
-	}
 }
