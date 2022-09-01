@@ -37,7 +37,7 @@ vendors:
           0: '2'
           1: '-1'
       - type: passenger_location
-        template: ^{{.company}}/passenger/{{HashID .hashType .sub (IssToSnappID .iss)}}/location$
+        template: ^{{.company}}/passenger/{{HashID .hashType .sub .iss}}/location$
         hash_type: 0
         accesses:
           0: '2'
