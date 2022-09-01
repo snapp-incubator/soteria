@@ -3,6 +3,7 @@ package authenticator
 import (
 	"fmt"
 
+	"github.com/speps/go-hashids/v2"
 	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
@@ -22,8 +23,24 @@ func (b Builder) Authenticators() map[string]*Authenticator {
 		b.ValidateMappers(vendor.IssEntityMap, vendor.IssPeerMap)
 
 		keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
-		hid := HIDManager(vendor.DriverSalt, vendor.DriverHashLength, vendor.PassengerSalt, vendor.PassengerHashLength)
 		allowedAccessTypes := b.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
+
+		hid := make(map[string]*hashids.HashID)
+		for iss, data := range vendor.HashIDMap {
+			var err error
+
+			hd := hashids.NewData()
+			hd.Salt = data.Salt
+			hd.MinLength = data.Length
+			if data.Alphabet != "" {
+				hd.Alphabet = data.Alphabet
+			}
+
+			hid[iss], err = hashids.NewWithData(hd)
+			if err != nil {
+				b.Logger.Fatal("cannot create hashid", zap.Error(err), zap.Any("configuration", data), zap.String("iss", iss))
+			}
+		}
 
 		auth := &Authenticator{
 			Keys:               keys,
