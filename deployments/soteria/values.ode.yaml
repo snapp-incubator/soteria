@@ -139,12 +139,12 @@ vendors:
       signing_method: "HS512"
     topics:
       - type: test
-        template: snapp_pay/passenger/{{HashID .hashType .sub (IssToSnappID .iss)}}/pay
+        template: snapp_pay/passenger/{{HashID .hashType .sub .iss}}/pay
         hash_type: 0
         accesses:
           snpay: '1'
       - type: cab_event
-        template: ^{{IssToEntity .iss}}-event-{{HashID .hashType .sub (IssToSnappID .iss)}}$
+        template: ^{{IssToEntity .iss}}-event-{{HashID .hashType .sub .iss}}$
         hash_type: 1
         accesses:
           snpay: '1'
