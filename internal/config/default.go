@@ -43,7 +43,7 @@ func SnappVendor() Vendor {
 			"pub",
 			"sub",
 		},
-		HashIDMap: map[string]HashID{
+		HashIDMap: map[string]topics.HashData{
 			"0": {
 				Alphabet: "",
 				Length:   DefaultDriverHashLength,

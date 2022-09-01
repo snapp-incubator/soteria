@@ -10,7 +10,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
@@ -97,20 +96,11 @@ func (suite *AuthenticatorTestSuite) SetupSuite() {
 
 	suite.PublicKeys.Passenger = pkey1
 
-	hid := &snappids.HashIDSManager{
-		Salts: map[snappids.Audience]string{
-			snappids.PassengerAudience:  "secret",
-			snappids.DriverAudience:     "secret",
-			snappids.ThirdPartyAudience: "secret",
-		},
-		Lengths: map[snappids.Audience]int{
-			snappids.PassengerAudience:  15,
-			snappids.DriverAudience:     15,
-			snappids.ThirdPartyAudience: 15,
-		},
-	}
-
 	cfg := config.SnappVendor()
+
+	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
+	require.NoError(err)
+
 	suite.Authenticator = authenticator.Authenticator{
 		Keys: map[string]any{
 			topics.DriverIss:    pkey0,
@@ -339,16 +329,10 @@ func (suite *AuthenticatorTestSuite) TestACL_Driver() {
 func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 	t.Parallel()
 
-	hid := &snappids.HashIDSManager{
-		Salts: map[snappids.Audience]string{
-			snappids.DriverAudience: "secret",
-		},
-		Lengths: map[snappids.Audience]int{
-			snappids.DriverAudience: 15,
-		},
-	}
-
 	cfg := config.SnappVendor()
+
+	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
+	assert.NoError(t, err)
 
 	// nolint: exhaustruct
 	authenticator := authenticator.Authenticator{

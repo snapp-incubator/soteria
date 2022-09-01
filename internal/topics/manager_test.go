@@ -3,7 +3,6 @@ package topics_test
 import (
 	"testing"
 
-	"gitlab.snapp.ir/dispatching/snappids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 )
@@ -130,18 +129,11 @@ func TestTopic_GetType(t *testing.T) {
 
 	cfg := config.SnappVendor()
 
-	hid := &snappids.HashIDSManager{
-		Salts: map[snappids.Audience]string{
-			snappids.PassengerAudience:  "secret",
-			snappids.DriverAudience:     "secret",
-			snappids.ThirdPartyAudience: "secret",
-		},
-		Lengths: map[snappids.Audience]int{
-			snappids.PassengerAudience:  15,
-			snappids.DriverAudience:     15,
-			snappids.ThirdPartyAudience: 15,
-		},
+	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
+	if err != nil {
+		t.Errorf("invalid default hash-id: %s", err)
 	}
+
 	// nolint: exhaustruct
 	topicManager := topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap)
 

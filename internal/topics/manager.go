@@ -150,3 +150,26 @@ func (t *Manager) IssPeerMapper(iss string) string {
 
 	return t.IssPeerMap[Default]
 }
+
+func NewHashIDManager(hidmap map[string]HashData) (map[string]*hashids.HashID, error) {
+	hid := make(map[string]*hashids.HashID)
+
+	for iss, data := range hidmap {
+		var err error
+
+		hd := hashids.NewData()
+		hd.Salt = data.Salt
+		hd.MinLength = data.Length
+
+		if data.Alphabet != "" {
+			hd.Alphabet = data.Alphabet
+		}
+
+		hid[iss], err = hashids.NewWithData(hd)
+		if err != nil {
+			return nil, fmt.Errorf("cannot create hashid enc/dec %w", err)
+		}
+	}
+
+	return hid, nil
+}
