@@ -43,6 +43,8 @@ func SnappVendor() Vendor {
 			"pub",
 			"sub",
 		},
+		DriverAlphabet:      "",
+		PassengerAlphabet:   "",
 		PassengerHashLength: DefaultPassengerHashLength,
 		DriverHashLength:    DefaultDriverHashLength,
 		PassengerSalt:       "secret",
