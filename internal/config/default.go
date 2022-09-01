@@ -43,17 +43,23 @@ func SnappVendor() Vendor {
 			"pub",
 			"sub",
 		},
-		DriverAlphabet:      "",
-		PassengerAlphabet:   "",
-		PassengerHashLength: DefaultPassengerHashLength,
-		DriverHashLength:    DefaultDriverHashLength,
-		PassengerSalt:       "secret",
-		DriverSalt:          "secret",
-		Company:             "snapp",
+		HashIDMap: map[string]HashID{
+			"0": {
+				Alphabet: "",
+				Length:   DefaultDriverHashLength,
+				Salt:     "secret",
+			},
+			"1": {
+				Alphabet: "",
+				Length:   DefaultPassengerHashLength,
+				Salt:     "secret",
+			},
+		},
+		Company: "snapp",
 		Topics: []topics.Topic{
 			{
 				Type:     topics.CabEvent,
-				Template: "^{{IssToEntity .iss}}-event-{{HashID .hashType .sub (IssToSnappID .iss)}}$",
+				Template: "^{{IssToEntity .iss}}-event-{{HashID .hashType .sub .iss}}$",
 				HashType: topics.MD5,
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Sub,
@@ -62,7 +68,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.DriverLocation,
-				Template: "^{{.company}}/driver/{{HashID .hashType .sub (IssToSnappID .iss)}}/location$",
+				Template: "^{{.company}}/driver/{{HashID .hashType .sub .iss}}/location$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Pub,
@@ -71,7 +77,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.PassengerLocation,
-				Template: "^{{.company}}/passenger/{{HashID .hashType .sub (IssToSnappID .iss)}}/location$",
+				Template: "^{{.company}}/passenger/{{HashID .hashType .sub .iss}}/location$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Pub,
@@ -80,7 +86,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.SuperappEvent,
-				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/superapp$",
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/superapp$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Sub,
@@ -98,7 +104,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.SharedLocation,
-				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/{{IssToPeer .iss}}-location$", //nolint:lll
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/{{IssToPeer .iss}}-location$", //nolint:lll
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Sub,
@@ -107,7 +113,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.Chat,
-				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/chat$",
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/chat$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Sub,
@@ -116,7 +122,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.GeneralCallEntry,
-				Template: "^shared/{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/send$",
+				Template: "^shared/{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/call/send$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Pub,
@@ -125,7 +131,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.NodeCallEntry,
-				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/[a-zA-Z0-9-_]+/send$", //nolint: lll
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/call/[a-zA-Z0-9-_]+/send$", //nolint: lll
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Pub,
@@ -134,7 +140,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.CallOutgoing,
-				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub (IssToSnappID .iss)}}/call/receive$",
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/call/receive$",
 				HashType: topics.HashID,
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Sub,
