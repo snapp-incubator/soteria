@@ -3,7 +3,6 @@ package authenticator
 import (
 	"fmt"
 
-	"github.com/speps/go-hashids/v2"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
