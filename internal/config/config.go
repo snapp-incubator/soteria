@@ -32,20 +32,14 @@ type (
 	}
 
 	Vendor struct {
-		AllowedAccessTypes []string          `koanf:"allowed_access_types"`
-		Company            string            `koanf:"company"`
-		Topics             []topics.Topic    `koanf:"topics"`
-		Keys               map[string]string `koanf:"keys"`
-		IssEntityMap       map[string]string `koanf:"iss_entity_map"`
-		IssPeerMap         map[string]string `koanf:"iss_peer_map"`
-		Jwt                Jwt               `koanf:"jwt"`
-		HashIDMap          map[string]HashID `koanf:"hashid_map"`
-	}
-
-	HashID struct {
-		Length   int    `koanf:"length"`
-		Salt     string `koanf:"salt"`
-		Alphabet string `koanf:"alphabet"`
+		AllowedAccessTypes []string                   `koanf:"allowed_access_types"`
+		Company            string                     `koanf:"company"`
+		Topics             []topics.Topic             `koanf:"topics"`
+		Keys               map[string]string          `koanf:"keys"`
+		IssEntityMap       map[string]string          `koanf:"iss_entity_map"`
+		IssPeerMap         map[string]string          `koanf:"iss_peer_map"`
+		Jwt                Jwt                        `koanf:"jwt"`
+		HashIDMap          map[string]topics.HashData `koanf:"hashid_map"`
 	}
 
 	Jwt struct {
