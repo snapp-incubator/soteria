@@ -106,6 +106,8 @@ func (t *Manager) ParseTopic(topic, iss, sub string) *Template {
 		regex := new(strings.Builder)
 
 		if err := topicTemplate.Template.Execute(regex, fields); err != nil {
+			t.Logger.Error("template execution failed", zap.Error(err), zap.String("template", topicTemplate.Type))
+
 			return nil
 		}
 
@@ -132,6 +134,8 @@ func (t *Manager) getHashID(hashType HashType, sub string, iss string) string {
 	case MD5:
 		id, err := t.HashIDSManager[iss].DecodeWithError(sub)
 		if err != nil {
+			t.Logger.Error("decoding sub failed", zap.Error(err), zap.String("sub", sub))
+
 			return ""
 		}
 
@@ -141,6 +145,8 @@ func (t *Manager) getHashID(hashType HashType, sub string, iss string) string {
 	case HashID:
 		id, err := t.HashIDSManager[iss].DecodeWithError(sub)
 		if err != nil {
+			t.Logger.Error("decoding sub failed", zap.Error(err), zap.String("sub", sub))
+
 			return ""
 		}
 
