@@ -11,8 +11,9 @@ import (
 type HashType int
 
 const (
-	HashID HashType = iota
+	None HashType = iota
 	MD5
+	HashID
 )
 
 type Topic struct {
