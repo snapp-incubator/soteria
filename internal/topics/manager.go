@@ -145,9 +145,11 @@ func (t *Manager) getHashID(hashType HashType, sub string, iss string) string {
 		}
 
 		return fmt.Sprintf("%d", id[0])
+	case None:
+		fallthrough
+	default:
+		return sub
 	}
-
-	return sub
 }
 
 func (t *Manager) IssEntityMapper(iss string) string {
