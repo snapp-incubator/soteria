@@ -12,6 +12,7 @@ import (
 	"text/template"
 
 	"github.com/speps/go-hashids/v2"
+	"go.uber.org/zap"
 )
 
 const (
@@ -51,6 +52,7 @@ type Manager struct {
 	IssEntityMap   map[string]string
 	IssPeerMap     map[string]string
 	Functions      template.FuncMap
+	Logger         *zap.Logger
 }
 
 // NewTopicManager returns a topic manager to validate topics.
@@ -59,12 +61,14 @@ func NewTopicManager(
 	hashIDManager map[string]*hashids.HashID,
 	company string,
 	issEntityMap, issPeerMap map[string]string,
+	logger *zap.Logger,
 ) *Manager {
 	manager := &Manager{ //nolint: exhaustruct
 		HashIDSManager: hashIDManager,
 		Company:        company,
 		IssEntityMap:   issEntityMap,
 		IssPeerMap:     issPeerMap,
+		Logger:         logger,
 	}
 
 	manager.Functions = template.FuncMap{
@@ -102,10 +106,16 @@ func (t *Manager) ParseTopic(topic, iss, sub string) *Template {
 
 		regex := new(strings.Builder)
 
-		err := topicTemplate.Template.Execute(regex, fields)
-		if err != nil {
+		if err := topicTemplate.Template.Execute(regex, fields); err != nil {
 			return nil
 		}
+
+		t.Logger.Debug("topic template generated",
+			zap.String("topic", regex.String()),
+			zap.String("iss", iss),
+			zap.String("sub", sub),
+			zap.String("company", t.Company),
+		)
 
 		if regexp.MustCompile(regex.String()).MatchString(topic) {
 			return &topicTemplate
