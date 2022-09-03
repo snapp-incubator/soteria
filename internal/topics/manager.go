@@ -129,15 +129,23 @@ func (t *Manager) ParseTopic(topic, iss, sub string) *Template {
 // most of the topics have hashID type for their hashIDs but some old topics have different hashTypes.
 // if hashType is equal to hashID, sub is returned without any changes.
 func (t *Manager) getHashID(hashType HashType, sub string, iss string) string {
-	if hashType == MD5 {
+	switch hashType {
+	case MD5:
 		id, err := t.HashIDSManager[iss].DecodeWithError(sub)
 		if err != nil {
 			return ""
 		}
 
-		hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", EmqCabHashPrefix, strconv.Itoa(id[0])))) //nolint:gosec
+		hid := md5.Sum([]byte(fmt.Sprintf("%s-%d", EmqCabHashPrefix, id[0]))) //nolint:gosec
 
 		return fmt.Sprintf("%x", hid)
+	case HashID:
+		id, err := t.HashIDSManager[iss].DecodeWithError(sub)
+		if err != nil {
+			return ""
+		}
+
+		return fmt.Sprintf("%d", id[0])
 	}
 
 	return sub
