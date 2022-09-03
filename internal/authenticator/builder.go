@@ -38,6 +38,7 @@ func (b Builder) Authenticators() map[string]*Authenticator {
 				vendor.Company,
 				vendor.IssEntityMap,
 				vendor.IssPeerMap,
+				b.Logger.Named("topic-manager"),
 			),
 			JwtConfig: vendor.Jwt,
 		}
