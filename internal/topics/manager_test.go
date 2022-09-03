@@ -5,6 +5,7 @@ import (
 
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
+	"go.uber.org/zap"
 )
 
 // nolint: funlen
@@ -135,7 +136,7 @@ func TestTopic_GetType(t *testing.T) {
 	}
 
 	// nolint: exhaustruct
-	topicManager := topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap)
+	topicManager := topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop())
 
 	sub := "DXKgaNQa7N5Y7bo"
 
