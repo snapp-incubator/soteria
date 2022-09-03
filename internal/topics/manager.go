@@ -7,7 +7,6 @@ import (
 	"crypto/md5" //nolint: gosec
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 	"text/template"
 
