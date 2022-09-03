@@ -71,9 +71,10 @@ func NewTopicManager(
 	}
 
 	manager.Functions = template.FuncMap{
-		"IssToEntity": manager.IssEntityMapper,
-		"HashID":      manager.getHashID,
-		"IssToPeer":   manager.IssPeerMapper,
+		"IssToEntity":  manager.IssEntityMapper,
+		"DecodeHashID": manager.DecodeHashID,
+		"EncodeMD5":    manager.EncodeMD5,
+		"IssToPeer":    manager.IssPeerMapper,
 	}
 
 	templates := make([]Template, 0)
@@ -82,7 +83,6 @@ func NewTopicManager(
 		each := Template{
 			Type:     topic.Type,
 			Template: template.Must(template.New(topic.Type).Funcs(manager.Functions).Parse(topic.Template)),
-			HashType: topic.HashType,
 			Accesses: topic.Accesses,
 		}
 		templates = append(templates, each)
@@ -101,8 +101,6 @@ func (t *Manager) ParseTopic(topic, iss, sub string) *Template {
 	fields["sub"] = sub
 
 	for _, topicTemplate := range t.TopicTemplates {
-		fields["hashType"] = topicTemplate.HashType
-
 		regex := new(strings.Builder)
 
 		if err := topicTemplate.Template.Execute(regex, fields); err != nil {
@@ -126,36 +124,21 @@ func (t *Manager) ParseTopic(topic, iss, sub string) *Template {
 	return nil
 }
 
-// getHashID calculate hashID based on hashType.
-// most of the topics have hashID type for their hashIDs but some old topics have different hashTypes.
-// if hashType is equal to hashID, sub is returned without any changes.
-func (t *Manager) getHashID(hashType HashType, sub string, iss string) string {
-	switch hashType {
-	case MD5:
-		id, err := t.HashIDSManager[iss].DecodeWithError(sub)
-		if err != nil {
-			t.Logger.Error("decoding sub failed", zap.Error(err), zap.String("sub", sub))
+func (t *Manager) EncodeMD5(iss string) string {
+	hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", EmqCabHashPrefix, iss))) //nolint:gosec
 
-			return ""
-		}
+	return fmt.Sprintf("%x", hid)
+}
 
-		hid := md5.Sum([]byte(fmt.Sprintf("%s-%d", EmqCabHashPrefix, id[0]))) //nolint:gosec
+func (t *Manager) DecodeHashID(sub, iss string) string {
+	id, err := t.HashIDSManager[iss].DecodeWithError(sub)
+	if err != nil {
+		t.Logger.Error("decoding sub failed", zap.Error(err), zap.String("sub", sub))
 
-		return fmt.Sprintf("%x", hid)
-	case HashID:
-		id, err := t.HashIDSManager[iss].DecodeWithError(sub)
-		if err != nil {
-			t.Logger.Error("decoding sub failed", zap.Error(err), zap.String("sub", sub))
-
-			return ""
-		}
-
-		return fmt.Sprintf("%d", id[0])
-	case None:
-		fallthrough
-	default:
-		return sub
+		return ""
 	}
+
+	return fmt.Sprintf("%d", id[0])
 }
 
 func (t *Manager) IssEntityMapper(iss string) string {
