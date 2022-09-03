@@ -7,26 +7,15 @@ import (
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 )
 
-// HashType topic hashID type.
-type HashType int
-
-const (
-	None HashType = iota
-	MD5
-	HashID
-)
-
 type Topic struct {
 	Type     string                    `koanf:"type"`
 	Template string                    `koanf:"template"`
-	HashType HashType                  `koanf:"hash_type"`
 	Accesses map[string]acl.AccessType `koanf:"accesses"`
 }
 
 type Template struct {
 	Type     string
 	Template *template.Template
-	HashType HashType
 	Accesses map[string]acl.AccessType
 }
 
