@@ -25,26 +25,23 @@ vendors:
     allowed_access_types: [ "pub", "sub" ]
     topics:
       - type: cab_event
-        template: ^{{IssToEntity .iss}}-event-{{HashID .hashType .sub .iss}}$
-        hash_type: 1
+        template: ^{{IssToEntity .iss}}-event-{{ EncodeMD5 (DecodeHashID .sub .iss) }}$
         accesses:
           0: '1'
           1: '1'
       - type: driver_location
-        template: ^{{.company}}/driver/{{HashID .hashType .sub .iss}}/location$
-        hash_type: 0
+        template: ^{{.company}}/driver/{{.sub}}/location$
         accesses:
           0: '2'
           1: '-1'
       - type: passenger_location
-        template: ^{{.company}}/passenger/{{HashID .hashType .sub .iss}}/location$
+        template: ^{{.company}}/passenger/{{.sub}}/location$
         hash_type: 0
         accesses:
           0: '2'
           1: '2'
       - type: superapp_event
-        template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/superapp$
-        hash_type: 0
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/superapp$
         accesses:
           0: '1'
           1: '1'
@@ -55,32 +52,27 @@ vendors:
           0: '-1'
           1: '-1'
       - type: shared_location
-        template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/{{IssToPeer .iss}}-location$
-        hash_type: 0
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/{{IssToPeer .iss}}-location$
         accesses:
           0: '1'
           1: '1'
       - type: chat
-        template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/chat$
-        hash_type: 0
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/chat$
         accesses:
           0: '1'
           1: '1'
       - type: general_call_entry
-        template: ^shared/{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/call/send$
-        hash_type: 0
+        template: ^shared/{{.company}}/{{IssToEntity .iss}}/{{.sub}}/call/send$
         accesses:
           0: '2'
           1: '2'
       - type: node_call_entry
-        template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/call/[a-zA-Z0-9-_]+/send$
-        hash_type: 0
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/call/[a-zA-Z0-9-_]+/send$
         accesses:
           0: '2'
           1: '2'
       - type: call_outgoing
-        template: ^{{.company}}/{{IssToEntity .iss}}/{{HashID .hashType .sub .iss}}/call/receive$
-        hash_type: 0
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/call/receive$
         accesses:
           0: '1'
           1: '1'
@@ -139,12 +131,10 @@ vendors:
       signing_method: "HS512"
     topics:
       - type: test
-        template: snapp_pay/passenger/{{HashID .hashType .sub .iss}}/pay
-        hash_type: 0
+        template: snapp_pay/passenger/{{.sub}}/pay
         accesses:
           snpay: '1'
       - type: cab_event
-        template: ^{{IssToEntity .iss}}-event-{{HashID .hashType .sub .iss}}$
-        hash_type: 1
+        template: ^{{IssToEntity .iss}}-event-{{ EncodeMD5 (DecodeHashID .sub .iss) }}$
         accesses:
           snpay: '1'
