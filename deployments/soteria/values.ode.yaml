@@ -135,7 +135,7 @@ vendors:
       default: "none"
     jwt:
       iss_name: "iss"
-      sub_name: "sud"
+      sub_name: "ud"
       signing_method: "HS512"
     topics:
       - type: test
