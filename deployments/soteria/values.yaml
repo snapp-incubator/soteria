@@ -47,7 +47,7 @@ config:
   default_vendor: "snapp"
   http_port: 9999
   logger:
-    level: "warn"
+    level: "debug"
   tracer:
     enabled: false
     ratio: 0.1
