@@ -74,7 +74,7 @@ release:production:teh-2:
 release:production:baly:
   extends: .easy_ci:release:docker
   variables:
-    BALY_REGISTRY: "registry.cloud.baly.app"
+    BALY_REGISTRY: "registry.apps.internal.okd.eu-central-1.cloud.baly.app"
     RELEASE_CONTAINER_REGISTRY_ADDRESS: "$BALY_REGISTRY"
     RELEASE_CONTAINER_REGISTRY_IMAGE: "$BALY_REGISTRY/baly-dispatching/$CI_PROJECT_NAME"
     RELEASE_CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
