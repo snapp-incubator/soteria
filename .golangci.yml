@@ -7,6 +7,7 @@ linters:
     # it should improve to support more known patterns
     - varnamelen
     - ireturn
+    - musttag
     # deprecated linters
     - maligned
     - scopelint
