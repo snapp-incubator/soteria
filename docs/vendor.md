@@ -42,6 +42,31 @@ These two configuration map iss to entity and peer respectively.
 
 **Note**: default case is `required`
 
+```yaml
+
+iss_entity_map:
+  0: "driver"
+  1: "passenger"
+  default: "none"
+iss_peer_map:
+  0: "passenger"
+  1: "driver"
+  default: "none"
+
+- type: driver_location
+  template: ^{{.company}}/driver/{{.sub}}/location$
+  accesses:
+    0: '2'
+    1: '-1'
+```
+
+In the example above, we have two maps for entity & peer maps. As it's clear for **entity** structure **0** and **1** is mapped to **driver** and **passenger**, respectively. Vice Versa, for peer structure it can be seen that **1** and **0** is mapped to **driver** and **passenger**. We have also the **default** key for both two cases.
+
+In the topic example, we have an accesses section in which **0** is mapped to **2** and **1** is mapped to **-1** which can be interpreted as a map from **IssEntity's Keys** to **Access Types**. In the other words this structure means:
+
+* **Driver**  has a **Pub** access on topic
+* **Passenger** has a **None** access on topic (No Access)
+
 ## JWT
 This is the jwt configuration. `iss_name` and `sub_name` are the name of issuer and subject in the jwt token's payload respectively.
 
