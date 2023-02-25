@@ -44,7 +44,7 @@ curl -s -u 'admin:admin' -L https://doago-snapp-ode-020.apps.private.teh-1.snapp
 ```
 
 # Architecure 
-
+![architectureOfSoteria](docs/arch.png)
 
 
 # Folder Structure
