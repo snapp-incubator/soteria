@@ -5,6 +5,6 @@ description: Soteria Helm Chart
 
 type: application
 
-version: 7.0.2
+version: 7.0.3
 
-appVersion: "v7-0-2"
+appVersion: "v7-0-3"
