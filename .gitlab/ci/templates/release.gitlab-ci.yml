@@ -32,8 +32,8 @@ release:staging:teh-2:
 release:mozart:
   extends: .easy_ci:release:docker
   variables:
-    RELEASE_CONTAINER_REGISTRY_ADDRESS: "$OKD_TEH1_REGISTRY"
-    RELEASE_CONTAINER_REGISTRY_IMAGE: "$OKD_TEH1_REGISTRY/mozart/$CI_PROJECT_NAME"
+    OKD4_TEH1_REGISTRY: "image-registry.apps.private.okd4.teh-1.snappcloud.io"
+    RELEASE_CONTAINER_REGISTRY_IMAGE: "$OKD4_TEH1_REGISTRY/mozart/$CI_PROJECT_NAME"
     RELEASE_CONTAINER_REGISTRY_USERNAME: "gitlab-ci"
     RELEASE_CONTAINER_REGISTRY_PASSWORD: "$OKD_MOZART_TOKEN"
   dependencies:
