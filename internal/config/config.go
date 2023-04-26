@@ -35,7 +35,7 @@ type (
 		AllowedAccessTypes []string                   `koanf:"allowed_access_types"`
 		Company            string                     `koanf:"company"`
 		Topics             []topics.Topic             `koanf:"topics"`
-		Keys               map[string]string          `koanf:"keys"`
+		Keys               map[string][]string        `koanf:"keys"`
 		IssEntityMap       map[string]string          `koanf:"iss_entity_map"`
 		IssPeerMap         map[string]string          `koanf:"iss_peer_map"`
 		Jwt                Jwt                        `koanf:"jwt"`
