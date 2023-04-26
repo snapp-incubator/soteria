@@ -11,7 +11,7 @@ import (
 
 // Authenticator is responsible for Acl/Auth/Token of users.
 type Authenticator struct {
-	Keys               map[string]any
+	Keys               map[string][]any
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
 	Company            string
