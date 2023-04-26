@@ -41,7 +41,7 @@ const (
 	// EmqCabHashPrefix is the default prefix for hashing part of cab topic, default value is 'emqch'.
 	EmqCabHashPrefix = "emqch"
 
-	Default = "default"
+	Default = "0"
 )
 
 type Manager struct {
