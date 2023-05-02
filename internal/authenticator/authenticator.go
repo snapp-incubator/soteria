@@ -21,10 +21,12 @@ type Authenticator struct {
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a Authenticator) Auth(tokenString string) error {
+	count := 1
 
-	for index := 0; index < len(a.TopicManager.IssEntityMapper(tokenString)); index++ {
-		fmt.Println(index)
+	for index := 0; index < count; index++ {
+
 		_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+
 			if token.Method.Alg() != a.JwtConfig.SigningMethod {
 				return nil, ErrInvalidSigningMethod
 			}
@@ -39,9 +41,15 @@ func (a Authenticator) Auth(tokenString string) error {
 
 			issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
 
-			key := a.Keys[issuer][index]
+			kilidash := a.Keys[issuer]
+
+			var key any
+			for i := range kilidash {
+				key = a.Keys[issuer][i]
+			}
 
 			return key, nil
+
 		})
 		if err == nil {
 			return nil
