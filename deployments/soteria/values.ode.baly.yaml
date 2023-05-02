@@ -125,7 +125,7 @@ vendors:
           0: '1'
           1: '1'
     keys:
-        0: |
+        0: |-
           -----BEGIN PUBLIC KEY-----
           MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyG4XpV9TpDfgWJF9TiIv
           va4hNhDuqYMJO6iXLzr3y8oCvoB7zUK0EjtbLH+A3gr1kUvyZKDWT4qHTvU2Sshm
@@ -135,7 +135,7 @@ vendors:
           J7F4N5f6y/VWd8+sDOSxtS/HcnP/7g8/A54G2IbXxr+EiwOO/1F+pyMPKq7sGDSU
           DwIDAQAB
           -----END PUBLIC KEY-----
-        1:
+        1: |-
           -----BEGIN PUBLIC KEY-----
           MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5SeRfOdTyvQZ7N9ahFHl
           +J05r7e9fgOQ2cpOtnnsIjAjCt1dF7/NkqVifEaxABRBGG9iXIw//G4hi0TqoKqK
