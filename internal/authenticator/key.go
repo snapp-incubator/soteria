@@ -28,10 +28,8 @@ func (b Builder) GenerateRsaKeys(raw map[string][]string) map[string][]any {
 	rsaKeys := make(map[string][]any)
 
 	for iss, publicKey := range raw {
-		for i, _ := range publicKey {
-
+		for i := range publicKey {
 			rsaKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicKey[i]))
-
 			if err != nil {
 				b.Logger.Fatal("could not read public key", zap.String("issuer", iss), zap.Error(err))
 			}
@@ -47,7 +45,7 @@ func (b Builder) GenerateHMacKeys(raw map[string][]string) map[string][]any {
 	keys := make(map[string][]any)
 
 	for iss, key := range raw {
-		for i, _ := range key {
+		for i := range key {
 			bytes, err := base64.StdEncoding.DecodeString(key[i])
 			if err != nil {
 				b.Logger.Fatal("failed to generate hmac key from base64", zap.Error(err))

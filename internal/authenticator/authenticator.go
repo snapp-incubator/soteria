@@ -41,7 +41,6 @@ func (a Authenticator) Auth(tokenString string) error {
 			key := a.Keys[issuer][index]
 
 			return key, nil
-
 		})
 		if err == nil {
 			return nil
