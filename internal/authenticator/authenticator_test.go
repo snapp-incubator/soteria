@@ -104,8 +104,8 @@ func (suite *AuthenticatorTestSuite) SetupSuite() {
 
 	suite.Authenticator = authenticator.Authenticator{
 		Keys: map[string][]any{
-			// topics.DriverIss:    pkey0,
-			// topics.PassengerIss: pkey1,
+			topics.DriverIss:    []any{pkey0},
+			topics.PassengerIss: []any{pkey1},
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
