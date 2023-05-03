@@ -139,7 +139,7 @@ func SnappVendor() Vendor {
 			},
 		},
 		Keys: map[string][]string{
-			"0": []string{`-----BEGIN PUBLIC KEY-----
+			"0": {`-----BEGIN PUBLIC KEY-----
 			MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyG4XpV9TpDfgWJF9TiIv
 			va4hNhDuqYMJO6iXLzr3y8oCvoB7zUK0EjtbLH+A3gr1kUvyZKDWT4qHTvU2Sshm
 			X+ttWGK34EhCvF3Lb18yxmVDSSK8JIcTaJjMqmyubxzamQnNoWazJ7ea9BIo2YGL
@@ -149,7 +149,7 @@ func SnappVendor() Vendor {
 			DwIDAQAB
 -----END PUBLIC KEY-----`},
 
-			"1": []string{`-----BEGIN PUBLIC KEY-----
+			"1": {`-----BEGIN PUBLIC KEY-----
 			MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5SeRfOdTyvQZ7N9ahFHl
         +J05r7e9fgOQ2cpOtnnsIjAjCt1dF7/NkqVifEaxABRBGG9iXIw//G4hi0TqoKqK
         aoSHMGf6q9pSRLGyB8FatxZf2RBTgrXYqVvpasbnB1ZNv858yTpRjV9NzJXYHLp8
