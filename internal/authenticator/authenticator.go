@@ -21,9 +21,8 @@ type Authenticator struct {
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a Authenticator) Auth(tokenString string) error {
-	count := 1
 
-	for index := 0; index < count; index++ {
+	for index := 0; index < len(a.Keys["0"]); index++ {
 
 		_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 
@@ -41,12 +40,7 @@ func (a Authenticator) Auth(tokenString string) error {
 
 			issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
 
-			kilidash := a.Keys[issuer]
-
-			var key any
-			for i := range kilidash {
-				key = a.Keys[issuer][i]
-			}
+			key := a.Keys[issuer][index]
 
 			return key, nil
 
@@ -54,9 +48,10 @@ func (a Authenticator) Auth(tokenString string) error {
 		if err == nil {
 			return nil
 		}
+		return fmt.Errorf("token is invalid: %w", err)
 	}
 
-	return ErrInvalidSigningMethod
+	return nil
 }
 
 // ACL check a user access to a topic.
