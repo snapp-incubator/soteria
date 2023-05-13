@@ -11,7 +11,7 @@ import (
 
 // Authenticator is responsible for Acl/Auth/Token of users.
 type Authenticator struct {
-	Keys               map[string]any
+	Keys               map[string][]any
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
 	Company            string
@@ -21,33 +21,33 @@ type Authenticator struct {
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a Authenticator) Auth(tokenString string) error {
-	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if token.Method.Alg() != a.JwtConfig.SigningMethod {
-			return nil, ErrInvalidSigningMethod
-		}
+	var err error
+	for index := 0; index < len(a.Keys["0"]); index++ { //nolint:staticcheck
+		_, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if token.Method.Alg() != a.JwtConfig.SigningMethod {
+				return nil, ErrInvalidSigningMethod
+			}
 
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok {
-			return nil, ErrInvalidClaims
-		}
-		if claims[a.JwtConfig.IssName] == nil {
-			return nil, ErrIssNotFound
-		}
+			claims, ok := token.Claims.(jwt.MapClaims)
+			if !ok {
+				return nil, ErrInvalidClaims
+			}
+			if claims[a.JwtConfig.IssName] == nil {
+				return nil, ErrIssNotFound
+			}
 
-		issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
+			issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
 
-		key := a.Keys[issuer]
-		if key == nil {
-			return nil, KeyNotFoundError{Issuer: issuer}
+			key := a.Keys[issuer][index]
+
+			return key, nil
+		})
+		if err == nil {
+			return nil
 		}
-
-		return key, nil
-	})
-	if err != nil {
-		return fmt.Errorf("token is invalid: %w", err)
 	}
 
-	return nil
+	return fmt.Errorf("token is invalid: %w", err) //nolint:staticcheck
 }
 
 // ACL check a user access to a topic.
