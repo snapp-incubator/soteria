@@ -8,6 +8,7 @@ linters:
     - varnamelen
     - ireturn
     - musttag
+    - depguard
     # deprecated linters
     - maligned
     - scopelint
