@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
@@ -29,6 +30,7 @@ type (
 		HTTPPort      int            `koanf:"http_port"`
 		Tracer        tracing.Config `koanf:"tracer"`
 		DefaultVendor string         `koanf:"default_vendor"`
+		Validator     Validator      `koanf:"validator"`
 	}
 
 	Vendor struct {
@@ -49,6 +51,11 @@ type (
 		IssName       string `koanf:"iss_name"`
 		SubName       string `koanf:"sub_name"`
 		SigningMethod string `koanf:"signing_method"`
+	}
+
+	Validator struct {
+		URL     string        `koanf:"url"`
+		Timeout time.Duration `koanf:"timeout"`
 	}
 )
 
