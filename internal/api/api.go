@@ -14,7 +14,7 @@ import (
 const VendorTokenSeparator = ":"
 
 type API struct {
-	Authenticators map[string]*authenticator.Authenticator
+	Authenticators map[string]authenticator.Authenticator
 	DefaultVendor  string
 	Tracer         trace.Tracer
 	Logger         *zap.Logger
@@ -47,7 +47,7 @@ func (a API) ReSTServer() *fiber.App {
 	return app
 }
 
-func (a API) Authenticator(vendor string) *authenticator.Authenticator {
+func (a API) Authenticator(vendor string) authenticator.Authenticator {
 	auth, ok := a.Authenticators[vendor]
 
 	if ok {
