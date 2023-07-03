@@ -21,7 +21,10 @@ require (
 	go.uber.org/zap v1.24.0
 )
 
-require github.com/golang-jwt/jwt/v5 v5.0.0-rc.1
+require (
+	github.com/golang-jwt/jwt/v5 v5.0.0-rc.1
+	gitlab.snapp.ir/security_regulatory/validator/pkg/sdk v0.2.1
+)
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
@@ -37,7 +40,6 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/klauspost/compress v1.16.3 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
