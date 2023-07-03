@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"gitlab.snapp.ir/dispatching/soteria/internal/logger"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/internal/tracing"
@@ -32,6 +34,10 @@ func Default() Config {
 				Host: "127.0.0.1",
 				Port: "6831",
 			},
+		},
+		Validator: Validator{
+			URL:     "http://validator-lb",
+			Timeout: 5 * time.Second,
 		},
 	}
 }

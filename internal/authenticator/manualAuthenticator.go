@@ -54,7 +54,7 @@ func (a ManualAuthenticator) Auth(tokenString string) error {
 
 // ACL check a user access to a topic.
 // nolint: funlen, cyclop
-func (a ManualAuthenticator) ACL(
+func (a ManualAuthenticator) ACL( //nolint:dupl
 	accessType acl.AccessType,
 	tokenString string,
 	topic string,

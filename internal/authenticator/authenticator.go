@@ -15,6 +15,9 @@ type Authenticator interface {
 		topic string,
 	) (bool, error)
 
+	// ValidateAccessType checks access type for specific topic
+	ValidateAccessType(accessType acl.AccessType) bool
+
 	// GetCompany Return the Company Field of The Inherited Objects
 	GetCompany() string
 }
