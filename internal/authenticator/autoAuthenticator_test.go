@@ -17,7 +17,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type ManualAuthenticatorTestSuite struct {
+type AutoAuthenticatorTestSuite struct {
 	suite.Suite
 
 	Tokens struct {
@@ -33,7 +33,7 @@ type ManualAuthenticatorTestSuite struct {
 	Authenticator authenticator.Authenticator
 }
 
-func (suite *ManualAuthenticatorTestSuite) SetupSuite() {
+func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 	require := suite.Require()
 
 	driverToken, err := suite.getSampleToken(topics.DriverIss, false)
@@ -57,22 +57,28 @@ func (suite *ManualAuthenticatorTestSuite) SetupSuite() {
 	suite.PublicKeys.Passenger = pkey1
 
 	cfg := config.SnappVendor()
+	cfg.UseValidator = true
 
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(err)
+	//
+	//appCfg := config.New()
+	//
+	//validatorClient := validatorSDK.New(appCfg.Validator.URL, appCfg.Validator.Timeout)
 
-	suite.Authenticator = authenticator.ManualAuthenticator{
+	suite.Authenticator = authenticator.AutoAuthenticator{
 		Keys: map[string][]any{
-			topics.DriverIss:    []any{pkey0},
-			topics.PassengerIss: []any{pkey1},
+			topics.DriverIss:    {pkey0},
+			topics.PassengerIss: {pkey1},
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
+		//Validator:          validatorClient,
 	}
 }
 
-func (suite *ManualAuthenticatorTestSuite) TestAuth() {
+func (suite *AutoAuthenticatorTestSuite) TestAuth() {
 	require := suite.Require()
 
 	suite.Run("testing driver token auth", func() {
@@ -88,7 +94,7 @@ func (suite *ManualAuthenticatorTestSuite) TestAuth() {
 	})
 }
 
-func (suite *ManualAuthenticatorTestSuite) TestACL_Basics() {
+func (suite *AutoAuthenticatorTestSuite) TestACL_Basics() {
 	require := suite.Require()
 
 	suite.Run("testing acl with invalid access type", func() {
@@ -125,7 +131,7 @@ func (suite *ManualAuthenticatorTestSuite) TestACL_Basics() {
 }
 
 // nolint: funlen
-func (suite *ManualAuthenticatorTestSuite) TestACL_Passenger() {
+func (suite *AutoAuthenticatorTestSuite) TestACL_Passenger() {
 	require := suite.Require()
 	token := suite.Tokens.Passenger
 
@@ -197,7 +203,7 @@ func (suite *ManualAuthenticatorTestSuite) TestACL_Passenger() {
 }
 
 // nolint: funlen
-func (suite *ManualAuthenticatorTestSuite) TestACL_Driver() {
+func (suite *AutoAuthenticatorTestSuite) TestACL_Driver() {
 	require := suite.Require()
 	token := suite.Tokens.Driver
 
@@ -286,16 +292,17 @@ func (suite *ManualAuthenticatorTestSuite) TestACL_Driver() {
 	})
 }
 
-func TestManualAuthenticator_ValidateTopicBySender(t *testing.T) {
+func TestAutoAuthenticator_ValidateTopicBySender(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.SnappVendor()
+	cfg.UseValidator = true
 
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	assert.NoError(t, err)
 
 	// nolint: exhaustruct
-	authenticator := authenticator.ManualAuthenticator{
+	authenticator := authenticator.AutoAuthenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
@@ -308,7 +315,7 @@ func TestManualAuthenticator_ValidateTopicBySender(t *testing.T) {
 }
 
 // nolint: funlen
-func TestManualAuthenticator_validateAccessType(t *testing.T) {
+func TestAutoAuthenticator_validateAccessType(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
@@ -387,7 +394,7 @@ func TestManualAuthenticator_validateAccessType(t *testing.T) {
 			t.Parallel()
 
 			// nolint: exhaustruct
-			a := authenticator.ManualAuthenticator{
+			a := authenticator.AutoAuthenticator{
 				AllowedAccessTypes: tt.fields.AllowedAccessTypes,
 			}
 			if got := a.ValidateAccessType(tt.args.accessType); got != tt.want {
@@ -398,7 +405,7 @@ func TestManualAuthenticator_validateAccessType(t *testing.T) {
 }
 
 // nolint: goerr113, wrapcheck
-func (suite *ManualAuthenticatorTestSuite) getPublicKey(u string) (*rsa.PublicKey, error) {
+func (suite *AutoAuthenticatorTestSuite) getPublicKey(u string) (*rsa.PublicKey, error) {
 	var fileName string
 
 	switch u {
@@ -424,7 +431,7 @@ func (suite *ManualAuthenticatorTestSuite) getPublicKey(u string) (*rsa.PublicKe
 }
 
 // nolint: goerr113, wrapcheck
-func (suite *ManualAuthenticatorTestSuite) getPrivateKey(u string) (*rsa.PrivateKey, error) {
+func (suite *AutoAuthenticatorTestSuite) getPrivateKey(u string) (*rsa.PrivateKey, error) {
 	var fileName string
 
 	switch u {
@@ -449,7 +456,7 @@ func (suite *ManualAuthenticatorTestSuite) getPrivateKey(u string) (*rsa.Private
 	return privateKey, nil
 }
 
-func (suite *ManualAuthenticatorTestSuite) getSampleToken(issuer string, isSuperuser bool) (string, error) {
+func (suite *AutoAuthenticatorTestSuite) getSampleToken(issuer string, isSuperuser bool) (string, error) {
 	key, err := suite.getPrivateKey(issuer)
 	if err != nil {
 		suite.Require().NoError(err)
