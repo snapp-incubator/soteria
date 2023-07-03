@@ -39,6 +39,7 @@ func Default() Config {
 //nolint:funlen
 func SnappVendor() Vendor {
 	return Vendor{
+		UseValidator: false,
 		AllowedAccessTypes: []string{
 			"pub",
 			"sub",

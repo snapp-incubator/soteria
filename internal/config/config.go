@@ -41,8 +41,8 @@ type (
 		Jwt                Jwt                 `koanf:"jwt"`
 		// by setting do validate to false we don't validate the jwt token and deligate
 		// it into a function.
-		DoValidate bool                       `koanf:"do_validate"`
-		HashIDMap  map[string]topics.HashData `koanf:"hashid_map"`
+		UseValidator bool                       `koanf:"use_validator"`
+		HashIDMap    map[string]topics.HashData `koanf:"hashid_map"`
 	}
 
 	Jwt struct {

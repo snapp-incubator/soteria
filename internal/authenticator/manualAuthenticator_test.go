@@ -102,7 +102,7 @@ func (suite *AuthenticatorTestSuite) SetupSuite() {
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(err)
 
-	suite.Authenticator = authenticator.Authenticator{
+	suite.Authenticator = authenticator.ManualAuthenticator{
 		Keys: map[string][]any{
 			topics.DriverIss:    []any{pkey0},
 			topics.PassengerIss: []any{pkey1},
@@ -336,7 +336,7 @@ func TestAuthenticator_ValidateTopicBySender(t *testing.T) {
 	assert.NoError(t, err)
 
 	// nolint: exhaustruct
-	authenticator := authenticator.Authenticator{
+	authenticator := authenticator.ManualAuthenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
@@ -428,7 +428,7 @@ func TestAuthenticator_validateAccessType(t *testing.T) {
 			t.Parallel()
 
 			// nolint: exhaustruct
-			a := authenticator.Authenticator{
+			a := authenticator.ManualAuthenticator{
 				AllowedAccessTypes: tt.fields.AllowedAccessTypes,
 			}
 			if got := a.ValidateAccessType(tt.args.accessType); got != tt.want {

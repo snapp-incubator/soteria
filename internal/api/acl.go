@@ -52,7 +52,7 @@ func (a API) ACL(c *fiber.Ctx) error {
 		attribute.String("token", request.Token),
 		attribute.String("username", request.Username),
 		attribute.String("password", request.Password),
-		attribute.String("authenticator", auth.Company),
+		attribute.String("authenticator", auth.GetCompany()),
 	)
 
 	ok, err := auth.ACL(request.Access, token, topic)
@@ -72,7 +72,7 @@ func (a API) ACL(c *fiber.Ctx) error {
 					zap.String("token", request.Token),
 					zap.String("username", request.Username),
 					zap.String("password", request.Password),
-					zap.String("authenticator", auth.Company))
+					zap.String("authenticator", auth.GetCompany()))
 		} else {
 			a.Logger.
 				Error("acl request is not authorized",
@@ -82,7 +82,7 @@ func (a API) ACL(c *fiber.Ctx) error {
 					zap.String("token", request.Token),
 					zap.String("username", request.Username),
 					zap.String("password", request.Password),
-					zap.String("authenticator", auth.Company))
+					zap.String("authenticator", auth.GetCompany()))
 		}
 
 		return c.Status(http.StatusUnauthorized).SendString("request is not authorized")
@@ -95,7 +95,7 @@ func (a API) ACL(c *fiber.Ctx) error {
 			zap.String("token", request.Token),
 			zap.String("username", request.Username),
 			zap.String("password", request.Password),
-			zap.String("authenticator", auth.Company),
+			zap.String("authenticator", auth.GetCompany()),
 		)
 
 	return c.Status(http.StatusOK).SendString("ok")

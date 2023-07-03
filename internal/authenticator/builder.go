@@ -14,8 +14,8 @@ type Builder struct {
 	Logger  zap.Logger
 }
 
-func (b Builder) Authenticators() map[string]*Authenticator {
-	all := make(map[string]*Authenticator)
+func (b Builder) Authenticators() map[string]Authenticator {
+	all := make(map[string]Authenticator)
 
 	for _, vendor := range b.Vendors {
 		b.ValidateMappers(vendor.IssEntityMap, vendor.IssPeerMap)
@@ -28,19 +28,31 @@ func (b Builder) Authenticators() map[string]*Authenticator {
 			b.Logger.Fatal("cannot create hash-id manager", zap.Error(err))
 		}
 
-		auth := &Authenticator{
-			Keys:               keys,
-			AllowedAccessTypes: allowedAccessTypes,
-			Company:            vendor.Company,
-			TopicManager: topics.NewTopicManager(
-				vendor.Topics,
-				hid,
-				vendor.Company,
-				vendor.IssEntityMap,
-				vendor.IssPeerMap,
-				b.Logger.Named("topic-manager"),
-			),
-			JwtConfig: vendor.Jwt,
+		var auth Authenticator
+
+		if vendor.UseValidator {
+			auth = &AutoAuthenticator{
+				Keys:               nil,
+				AllowedAccessTypes: nil,
+				TopicManager:       nil,
+				Company:            "",
+				JwtConfig:          config.Jwt{}, //nolint:exhaustruct
+			}
+		} else {
+			auth = &ManualAuthenticator{
+				Keys:               keys,
+				AllowedAccessTypes: allowedAccessTypes,
+				Company:            vendor.Company,
+				TopicManager: topics.NewTopicManager(
+					vendor.Topics,
+					hid,
+					vendor.Company,
+					vendor.IssEntityMap,
+					vendor.IssPeerMap,
+					b.Logger.Named("topic-manager"),
+				),
+				JwtConfig: vendor.Jwt,
+			}
 		}
 
 		all[vendor.Company] = auth
