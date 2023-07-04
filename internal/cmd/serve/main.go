@@ -23,10 +23,13 @@ type Serve struct {
 
 func (s Serve) main() {
 	api := api.API{
-		DefaultVendor:  s.Cfg.DefaultVendor,
-		Authenticators: authenticator.Builder{Vendors: s.Cfg.Vendors, Logger: s.Logger}.Authenticators(),
-		Tracer:         s.Tracer,
-		Logger:         s.Logger.Named("api"),
+		DefaultVendor: s.Cfg.DefaultVendor,
+		Authenticators: authenticator.Builder{
+			Vendors: s.Cfg.Vendors, Logger: s.Logger,
+			ValidatorConfig: s.Cfg.Validator,
+		}.Authenticators(),
+		Tracer: s.Tracer,
+		Logger: s.Logger.Named("api"),
 	}
 
 	if _, ok := api.Authenticators[s.Cfg.DefaultVendor]; !ok {

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"gitlab.snapp.ir/dispatching/soteria/internal/logger"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/internal/tracing"
@@ -33,12 +35,17 @@ func Default() Config {
 				Port: "6831",
 			},
 		},
+		Validator: Validator{
+			URL:     "http://validator-lb",
+			Timeout: 5 * time.Second,
+		},
 	}
 }
 
 //nolint:funlen
 func SnappVendor() Vendor {
 	return Vendor{
+		UseValidator: false,
 		AllowedAccessTypes: []string{
 			"pub",
 			"sub",
