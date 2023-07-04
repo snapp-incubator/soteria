@@ -12,6 +12,11 @@ image:
   tag: main
   pullPolicy: Always
 
+config:
+  validator:
+    url: "http://validator:80"
+    timeout: 10s
+
 vendors:
   snapp:
     company: "snapp"
