@@ -19,6 +19,7 @@ config:
 
 vendors:
   snapp:
+    use_validator: true
     company: "snapp"
     hashid_map:
       0:
