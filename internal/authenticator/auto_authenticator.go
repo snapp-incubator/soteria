@@ -28,15 +28,15 @@ func (a AutoAuthenticator) Auth(tokenString string) error {
 	if _, err := a.Validator.Validate(context.Background(), &http.Header{
 		"X-Service-Name": []string{"Soteria"},
 	}, tokenString); err != nil {
-		return fmt.Errorf("token is invalid: %w", err) //nolint:staticcheck
+		return fmt.Errorf("token is invalid: %w", err)
 	}
 
 	return nil
 }
 
 // ACL check a user access to a topic.
-// nolint: funlen, cyclop
-func (a AutoAuthenticator) ACL( //nolint:dupl
+// nolint: funlen, cyclop, dupl
+func (a AutoAuthenticator) ACL(
 	accessType acl.AccessType,
 	tokenString string,
 	topic string,
