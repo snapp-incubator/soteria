@@ -36,13 +36,11 @@ type AutoAuthenticatorTestSuite struct {
 func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 	require := suite.Require()
 
-	driverToken, err := suite.getSampleToken(topics.DriverIss, false)
-	require.NoError(err)
+	driverToken := suite.getSampleToken(topics.DriverIss)
 
 	suite.Tokens.Driver = driverToken
 
-	passengerToken, err := suite.getSampleToken(topics.PassengerIss, false)
-	require.NoError(err)
+	passengerToken := suite.getSampleToken(topics.PassengerIss)
 
 	suite.Tokens.Passenger = passengerToken
 
@@ -61,11 +59,8 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(err)
-	//
-	// appCfg := config.New()
-	//
-	// validatorClient := validatorSDK.New(appCfg.Validator.URL, appCfg.Validator.Timeout)
 
+	// nolint: exhaustruct
 	suite.Authenticator = authenticator.AutoAuthenticator{
 		Keys: map[string][]any{
 			topics.DriverIss:    {pkey0},
@@ -94,6 +89,7 @@ func (suite *AutoAuthenticatorTestSuite) TestAuth() {
 	})
 }
 
+// nolint: dupl
 func (suite *AutoAuthenticatorTestSuite) TestACL_Basics() {
 	require := suite.Require()
 
@@ -309,12 +305,14 @@ func TestAutoAuthenticator_ValidateTopicBySender(t *testing.T) {
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
+		t.Parallel()
+
 		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topics.DriverIss, "DXKgaNQa7N5Y7bo")
 		assert.True(t, topicTemplate != nil)
 	})
 }
 
-// nolint: funlen
+// nolint: funlen, dupl
 func TestAutoAuthenticator_validateAccessType(t *testing.T) {
 	t.Parallel()
 
@@ -456,11 +454,9 @@ func (suite *AutoAuthenticatorTestSuite) getPrivateKey(u string) (*rsa.PrivateKe
 	return privateKey, nil
 }
 
-func (suite *AutoAuthenticatorTestSuite) getSampleToken(issuer string, isSuperuser bool) (string, error) {
+func (suite *AutoAuthenticatorTestSuite) getSampleToken(issuer string) string {
 	key, err := suite.getPrivateKey(issuer)
-	if err != nil {
-		suite.Require().NoError(err)
-	}
+	suite.Require().NoError(err)
 
 	exp := time.Now().Add(time.Hour * 24 * 365 * 10)
 	sub := "DXKgaNQa7N5Y7bo"
@@ -468,15 +464,13 @@ func (suite *AutoAuthenticatorTestSuite) getSampleToken(issuer string, isSuperus
 	// nolint: exhaustruct
 	claims := jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(exp),
-		Issuer:    string(issuer),
+		Issuer:    issuer,
 		Subject:   sub,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
 	tokenString, err := token.SignedString(key)
-	if err != nil {
-		suite.Require().NoError(err)
-	}
+	suite.Require().NoError(err)
 
-	return tokenString, nil
+	return tokenString
 }
