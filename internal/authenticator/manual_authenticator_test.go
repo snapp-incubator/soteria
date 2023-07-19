@@ -3,7 +3,7 @@ package authenticator_test
 import (
 	"crypto/rsa"
 	"errors"
-	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -36,13 +36,11 @@ type ManualAuthenticatorTestSuite struct {
 func (suite *ManualAuthenticatorTestSuite) SetupSuite() {
 	require := suite.Require()
 
-	driverToken, err := suite.getSampleToken(topics.DriverIss, false)
-	require.NoError(err)
+	driverToken := suite.getSampleToken(topics.DriverIss)
 
 	suite.Tokens.Driver = driverToken
 
-	passengerToken, err := suite.getSampleToken(topics.PassengerIss, false)
-	require.NoError(err)
+	passengerToken := suite.getSampleToken(topics.PassengerIss)
 
 	suite.Tokens.Passenger = passengerToken
 
@@ -61,6 +59,7 @@ func (suite *ManualAuthenticatorTestSuite) SetupSuite() {
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(err)
 
+	// nolint: exhaustruct
 	suite.Authenticator = authenticator.ManualAuthenticator{
 		Keys: map[string][]any{
 			topics.DriverIss:    {pkey0},
@@ -88,6 +87,7 @@ func (suite *ManualAuthenticatorTestSuite) TestAuth() {
 	})
 }
 
+// nolint: dupl
 func (suite *ManualAuthenticatorTestSuite) TestACL_Basics() {
 	require := suite.Require()
 
@@ -302,12 +302,13 @@ func TestManualAuthenticator_ValidateTopicBySender(t *testing.T) {
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
+		t.Parallel()
 		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topics.DriverIss, "DXKgaNQa7N5Y7bo")
 		assert.True(t, topicTemplate != nil)
 	})
 }
 
-// nolint: funlen
+// nolint: funlen, dupl
 func TestManualAuthenticator_validateAccessType(t *testing.T) {
 	t.Parallel()
 
@@ -410,7 +411,7 @@ func (suite *ManualAuthenticatorTestSuite) getPublicKey(u string) (*rsa.PublicKe
 		return nil, errors.New("invalid user, public key not found")
 	}
 
-	pem, err := ioutil.ReadFile(fileName)
+	pem, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
@@ -436,7 +437,7 @@ func (suite *ManualAuthenticatorTestSuite) getPrivateKey(u string) (*rsa.Private
 		return nil, errors.New("invalid user, private key not found")
 	}
 
-	pem, err := ioutil.ReadFile(fileName)
+	pem, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
@@ -449,11 +450,9 @@ func (suite *ManualAuthenticatorTestSuite) getPrivateKey(u string) (*rsa.Private
 	return privateKey, nil
 }
 
-func (suite *ManualAuthenticatorTestSuite) getSampleToken(issuer string, isSuperuser bool) (string, error) {
+func (suite *ManualAuthenticatorTestSuite) getSampleToken(issuer string) string {
 	key, err := suite.getPrivateKey(issuer)
-	if err != nil {
-		suite.Require().NoError(err)
-	}
+	suite.Require().NoError(err)
 
 	exp := time.Now().Add(time.Hour * 24 * 365 * 10)
 	sub := "DXKgaNQa7N5Y7bo"
@@ -461,15 +460,13 @@ func (suite *ManualAuthenticatorTestSuite) getSampleToken(issuer string, isSuper
 	// nolint: exhaustruct
 	claims := jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(exp),
-		Issuer:    string(issuer),
+		Issuer:    issuer,
 		Subject:   sub,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
 	tokenString, err := token.SignedString(key)
-	if err != nil {
-		suite.Require().NoError(err)
-	}
+	suite.Require().NoError(err)
 
-	return tokenString, nil
+	return tokenString
 }
