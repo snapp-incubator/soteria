@@ -3,7 +3,7 @@ package authenticator_test
 import (
 	"crypto/rsa"
 	"errors"
-	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -62,9 +62,9 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(err)
 	//
-	//appCfg := config.New()
+	// appCfg := config.New()
 	//
-	//validatorClient := validatorSDK.New(appCfg.Validator.URL, appCfg.Validator.Timeout)
+	// validatorClient := validatorSDK.New(appCfg.Validator.URL, appCfg.Validator.Timeout)
 
 	suite.Authenticator = authenticator.AutoAuthenticator{
 		Keys: map[string][]any{
@@ -74,7 +74,7 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
-		//Validator:          validatorClient,
+		// Validator:          validatorClient,
 	}
 }
 
@@ -417,7 +417,7 @@ func (suite *AutoAuthenticatorTestSuite) getPublicKey(u string) (*rsa.PublicKey,
 		return nil, errors.New("invalid user, public key not found")
 	}
 
-	pem, err := ioutil.ReadFile(fileName)
+	pem, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
@@ -443,7 +443,7 @@ func (suite *AutoAuthenticatorTestSuite) getPrivateKey(u string) (*rsa.PrivateKe
 		return nil, errors.New("invalid user, private key not found")
 	}
 
-	pem, err := ioutil.ReadFile(fileName)
+	pem, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
