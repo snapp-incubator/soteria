@@ -1,8 +1,11 @@
 package api_test
 
 import (
-	"gitlab.snapp.ir/dispatching/soteria/internal/api"
 	"testing"
+
+	"testing"
+
+	"gitlab.snapp.ir/dispatching/soteria/internal/api"
 )
 
 func TestExtractVendorToken(t *testing.T) {
