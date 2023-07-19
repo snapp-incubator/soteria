@@ -16,6 +16,3 @@ linters:
     - interfacer
     - exhaustivestruct
     - nolintlint
-run:
-  skip-files:
-    - ".*_test.go"
