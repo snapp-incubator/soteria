@@ -6,7 +6,7 @@ Soteria is responsible for Authentication and Authorization of every request sen
 
 We are using the http_auth plugin of EMQ for forwarding these requests to Soteria.
 
-EMQX has caching mechanism but it sends requests almost for each Publish message to Soteria. 
+EMQX has caching mechanism but it sends requests almost for each Publish message to Soteria.
 
 (PS: On Subscribe we have only one message from client that need authorization and other messages are coming from server.
 
@@ -43,9 +43,9 @@ Replace `driver` and `0` for issuer and ID respectively.
 curl -s -u 'admin:admin' -L https://doago-snapp-ode-020.apps.private.teh-1.snappcloud.io/api/snapp/driver/0  | jq '.Token' -r
 ```
 
-# Architecure 
-![architectureOfSoteria](docs/arch.png)
+# Architecure
 
+![architectureOfSoteria](docs/arch.png)
 
 # Folder Structure
 
