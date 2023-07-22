@@ -26,11 +26,11 @@ type AutoAuthenticator struct {
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a AutoAuthenticator) Auth(tokenString string) error {
 	if _, err := a.Validator.Validate(context.Background(), &http.Header{
-		"x-service-name":     []string{"soteria"},
+		"X-Service-Name":     []string{"soteria"},
 		"user-agent":         []string{},
-		"x-app-version-code": []string{""},
-		"x-app-version":      []string{""},
-		"x-app-name":         []string{"soteria"},
+		"X-APP-Version-Code": []string{""},
+		"X-APP-Version":      []string{""},
+		"X-APP-Name":         []string{"soteria"},
 		"locale":             []string{"en-US"},
 	}, tokenString); err != nil {
 		return fmt.Errorf("token is invalid: %w", err)
