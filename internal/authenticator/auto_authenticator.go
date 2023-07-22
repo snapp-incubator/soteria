@@ -32,7 +32,7 @@ func (a AutoAuthenticator) Auth(tokenString string) error {
 		"X-APP-Version":      []string{""},
 		"X-APP-Name":         []string{"soteria"},
 		"locale":             []string{"en-US"},
-	}, tokenString); err != nil {
+	}, fmt.Sprintf("bearer %s", tokenString)); err != nil {
 		return fmt.Errorf("token is invalid: %w", err)
 	}
 
