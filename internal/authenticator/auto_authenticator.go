@@ -50,36 +50,9 @@ func (a AutoAuthenticator) ACL(
 		return false, ErrInvalidAccessType
 	}
 
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if token.Method.Alg() != a.JwtConfig.SigningMethod {
-			return nil, ErrInvalidSigningMethod
-		}
+	var claims jwt.MapClaims
 
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok {
-			return nil, ErrInvalidClaims
-		}
-		if claims[a.JwtConfig.IssName] == nil {
-			return nil, ErrIssNotFound
-		}
-		if claims[a.JwtConfig.SubName] == nil {
-			return nil, ErrSubNotFound
-		}
-
-		issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
-		key := a.Keys[issuer]
-		if key == nil {
-			return nil, KeyNotFoundError{Issuer: issuer}
-		}
-
-		return key, nil
-	})
-	if err != nil {
-		return false, fmt.Errorf("token is invalid %w", err)
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
+	if _, _, err := jwt.NewParser().ParseUnverified(tokenString, &claims); err != nil {
 		return false, ErrInvalidClaims
 	}
 
