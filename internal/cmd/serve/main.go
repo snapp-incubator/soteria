@@ -61,7 +61,7 @@ func (s Serve) Register(root *cobra.Command) {
 			Use:   "serve",
 			Short: "serve runs the application",
 			Long:  `serve will run Soteria ReST server and waits until user disrupts.`,
-			Run: func(cmd *cobra.Command, args []string) {
+			Run: func(_ *cobra.Command, _ []string) {
 				s.main()
 			},
 		},
