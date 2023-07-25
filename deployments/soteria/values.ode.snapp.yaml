@@ -9,7 +9,7 @@ labels:
 image:
   registry: image-registry.apps.private.okd4.teh-1.snappcloud.io
   repository: mozart/soteria
-  tag: main
+  tag: v7.0.2
   pullPolicy: Always
 
 config:
