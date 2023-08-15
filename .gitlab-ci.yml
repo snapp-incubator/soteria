@@ -6,10 +6,6 @@ stages:
   - build
   - release
 
-variables:
-  BUILD_PATH: "./"
-  PROJECT_VERSION: "${CI_COMMIT_SHA}"
-
 include:
   - local: .gitlab/ci/templates/compile.gitlab-ci.yml
   - local: .gitlab/ci/templates/test.gitlab-ci.yml
