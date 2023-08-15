@@ -2,16 +2,11 @@
 compile:
   stage: compile
   image: registry.snapp.tech/docker/golang:1.20-alpine
-  variables:
-    GOOS: "linux"
-    GOARCH: "amd64"
-    CGO_ENABLED: 0
-  before_script:
-    - go env -w GOPROXY="https://repo.snapp.tech/repository/goproxy/"
+  extends: .easy_ci:go:cache
   script:
-    - go build -v -o ${BUILD_PATH}/${CI_PROJECT_NAME} cmd/soteria/soteria.go
+    - go build -v -o app cmd/soteria/soteria.go
   artifacts:
-    name: "$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG"
+    name: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}"
     paths:
-      - ${BUILD_PATH}/${CI_PROJECT_NAME}
+      - ./app
     expire_in: 1 week

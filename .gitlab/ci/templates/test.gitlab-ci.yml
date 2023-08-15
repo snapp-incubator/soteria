@@ -6,11 +6,10 @@ handolint:
   extends: .easy-ci:dockerfile:lint
 
 test:
-  image: registry.snapp.tech/docker/golang:1.20-alpine
+  image: registry.snapp.tech/docker/golang:1.21-alpine
   stage: test
   coverage: '/total:\s*\(statements\)\s*([\d.]+)%/'
-  before_script:
-    - go env -w GOPROXY="https://repo.snapp.tech/repository/goproxy/"
+  extends: .easy_ci:go:cache
   script:
     - go test -gcflags=-l -v -coverprofile .coverage.out ./...
     - go tool cover -func .coverage.out
