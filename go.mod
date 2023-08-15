@@ -1,9 +1,9 @@
 module gitlab.snapp.ir/dispatching/soteria
 
-go 1.20
+go 1.21
 
 require (
-	github.com/ansrivas/fiberprometheus/v2 v2.6.0
+	github.com/ansrivas/fiberprometheus/v2 v2.6.1
 	github.com/gofiber/contrib/fiberzap v1.0.2
 	github.com/gofiber/fiber/v2 v2.48.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
