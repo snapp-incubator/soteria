@@ -4,9 +4,9 @@ compile:
   image: registry.snapp.tech/docker/golang:1.20-alpine
   extends: .easy_ci:go:cache
   script:
-    - go build -v -o app cmd/soteria/soteria.go
+    - go build -v -o soteria cmd/soteria/soteria.go
   artifacts:
     name: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}"
     paths:
-      - ./app
+      - ./soteria
     expire_in: 1 week
