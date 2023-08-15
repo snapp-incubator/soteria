@@ -82,6 +82,18 @@ vendors:
         accesses:
           0: '1'
           1: '1'
+    iss_entity_map:
+      0: "driver"
+      1: "passenger"
+      default: "none"
+    iss_peer_map:
+      0: "passenger"
+      1: "driver"
+      default: "none"
+    jwt:
+      iss_name: "iss"
+      sub_name: "sub"
+      signing_method: "RS512"
 
   snapp_pay:
     company: "snapp_pay"
