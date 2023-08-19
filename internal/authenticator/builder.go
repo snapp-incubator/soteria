@@ -22,7 +22,6 @@ func (b Builder) Authenticators() map[string]Authenticator {
 	for _, vendor := range b.Vendors {
 		b.ValidateMappers(vendor.IssEntityMap, vendor.IssPeerMap)
 
-		keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
 		allowedAccessTypes := b.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
 
 		hid, err := topics.NewHashIDManager(vendor.HashIDMap)
@@ -36,7 +35,6 @@ func (b Builder) Authenticators() map[string]Authenticator {
 
 		if vendor.UseValidator {
 			auth = &AutoAuthenticator{
-				Keys:               keys,
 				AllowedAccessTypes: allowedAccessTypes,
 				Company:            vendor.Company,
 				TopicManager: topics.NewTopicManager(
@@ -51,6 +49,8 @@ func (b Builder) Authenticators() map[string]Authenticator {
 				Validator: validatorClient,
 			}
 		} else {
+			keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
+
 			auth = &ManualAuthenticator{
 				Keys:               keys,
 				AllowedAccessTypes: allowedAccessTypes,
