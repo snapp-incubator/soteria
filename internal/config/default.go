@@ -167,12 +167,14 @@ func SnappVendor() Vendor {
 -----END PUBLIC KEY-----`,
 		},
 		IssEntityMap: map[string]string{
-			"0": "driver",
-			"1": "passenger",
+			"0":       "driver",
+			"1":       "passenger",
+			"default": "",
 		},
 		IssPeerMap: map[string]string{
-			"0": "passenger",
-			"1": "driver",
+			"0":       "passenger",
+			"1":       "driver",
+			"default": "",
 		},
 		Jwt: Jwt{
 			IssName:       "iss",
