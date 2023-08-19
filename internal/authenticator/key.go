@@ -31,9 +31,9 @@ func (b Builder) GenerateRsaKeys(raw map[string]string) map[string]any {
 		bytes, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicKey))
 		if err != nil {
 			b.Logger.Fatal("could not read public key", zap.String("issuer", iss), zap.Error(err))
-
-			rsaKeys[iss] = bytes
 		}
+
+		rsaKeys[iss] = bytes
 	}
 
 	return rsaKeys
