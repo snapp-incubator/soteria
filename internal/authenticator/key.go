@@ -8,8 +8,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func (b Builder) GenerateKeys(method string, keys map[string][]string) map[string][]any {
-	var keyList map[string][]any
+func (b Builder) GenerateKeys(method string, keys map[string]string) map[string]any {
+	var keyList map[string]any
 
 	// ES RS HS PS EdDSA
 	switch {
@@ -18,41 +18,37 @@ func (b Builder) GenerateKeys(method string, keys map[string][]string) map[strin
 	case strings.HasPrefix(method, "HS"):
 		keyList = b.GenerateHMacKeys(keys)
 	default:
-		keyList = make(map[string][]any)
+		keyList = make(map[string]any)
 	}
 
 	return keyList
 }
 
-func (b Builder) GenerateRsaKeys(raw map[string][]string) map[string][]any {
-	rsaKeys := make(map[string][]any)
+func (b Builder) GenerateRsaKeys(raw map[string]string) map[string]any {
+	rsaKeys := make(map[string]any)
 
 	for iss, publicKey := range raw {
-		for i := range publicKey {
-			rsaKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicKey[i]))
-			if err != nil {
-				b.Logger.Fatal("could not read public key", zap.String("issuer", iss), zap.Error(err))
-			}
+		bytes, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicKey))
+		if err != nil {
+			b.Logger.Fatal("could not read public key", zap.String("issuer", iss), zap.Error(err))
 
-			rsaKeys[iss] = append(rsaKeys[iss], rsaKey)
+			rsaKeys[iss] = bytes
 		}
 	}
 
 	return rsaKeys
 }
 
-func (b Builder) GenerateHMacKeys(raw map[string][]string) map[string][]any {
-	keys := make(map[string][]any)
+func (b Builder) GenerateHMacKeys(raw map[string]string) map[string]any {
+	keys := make(map[string]any)
 
 	for iss, key := range raw {
-		for i := range key {
-			bytes, err := base64.StdEncoding.DecodeString(key[i])
-			if err != nil {
-				b.Logger.Fatal("failed to generate hmac key from base64", zap.Error(err))
-			}
-
-			keys[iss] = append(keys[iss], bytes)
+		bytes, err := base64.StdEncoding.DecodeString(key)
+		if err != nil {
+			b.Logger.Fatal("failed to generate hmac key from base64", zap.Error(err))
 		}
+
+		keys[iss] = bytes
 	}
 
 	return keys

@@ -14,7 +14,6 @@ import (
 
 // AutoAuthenticator is responsible for Acl/Auth/Token of users.
 type AutoAuthenticator struct {
-	Keys               map[string][]any
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
 	Company            string
