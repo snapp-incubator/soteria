@@ -11,7 +11,7 @@ import (
 
 // ManualAuthenticator is responsible for Acl/Auth/Token of users.
 type ManualAuthenticator struct {
-	Keys               map[string][]any
+	Keys               map[string]any
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
 	Company            string
@@ -21,35 +21,32 @@ type ManualAuthenticator struct {
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a ManualAuthenticator) Auth(tokenString string) error {
-	var err error
-	for index := 0; index < len(a.Keys["0"]); index++ { //nolint:staticcheck
-		_, err = jwt.Parse(tokenString, func(
-			token *jwt.Token,
-		) (interface{}, error) {
-			if token.Method.Alg() != a.JwtConfig.SigningMethod {
-				return nil, ErrInvalidSigningMethod
-			}
-
-			claims, ok := token.Claims.(jwt.MapClaims)
-			if !ok {
-				return nil, ErrInvalidClaims
-			}
-			if claims[a.JwtConfig.IssName] == nil {
-				return nil, ErrIssNotFound
-			}
-
-			issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
-
-			key := a.Keys[issuer][index]
-
-			return key, nil
-		})
-		if err == nil {
-			return nil
+	_, err := jwt.Parse(tokenString, func(
+		token *jwt.Token,
+	) (interface{}, error) {
+		if token.Method.Alg() != a.JwtConfig.SigningMethod {
+			return nil, ErrInvalidSigningMethod
 		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			return nil, ErrInvalidClaims
+		}
+		if claims[a.JwtConfig.IssName] == nil {
+			return nil, ErrIssNotFound
+		}
+
+		issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
+
+		key := a.Keys[issuer]
+
+		return key, nil
+	})
+	if err == nil {
+		return nil
 	}
 
-	return fmt.Errorf("token is invalid: %w", err) //nolint:staticcheck
+	return fmt.Errorf("token is invalid: %w", err)
 }
 
 // ACL check a user access to a topic.
@@ -88,7 +85,7 @@ func (a ManualAuthenticator) ACL( //nolint:dupl
 		return key, nil
 	})
 	if err != nil {
-		return false, fmt.Errorf("token is invalid %w", err)
+		return false, fmt.Errorf("token is invalid: %w", err)
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
