@@ -34,13 +34,13 @@ type (
 	}
 
 	Vendor struct {
-		AllowedAccessTypes []string            `koanf:"allowed_access_types"`
-		Company            string              `koanf:"company"`
-		Topics             []topics.Topic      `koanf:"topics"`
-		Keys               map[string][]string `koanf:"keys"`
-		IssEntityMap       map[string]string   `koanf:"iss_entity_map"`
-		IssPeerMap         map[string]string   `koanf:"iss_peer_map"`
-		Jwt                Jwt                 `koanf:"jwt"`
+		AllowedAccessTypes []string          `koanf:"allowed_access_types"`
+		Company            string            `koanf:"company"`
+		Topics             []topics.Topic    `koanf:"topics"`
+		Keys               map[string]string `koanf:"keys"`
+		IssEntityMap       map[string]string `koanf:"iss_entity_map"`
+		IssPeerMap         map[string]string `koanf:"iss_peer_map"`
+		Jwt                Jwt               `koanf:"jwt"`
 		// by setting do validate to false we don't validate the jwt token and deligate
 		// it into a function.
 		UseValidator bool                       `koanf:"use_validator"`
