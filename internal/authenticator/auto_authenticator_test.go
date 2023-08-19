@@ -62,10 +62,6 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 
 	// nolint: exhaustruct
 	suite.Authenticator = authenticator.AutoAuthenticator{
-		Keys: map[string][]any{
-			topics.DriverIss:    {pkey0},
-			topics.PassengerIss: {pkey1},
-		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
