@@ -1,6 +1,7 @@
 package authenticator
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -21,13 +22,13 @@ type ManualAuthenticator struct {
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a ManualAuthenticator) Auth(tokenString string) error {
-	_, err := jwt.Parse(tokenString, func(
+	parser := jwt.NewParser(
+		jwt.WithValidMethods([]string{a.JwtConfig.SigningMethod}),
+	)
+
+	_, err := parser.Parse(tokenString, func(
 		token *jwt.Token,
 	) (interface{}, error) {
-		if token.Method.Alg() != a.JwtConfig.SigningMethod {
-			return nil, ErrInvalidSigningMethod
-		}
-
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			return nil, ErrInvalidClaims
@@ -42,16 +43,16 @@ func (a ManualAuthenticator) Auth(tokenString string) error {
 
 		return key, nil
 	})
-	if err == nil {
-		return nil
+	if err != nil {
+		return fmt.Errorf("token is invalid: %w", err)
 	}
 
-	return fmt.Errorf("token is invalid: %w", err)
+	return nil
 }
 
 // ACL check a user access to a topic.
-// nolint: funlen, cyclop
-func (a ManualAuthenticator) ACL( //nolint:dupl
+// nolint: funlen, cyclop, dupl
+func (a ManualAuthenticator) ACL(
 	accessType acl.AccessType,
 	tokenString string,
 	topic string,
@@ -60,11 +61,11 @@ func (a ManualAuthenticator) ACL( //nolint:dupl
 		return false, ErrInvalidAccessType
 	}
 
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if token.Method.Alg() != a.JwtConfig.SigningMethod {
-			return nil, ErrInvalidSigningMethod
-		}
+	parser := jwt.NewParser(
+		jwt.WithValidMethods([]string{a.JwtConfig.SigningMethod}),
+	)
 
+	token, err := parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			return nil, ErrInvalidClaims
