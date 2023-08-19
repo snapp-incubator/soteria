@@ -1,9 +1,11 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
@@ -48,14 +50,16 @@ func (a API) Auth(c *fiber.Ctx) error {
 	if err := authenticator.Auth(token); err != nil {
 		span.RecordError(err)
 
-		a.Logger.
-			Error("auth request is not authorized",
-				zap.Error(err),
-				zap.String("token", request.Token),
-				zap.String("username", request.Username),
-				zap.String("password", request.Password),
-				zap.String("authenticator", authenticator.GetCompany()),
-			)
+		if !errors.Is(err, jwt.ErrTokenExpired) {
+			a.Logger.
+				Error("auth request is not authorized",
+					zap.Error(err),
+					zap.String("token", request.Token),
+					zap.String("username", request.Username),
+					zap.String("password", request.Password),
+					zap.String("authenticator", authenticator.GetCompany()),
+				)
+		}
 
 		return c.Status(http.StatusUnauthorized).SendString("request is not authorized")
 	}
