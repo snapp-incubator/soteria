@@ -1,7 +1,6 @@
 package authenticator
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
