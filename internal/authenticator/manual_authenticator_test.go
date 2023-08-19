@@ -61,9 +61,9 @@ func (suite *ManualAuthenticatorTestSuite) SetupSuite() {
 
 	// nolint: exhaustruct
 	suite.Authenticator = authenticator.ManualAuthenticator{
-		Keys: map[string][]any{
-			topics.DriverIss:    {pkey0},
-			topics.PassengerIss: {pkey1},
+		Keys: map[string]any{
+			topics.DriverIss:    pkey0,
+			topics.PassengerIss: pkey1,
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
