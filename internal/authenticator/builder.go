@@ -3,6 +3,7 @@ package authenticator
 import (
 	"fmt"
 
+	"github.com/golang-jwt/jwt/v4"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
@@ -47,6 +48,7 @@ func (b Builder) Authenticators() map[string]Authenticator {
 				),
 				JwtConfig: vendor.Jwt,
 				Validator: validatorClient,
+				Parser:    jwt.NewParser(),
 			}
 		} else {
 			keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
@@ -64,6 +66,7 @@ func (b Builder) Authenticators() map[string]Authenticator {
 					b.Logger.Named("topic-manager"),
 				),
 				JwtConfig: vendor.Jwt,
+				Parser:    jwt.NewParser(jwt.WithValidMethods([]string{vendor.Jwt.SigningMethod})),
 			}
 		}
 

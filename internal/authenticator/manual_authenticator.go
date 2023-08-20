@@ -3,7 +3,7 @@ package authenticator
 import (
 	"fmt"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v4"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
@@ -16,16 +16,13 @@ type ManualAuthenticator struct {
 	TopicManager       *topics.Manager
 	Company            string
 	JwtConfig          config.Jwt
+	Parser             *jwt.Parser
 }
 
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a ManualAuthenticator) Auth(tokenString string) error {
-	parser := jwt.NewParser(
-		jwt.WithValidMethods([]string{a.JwtConfig.SigningMethod}),
-	)
-
-	_, err := parser.Parse(tokenString, func(
+	_, err := a.Parser.Parse(tokenString, func(
 		token *jwt.Token,
 	) (interface{}, error) {
 		claims, ok := token.Claims.(jwt.MapClaims)
@@ -60,11 +57,7 @@ func (a ManualAuthenticator) ACL(
 		return false, ErrInvalidAccessType
 	}
 
-	parser := jwt.NewParser(
-		jwt.WithValidMethods([]string{a.JwtConfig.SigningMethod}),
-	)
-
-	token, err := parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := a.Parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			return nil, ErrInvalidClaims
