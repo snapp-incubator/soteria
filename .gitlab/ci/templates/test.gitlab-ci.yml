@@ -6,7 +6,7 @@ handolint:
   extends: .easy-ci:dockerfile:lint
 
 test:
-  image: registry.snapp.tech/docker/golang:1.21-alpine
+  image: registry.snapp.tech/docker/golang:1.19-alpine
   stage: test
   coverage: '/total:\s*\(statements\)\s*([\d.]+)%/'
   extends: .easy_ci:go:cache
