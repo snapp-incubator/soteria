@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v4"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"go.opentelemetry.io/otel/attribute"

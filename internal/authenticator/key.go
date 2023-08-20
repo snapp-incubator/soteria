@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"strings"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
 )
 
