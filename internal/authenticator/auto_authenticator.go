@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v4"
 	"gitlab.snapp.ir/dispatching/soteria/internal/config"
 	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
@@ -19,6 +19,7 @@ type AutoAuthenticator struct {
 	Company            string
 	JwtConfig          config.Jwt
 	Validator          validatorSDK.Client
+	Parser             *jwt.Parser
 }
 
 // Auth check user authentication by checking the user's token
@@ -51,7 +52,7 @@ func (a AutoAuthenticator) ACL(
 
 	var claims jwt.MapClaims
 
-	if _, _, err := jwt.NewParser().ParseUnverified(tokenString, &claims); err != nil {
+	if _, _, err := a.Parser.ParseUnverified(tokenString, &claims); err != nil {
 		return false, ErrInvalidClaims
 	}
 
