@@ -8,7 +8,7 @@ lint:helm:soteria:
     - tags
   when: manual
 
-chart:helm::soteria:
+chart:helm:soteria:
   stage: release
   extends: .easy_ci:helm:push
   variables:
