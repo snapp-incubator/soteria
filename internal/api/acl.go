@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
 	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
 	"go.opentelemetry.io/otel/attribute"
@@ -73,7 +74,7 @@ func (a API) ACL(c *fiber.Ctx) error {
 					zap.String("username", request.Username),
 					zap.String("password", request.Password),
 					zap.String("authenticator", auth.GetCompany()))
-		} else {
+		} else if !errors.Is(err, jwt.ErrTokenExpired) {
 			a.Logger.
 				Error("acl request is not authorized",
 					zap.Error(err),
