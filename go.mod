@@ -1,6 +1,6 @@
 module gitlab.snapp.ir/dispatching/soteria
 
-go 1.20
+go 1.21
 
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.6.1
