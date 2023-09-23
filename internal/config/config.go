@@ -25,37 +25,37 @@ const (
 type (
 	// Config is the main container of Soteria's config.
 	Config struct {
-		Vendors       []Vendor       `koanf:"vendors"`
-		Logger        logger.Config  `koanf:"logger"`
-		HTTPPort      int            `koanf:"http_port"`
-		Tracer        tracing.Config `koanf:"tracer"`
-		DefaultVendor string         `koanf:"default_vendor"`
-		Validator     Validator      `koanf:"validator"`
+		Vendors       []Vendor       `json:"vendors,omitempty"        koanf:"vendors"`
+		Logger        logger.Config  `json:"logger,omitempty"         koanf:"logger"`
+		HTTPPort      int            `json:"http_port,omitempty"      koanf:"http_port"`
+		Tracer        tracing.Config `json:"tracer,omitempty"         koanf:"tracer"`
+		DefaultVendor string         `json:"default_vendor,omitempty" koanf:"default_vendor"`
+		Validator     Validator      `json:"validator,omitempty"      koanf:"validator"`
 	}
 
 	Vendor struct {
-		AllowedAccessTypes []string          `koanf:"allowed_access_types"`
-		Company            string            `koanf:"company"`
-		Topics             []topics.Topic    `koanf:"topics"`
-		Keys               map[string]string `koanf:"keys"`
-		IssEntityMap       map[string]string `koanf:"iss_entity_map"`
-		IssPeerMap         map[string]string `koanf:"iss_peer_map"`
-		Jwt                Jwt               `koanf:"jwt"`
+		AllowedAccessTypes []string          `json:"allowed_access_types,omitempty" koanf:"allowed_access_types"`
+		Company            string            `json:"company,omitempty"              koanf:"company"`
+		Topics             []topics.Topic    `json:"topics,omitempty"               koanf:"topics"`
+		Keys               map[string]string `json:"keys,omitempty"                 koanf:"keys"`
+		IssEntityMap       map[string]string `json:"iss_entity_map,omitempty"       koanf:"iss_entity_map"`
+		IssPeerMap         map[string]string `json:"iss_peer_map,omitempty"         koanf:"iss_peer_map"`
+		Jwt                Jwt               `json:"jwt,omitempty"                  koanf:"jwt"`
 		// by setting do validate to false we don't validate the jwt token and deligate
 		// it into a function.
-		UseValidator bool                       `koanf:"use_validator"`
-		HashIDMap    map[string]topics.HashData `koanf:"hashid_map"`
+		UseValidator bool                       `json:"use_validator,omitempty" koanf:"use_validator"`
+		HashIDMap    map[string]topics.HashData `json:"hash_id_map,omitempty"   koanf:"hashid_map"`
 	}
 
 	Jwt struct {
-		IssName       string `koanf:"iss_name"`
-		SubName       string `koanf:"sub_name"`
-		SigningMethod string `koanf:"signing_method"`
+		IssName       string `json:"iss_name,omitempty"       koanf:"iss_name"`
+		SubName       string `json:"sub_name,omitempty"       koanf:"sub_name"`
+		SigningMethod string `json:"signing_method,omitempty" koanf:"signing_method"`
 	}
 
 	Validator struct {
-		URL     string        `koanf:"url"`
-		Timeout time.Duration `koanf:"timeout"`
+		URL     string        `json:"url,omitempty"     koanf:"url"`
+		Timeout time.Duration `json:"timeout,omitempty" koanf:"timeout"`
 	}
 )
 
