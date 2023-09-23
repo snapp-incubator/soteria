@@ -1,58 +1,72 @@
 # Soteria
 
+## Introduction
+
 Soteria is responsible for Authentication and Authorization of every request sent to EMQ.
 
-# Description Details
+```hocon
+{
+    mechanism = password_based
+    backend = http
+    enable = true
 
-We are using the http_auth plugin of EMQ for forwarding these requests to Soteria.
-
-EMQX has caching mechanism but it sends requests almost for each Publish message to Soteria.
-
-(PS: On Subscribe we have only one message from client that need authorization and other messages are coming from server.
-
-# Deployment
-
-## Staging
-
-You can deploy `soteria` to the staging environments using
-helm charts.
-
-```bash
-cd deployments/soteria
-helm install soteria .
+    method = post
+    url = "http://127.0.0.1:8080/v2/auth"
+    body {
+        username = "${username}"
+        password = "${password}"
+        token = "${username}"
+        clientid = "${clientid}"
+    }
+    headers {
+        "Content-Type" = "application/json"
+        "X-Request-Source" = "EMQX"
+    }
+}
 ```
 
-## Production
+```hocon
+{
+    type = http
+    enable = true
 
-We deploy `soteria` on `Cloud (okd)` infrastructures.
+    method = post
+    url = "http://127.0.0.1:32333/v2/acl"
+    body {
+        username = "${username}"
+        topic = "${topic}"
+        action = "${action}"
+    }
+    headers {
+        "Content-Type" = "application/json"
+        "X-Request-Source" = "EMQX"
+    }
+}
 
-### Cloud (okd)
+```
 
-[dispatching/ignite](https://gitlab.snapp.ir/dispatching/ignite) is responsible
-for production deployments on Cloud (okd).
+We are using the [Authentication HTTP Service](https://www.emqx.io/docs/en/v5.2/access-control/authn/http.html)
+and [Authorization HTTP Service](https://www.emqx.io/docs/en/v5.2/access-control/authn/http.html)
+plugins of EMQ for forwarding these requests to Soteria and doing Authentication and Authorization.
+EMQX has caching mechanism, but it sends requests almost for each Publish message to Soteria.
+PS: On Subscribe we have only one message from client that need authorization and other messages are coming from server.
 
-# Add Vendor
+## Deployment
 
-Soteria is a multivendor authenticator for EMQX. Follow instruction from [here](docs/vendor.md)
+### Add Vendor
 
-# Generate JWT Token
+Soteria is a multivendor authenticator for EMQX.
+Follow instruction from [here](docs/vendor.md)
 
-Replace `driver` and `0` for issuer and ID respectively.
+### Generate JWT Token
+
+For testing Soteria on staging (I mean ODE) you can use the following
+`curl`, just replace `driver` and `0` for issuer and ID respectively.
 
 ```bash
 curl -s -u 'admin:admin' -L https://doago-snapp-ode-020.apps.private.teh-1.snappcloud.io/api/snapp/driver/0  | jq '.Token' -r
 ```
 
-# Architecure
+### Architecure
 
 ![architectureOfSoteria](docs/arch.png)
-
-# Folder Structure
-
-- `.api`: API documentation like swagger files
-- `.gitlab`: Gitlab CI templates
-- `.okd`: OpenShift deployment configs (no longer is use. please use Helm charts)
-- `deployments`: Helm Charts
-- `internal`: Main application directory for codes
-- `pkg`: Go packages that their logic is independent of this project and can become handy in other projects as well.
-- `test`: test data like jwt keys
