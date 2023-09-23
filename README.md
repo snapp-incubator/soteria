@@ -3,6 +3,8 @@
 ## Introduction
 
 Soteria is responsible for Authentication and Authorization of every request sent to EMQ.
+The following configuration in [HOCON](https://github.com/lightbend/config/blob/master/HOCON.md)
+format, configure EMQX to use HTTP Service for Authentication and Authorization.
 
 ```hocon
 {
