@@ -41,8 +41,11 @@ func (a API) ReSTServer() *fiber.App {
 	prometheus.RegisterAt(app, "/metrics")
 	app.Use(prometheus.Middleware)
 
-	app.Post("/auth", a.Auth)
-	app.Post("/acl", a.ACL)
+	app.Post("/auth", a.Authv1)
+	app.Post("/acl", a.ACLv1)
+
+	app.Post("/v2/auth", a.Authv2)
+	app.Post("/v2/acl", a.ACLv2)
 
 	return app
 }
