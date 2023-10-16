@@ -9,8 +9,8 @@ labels:
   createdby: dispatching-team
 
 image:
-  registry: docker-registry.default.svc:5000
-  repository: realtime-staging/soteria
+  registry: image-registry.apps.private.okd4.teh-1.snappcloud.io
+  repository: mozart/soteria
   pullPolicy: Always
 
 timezone: Asia/Tehran
