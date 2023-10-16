@@ -9,7 +9,7 @@ labels:
   createdby: dispatching-team
 
 image:
-  registry: image-registry.apps.private.okd4.teh-1.snappcloud.io
+  registry: image-registry.openshift-image-registry.svc:5000
   repository: mozart/soteria
   pullPolicy: Always
 
