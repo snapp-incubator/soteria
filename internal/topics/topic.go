@@ -4,7 +4,7 @@ import (
 	"strings"
 	"text/template"
 
-	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"github.com/snapp-incubator/soteria/pkg/acl"
 )
 
 type Topic struct {
