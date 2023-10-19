@@ -6,7 +6,7 @@ import (
 	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/contrib/fiberzap"
 	"github.com/gofiber/fiber/v2"
-	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
+	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )

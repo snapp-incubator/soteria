@@ -1,7 +1,7 @@
 package authenticator
 
 import (
-	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"github.com/snapp-incubator/soteria/pkg/acl"
 )
 
 type Authenticator interface {

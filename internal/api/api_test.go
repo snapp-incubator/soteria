@@ -3,7 +3,7 @@ package api_test
 import (
 	"testing"
 
-	"gitlab.snapp.ir/dispatching/soteria/internal/api"
+	"github.com/snapp-incubator/soteria/internal/api"
 )
 
 // nolint: funlen
