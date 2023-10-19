@@ -10,7 +10,6 @@ import (
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
-	validatorSDK "gitlab.snapp.ir/security_regulatory/validator/pkg/sdk"
 )
 
 // AutoAuthenticator is responsible for Acl/Auth/Token of users.
@@ -19,14 +18,14 @@ type AutoAuthenticator struct {
 	TopicManager       *topics.Manager
 	Company            string
 	JwtConfig          config.Jwt
-	Validator          validatorSDK.Client
+	Validator          validator.Client
 	Parser             *jwt.Parser
 }
 
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a AutoAuthenticator) Auth(tokenString string) error {
-	if _, err := a.Validator.Validate(context.Background(), &http.Header{
+	if _, err := a.Validator.Validate(context.Background(), http.Header{
 		validator.ServiceNameHeader: []string{"soteria"},
 		"user-agent":                []string{},
 		"X-APP-Version-Code":        []string{""},
