@@ -1,6 +1,0 @@
----
-build:
-  extends: .easy_ci:docker:build
-  dependencies:
-    - compile
-
