@@ -3,8 +3,8 @@ package topics_test
 import (
 	"testing"
 
-	"gitlab.snapp.ir/dispatching/soteria/internal/config"
-	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/internal/config"
+	"github.com/snapp-incubator/soteria/internal/topics"
 	"go.uber.org/zap"
 )
 

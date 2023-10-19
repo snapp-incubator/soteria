@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"github.com/snapp-incubator/soteria/pkg/acl"
 )
 
 var (

@@ -8,9 +8,9 @@ import (
 	"os/signal"
 
 	"github.com/spf13/cobra"
-	"gitlab.snapp.ir/dispatching/soteria/internal/api"
-	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
-	"gitlab.snapp.ir/dispatching/soteria/internal/config"
+	"github.com/snapp-incubator/soteria/internal/api"
+	"github.com/snapp-incubator/soteria/internal/authenticator"
+	"github.com/snapp-incubator/soteria/internal/config"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
