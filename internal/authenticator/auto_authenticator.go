@@ -9,6 +9,7 @@ import (
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
+	"github.com/snapp-incubator/soteria/pkg/validator"
 	validatorSDK "gitlab.snapp.ir/security_regulatory/validator/pkg/sdk"
 )
 
@@ -26,12 +27,12 @@ type AutoAuthenticator struct {
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a AutoAuthenticator) Auth(tokenString string) error {
 	if _, err := a.Validator.Validate(context.Background(), &http.Header{
-		"X-Service-Name":     []string{"soteria"},
-		"user-agent":         []string{},
-		"X-APP-Version-Code": []string{""},
-		"X-APP-Version":      []string{""},
-		"X-APP-Name":         []string{"soteria"},
-		"locale":             []string{"en-US"},
+		validator.ServiceNameHeader: []string{"soteria"},
+		"user-agent":                []string{},
+		"X-APP-Version-Code":        []string{""},
+		"X-APP-Version":             []string{""},
+		"X-APP-Name":                []string{"soteria"},
+		"locale":                    []string{"en-US"},
 	}, fmt.Sprintf("bearer %s", tokenString)); err != nil {
 		return fmt.Errorf("token is invalid: %w", err)
 	}

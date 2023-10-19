@@ -1,4 +1,4 @@
-package client
+package validator
 
 import (
 	"context"
@@ -12,17 +12,12 @@ import (
 )
 
 const (
-	validateURI        = "/api/v3/internal/validate"
-	authHeader         = "Authorization"
-	UserDataHeader     = "X-User-Data"
-	fingerprintHeader  = "X-Fingerprint"
-	featureFlagsHeader = "X-Feature-Flags"
-	serviceNameHeader  = "X-Service-Name"
+	ServiceNameHeader = "X-Service-Name"
 
-	modeQueryParam        = "mode"
-	fingerprintQueryParam = "fingerprint"
-	checksumQueryParam    = "x-upstream-name"
-	subrequestQueryParam  = "subrequest"
+	validateURI    = "/api/v3/internal/validate"
+	authHeader     = "Authorization"
+	userDataHeader = "X-User-Data"
+	modeQueryParam = "mode"
 )
 
 type Client struct {
@@ -33,10 +28,6 @@ type Client struct {
 }
 
 type Payload struct {
-	UserData UserData
-}
-
-type UserData struct {
 	IAT    int    `json:"iat"`
 	Aud    string `json:"aud"`
 	Iss    int    `json:"iss"`
@@ -76,7 +67,7 @@ func (c *Client) WithOptionalValidate() {
 // Consider that the bearerToken must contain Bearer keyword and JWT.
 // For `X-Service-Name` you should put your project/service name in this header.
 func (c *Client) Validate(parentCtx context.Context, headers http.Header, bearerToken string) (*Payload, error) {
-	if headers.Get(serviceNameHeader) == "" {
+	if headers.Get(ServiceNameHeader) == "" {
 		return nil, errors.New("x-service-name can not be empty")
 	}
 
@@ -116,7 +107,7 @@ func (c *Client) Validate(parentCtx context.Context, headers http.Header, bearer
 		return nil, fmt.Errorf("invalid token: %s", response.Status)
 	}
 
-	userDataHeader := response.Header.Get(UserDataHeader)
+	userDataHeader := response.Header.Get(userDataHeader)
 	if userDataHeader == "" {
 		return nil, fmt.Errorf("invalid X-User-Data header")
 	}
@@ -127,37 +118,37 @@ func (c *Client) Validate(parentCtx context.Context, headers http.Header, bearer
 		return nil, fmt.Errorf("X-User-Data header unmarshal failed: %s", err)
 	}
 
-	payload := &Payload{UserData: UserData{}}
+	payload := new(Payload)
 	if iat, ok := userData["iat"].(float64); ok {
-		payload.UserData.IAT = int(iat)
+		payload.IAT = int(iat)
 	}
 
 	if aud, ok := userData["aud"].(string); ok {
-		payload.UserData.Aud = aud
+		payload.Aud = aud
 	}
 
 	if iss, ok := userData["iss"].(float64); ok {
-		payload.UserData.Iss = int(iss)
+		payload.Iss = int(iss)
 	}
 
 	if sub, ok := userData["sub"].(string); ok {
-		payload.UserData.Sub = sub
+		payload.Sub = sub
 	}
 
 	if userID, ok := userData["user_id"].(float64); ok {
-		payload.UserData.UserID = int(userID)
+		payload.UserID = int(userID)
 	}
 
 	if email, ok := userData["email"].(string); ok {
-		payload.UserData.Email = email
+		payload.Email = email
 	}
 
 	if exp, ok := userData["exp"].(float64); ok {
-		payload.UserData.Exp = int(exp)
+		payload.Exp = int(exp)
 	}
 
 	if locale, ok := userData["locale"].(string); ok {
-		payload.UserData.Locale = locale
+		payload.Locale = locale
 	}
 
 	return payload, nil
