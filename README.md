@@ -1,4 +1,4 @@
-# Soteria
+<h1 align="center"> Soteria </h1>
 
 ## Introduction
 
@@ -60,15 +60,6 @@ PS: On Subscribe we have only one message from client that need authorization an
 Soteria is a multivendor authenticator for EMQX.
 Follow instruction from [here](docs/vendor.md)
 
-### Generate JWT Token
-
-For testing Soteria on staging (I mean ODE) you can use the following
-`curl`, just replace `driver` and `0` for issuer and ID respectively.
-
-```bash
-curl -s -u 'admin:admin' -L https://doago-snapp-ode-020.apps.private.teh-1.snappcloud.io/api/snapp/driver/0  | jq '.Token' -r
-```
-
-### Architecure
+### Architecture
 
 ![architectureOfSoteria](docs/arch.png)
