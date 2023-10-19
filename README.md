@@ -1,5 +1,15 @@
 <h1 align="center"> Soteria </h1>
 
+<p align="center">
+    <img src="./assets/logo.jpg" height="250px">
+</p>
+
+<p align="center">
+    <img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/snapp-incubator/soteria/test.yaml?logo=github&style=for-the-badge">
+    <img alt="Codecov" src="https://img.shields.io/codecov/c/github/snapp-incubator/soteria?logo=codecov&style=for-the-badge">
+    <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/snapp-incubator/soteria?logo=github&style=for-the-badge">
+</p>
+
 ## Introduction
 
 Soteria is responsible for Authentication and Authorization of every request sent to EMQ.
