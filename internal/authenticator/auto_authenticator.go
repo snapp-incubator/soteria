@@ -6,9 +6,9 @@ import (
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
-	"gitlab.snapp.ir/dispatching/soteria/internal/config"
-	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"github.com/snapp-incubator/soteria/internal/config"
+	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/pkg/acl"
 	validatorSDK "gitlab.snapp.ir/security_regulatory/validator/pkg/sdk"
 )
 

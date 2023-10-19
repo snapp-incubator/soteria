@@ -10,10 +10,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"gitlab.snapp.ir/dispatching/soteria/internal/authenticator"
-	"gitlab.snapp.ir/dispatching/soteria/internal/config"
-	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"github.com/snapp-incubator/soteria/internal/authenticator"
+	"github.com/snapp-incubator/soteria/internal/config"
+	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/pkg/acl"
 	"go.uber.org/zap"
 )
 

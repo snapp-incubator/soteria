@@ -3,10 +3,10 @@ package config
 import (
 	"time"
 
-	"gitlab.snapp.ir/dispatching/soteria/internal/logger"
-	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/internal/tracing"
-	"gitlab.snapp.ir/dispatching/soteria/pkg/acl"
+	"github.com/snapp-incubator/soteria/internal/logger"
+	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/internal/tracing"
+	"github.com/snapp-incubator/soteria/pkg/acl"
 )
 
 const (

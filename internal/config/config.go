@@ -12,9 +12,9 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/structs"
 	"github.com/tidwall/pretty"
-	"gitlab.snapp.ir/dispatching/soteria/internal/logger"
-	"gitlab.snapp.ir/dispatching/soteria/internal/topics"
-	"gitlab.snapp.ir/dispatching/soteria/internal/tracing"
+	"github.com/snapp-incubator/soteria/internal/logger"
+	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/internal/tracing"
 )
 
 const (
