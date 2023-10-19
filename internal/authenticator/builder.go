@@ -7,7 +7,7 @@ import (
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
-	validatorSDK "gitlab.snapp.ir/security_regulatory/validator/pkg/sdk"
+	"github.com/snapp-incubator/soteria/pkg/validator"
 	"go.uber.org/zap"
 )
 
@@ -30,7 +30,7 @@ func (b Builder) Authenticators() map[string]Authenticator {
 			b.Logger.Fatal("cannot create hash-id manager", zap.Error(err))
 		}
 
-		validatorClient := validatorSDK.New(b.ValidatorConfig.URL, b.ValidatorConfig.Timeout)
+		client := validator.New(b.ValidatorConfig.URL, b.ValidatorConfig.Timeout)
 
 		var auth Authenticator
 
@@ -47,7 +47,7 @@ func (b Builder) Authenticators() map[string]Authenticator {
 					b.Logger.Named("topic-manager"),
 				),
 				JwtConfig: vendor.Jwt,
-				Validator: validatorClient,
+				Validator: client,
 				Parser:    jwt.NewParser(),
 			}
 		} else {
