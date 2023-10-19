@@ -1,7 +1,7 @@
 <h1 align="center"> Soteria </h1>
 
 <p align="center">
-    <img src="./assets/logo.jpg" height="250px">
+    <img src="./.github/assets/logo.jpg" height="250px">
 </p>
 
 <p align="center">
