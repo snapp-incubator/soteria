@@ -1,0 +1,17 @@
+{
+  "group": {
+    "default": {
+      "targets": [
+        "soteria"
+      ]
+    }
+  },
+  "target": {
+    "koochooloo": {
+      "dockerfile": "build/package/Dockerfile",
+      "tags": [
+        "ghcr.io/snapp-incubator/soteria"
+      ]
+    }
+  }
+}
