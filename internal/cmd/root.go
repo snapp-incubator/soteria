@@ -3,11 +3,11 @@ package cmd
 import (
 	"os"
 
-	"github.com/spf13/cobra"
 	"github.com/snapp-incubator/soteria/internal/cmd/serve"
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/logger"
 	"github.com/snapp-incubator/soteria/internal/tracing"
+	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
 
