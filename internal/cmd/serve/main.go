@@ -7,10 +7,10 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/spf13/cobra"
 	"github.com/snapp-incubator/soteria/internal/api"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/config"
+	"github.com/spf13/cobra"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
