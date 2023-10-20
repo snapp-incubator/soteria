@@ -20,6 +20,13 @@ const (
 	modeQueryParam = "mode"
 )
 
+var (
+	ErrEmptyServiceName      = errors.New("x-service-name can not be empty")
+	ErrInvalidJWT            = errors.New("invalid jwt")
+	ErrInvalidUserDataHeader = errors.New("invalid X-User-Data header")
+	ErrRequestFailed         = errors.New("validator request failed")
+)
+
 type Client struct {
 	baseURL    string
 	client     *http.Client
@@ -66,14 +73,15 @@ func (c *Client) WithOptionalValidate() {
 // You must place your Authorization header content in the bearerToken argument.
 // Consider that the bearerToken must contain Bearer keyword and JWT.
 // For `X-Service-Name` you should put your project/service name in this header.
+// nolint: funlen, cyclop
 func (c *Client) Validate(parentCtx context.Context, headers http.Header, bearerToken string) (*Payload, error) {
 	if headers.Get(ServiceNameHeader) == "" {
-		return nil, errors.New("x-service-name can not be empty")
+		return nil, ErrEmptyServiceName
 	}
 
 	segments := strings.Split(bearerToken, " ")
 	if len(segments) < 2 || strings.ToLower(segments[0]) != "bearer" {
-		return nil, errors.New("invalid jwt")
+		return nil, ErrInvalidJWT
 	}
 
 	ctx, cancel := context.WithTimeout(parentCtx, c.timeout)
@@ -83,7 +91,7 @@ func (c *Client) Validate(parentCtx context.Context, headers http.Header, bearer
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("validator creating request failed %w", err)
 	}
 
 	request.Header = headers
@@ -98,24 +106,24 @@ func (c *Client) Validate(parentCtx context.Context, headers http.Header, bearer
 
 	response, err := c.client.Do(request)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("validator sending request failed %w", err)
 	}
 
 	closeBody(response)
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("invalid token: %s", response.Status)
+		return nil, ErrRequestFailed
 	}
 
 	userDataHeader := response.Header.Get(userDataHeader)
 	if userDataHeader == "" {
-		return nil, fmt.Errorf("invalid X-User-Data header")
+		return nil, ErrInvalidJWT
 	}
 
 	userData := map[string]interface{}{}
 
 	if err := json.Unmarshal([]byte(userDataHeader), &userData); err != nil {
-		return nil, fmt.Errorf("X-User-Data header unmarshal failed: %s", err)
+		return nil, fmt.Errorf("X-User-Data header unmarshal failed: %w", err)
 	}
 
 	payload := new(Payload)
