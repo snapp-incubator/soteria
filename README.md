@@ -12,9 +12,9 @@
 
 ## Introduction
 
-Soteria is responsible for Authentication and Authorization of every request sent to EMQ.
+Soteria is responsible for Authentication and Authorization of every request sent to [EMQ](https://github.com/emqx/emqx/).
 The following configuration in [HOCON](https://github.com/lightbend/config/blob/master/HOCON.md)
-format, configure EMQX to use HTTP Service for Authentication and Authorization.
+format, configure EMQ to use HTTP Service for Authentication and Authorization.
 
 ```hocon
 {
@@ -60,7 +60,7 @@ format, configure EMQX to use HTTP Service for Authentication and Authorization.
 We are using the [Authentication HTTP Service](https://www.emqx.io/docs/en/v5.2/access-control/authn/http.html)
 and [Authorization HTTP Service](https://www.emqx.io/docs/en/v5.2/access-control/authn/http.html)
 plugins of EMQ for forwarding these requests to Soteria and doing Authentication and Authorization.
-EMQX has caching mechanism, but it sends requests almost for each Publish message to Soteria.
+EMQ has caching mechanism, but it sends requests almost for each Publish message to Soteria.
 PS: On Subscribe we have only one message from client that need authorization and other messages are coming from server.
 
 ## Deployment
