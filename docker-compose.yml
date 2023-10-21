@@ -1,0 +1,30 @@
+services:
+  soteria:
+    build:
+      dockerfile: ./build/package/Dockerfile
+      context: .
+    command: serve
+  emqx:
+    image: emqx/emqx
+    environment:
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: public
+      EMQX_DASHBOARD__DEFAULT_USERNAME: admin
+      EMQX_AUTHENTICATION__1__MECHANISM: "password_based"
+      EMQX_AUTHENTICATION__1__BACKEND: "http"
+      EMQX_AUTHENTICATION__1__ENABLE: "true"
+      EMQX_AUTHENTICATION__1__METHOD: "post"
+      EMQX_AUTHENTICATION__1__URL: "http://soteria:9999/v2/auth"
+      EMQX_AUTHENTICATION__1__BODY: '{"username" = "$${username}", "password" = "$${password}", "token" = "$${username}"}'
+      EMQX_AUTHORIZATION__NO_MATCH: deny
+      EMQX_AUTHORIZATION__DENY_ACTION: disconnect
+      EMQX_AUTHORIZATION__SOURCES__1__TYPE: http
+      EMQX_AUTHORIZATION__SOURCES__1__METHOD: post
+      EMQX_AUTHORIZATION__SOURCES__1__URL: "http://soteria:9999/v2/acl"
+      EMQX_AUTHORIZATION__SOURCES__1__BODY: '{"username" = "$${username}", "password" = "$${password}", "token" = "$${username}"}'
+      EMQX_LISTENERS__TCP__DEFAULT__ENABLE_AUTHN: "quick_deny_anonymous"
+      EMQX_LISTENERS__TCP__INTERNAL__ENABLE: "true"
+      EMQX_LISTENERS__TCP__INTERNAL__BIND: 11883
+      EMQX_LISTENERS__TCP__INTERNAL__ENABLE_AUTHN: "false"
+    ports:
+      - 1883:1883
+      - 18083:18083
