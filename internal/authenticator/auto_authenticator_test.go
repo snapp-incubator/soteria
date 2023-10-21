@@ -12,7 +12,7 @@ import (
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 )
@@ -219,14 +219,14 @@ func (suite *AutoAuthenticatorTestSuite) TestACL_Driver() {
 
 	suite.Run("testing driver subscribe on valid superapp event topic", func() {
 		ok, err := suite.Authenticator.ACL(acl.Sub, token, validDriverSuperappEventTopic)
-		suite.NoError(err)
-		suite.True(ok)
+		require.NoError(err)
+		require.True(ok)
 	})
 
 	suite.Run("testing driver subscribe on invalid superapp event topic", func() {
 		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidDriverSuperappEventTopic)
-		suite.Error(err)
-		suite.False(ok)
+		require.Error(err)
+		require.False(ok)
 	})
 
 	suite.Run("testing driver subscribe on valid shared location topic", func() {
@@ -291,7 +291,7 @@ func TestAutoAuthenticator_ValidateTopicBySender(t *testing.T) {
 	cfg.UseValidator = true
 
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// nolint: exhaustruct
 	authenticator := authenticator.AutoAuthenticator{
@@ -304,7 +304,7 @@ func TestAutoAuthenticator_ValidateTopicBySender(t *testing.T) {
 		t.Parallel()
 
 		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topics.DriverIss, "DXKgaNQa7N5Y7bo")
-		assert.True(t, topicTemplate != nil)
+		require.NotNil(t, topicTemplate)
 	})
 }
 
