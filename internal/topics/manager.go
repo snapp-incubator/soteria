@@ -5,8 +5,10 @@ package topics
 
 import (
 	"crypto/md5" //nolint: gosec
+	"encoding/hex"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -127,7 +129,7 @@ func (t *Manager) ParseTopic(topic, iss, sub string) *Template {
 func (t *Manager) EncodeMD5(iss string) string {
 	hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", EmqCabHashPrefix, iss))) //nolint:gosec
 
-	return fmt.Sprintf("%x", hid)
+	return hex.EncodeToString(hid[:])
 }
 
 func (t *Manager) DecodeHashID(sub, iss string) string {
@@ -138,7 +140,7 @@ func (t *Manager) DecodeHashID(sub, iss string) string {
 		return ""
 	}
 
-	return fmt.Sprintf("%d", id[0])
+	return strconv.Itoa(id[0])
 }
 
 func (t *Manager) IssEntityMapper(iss string) string {
