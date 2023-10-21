@@ -1,8 +1,10 @@
 package tracing
 
 import (
+	"context"
+
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger" // nolint: staticcheck
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -16,11 +18,12 @@ func New(cfg Config, logger *zap.Logger) trace.Tracer { //nolint: ireturn
 		return trace.NewNoopTracerProvider().Tracer("snapp.dispatching")
 	}
 
-	exporter, err := jaeger.New(
-		jaeger.WithAgentEndpoint(jaeger.WithAgentHost(cfg.Agent.Host), jaeger.WithAgentPort(cfg.Agent.Port)),
+	exporter, err := otlptracegrpc.New(
+		context.Background(),
+		otlptracegrpc.WithEndpoint(cfg.Endpoint), otlptracegrpc.WithInsecure(),
 	)
 	if err != nil {
-		logger.Fatal("failed to initialize export pipeline", zap.Error(err))
+		log.Fatalf("failed to initialize export pipeline for traces (otlp with grpc): %v", err)
 	}
 
 	res, err := resource.Merge(
