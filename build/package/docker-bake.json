@@ -6,11 +6,16 @@
       ]
     }
   },
+  "variable": {
+    "TAG": {
+      "default": "latest"
+    }
+  },
   "target": {
     "soteria": {
       "dockerfile": "build/package/Dockerfile",
       "tags": [
-        "ghcr.io/snapp-incubator/soteria"
+        "ghcr.io/snapp-incubator/soteria:${TAG}"
       ]
     }
   }
