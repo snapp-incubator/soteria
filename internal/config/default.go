@@ -28,12 +28,9 @@ func Default() Config {
 		},
 		HTTPPort: DefaultHTTPPort,
 		Tracer: tracing.Config{
-			Enabled: false,
-			Ratio:   0.1,
-			Agent: tracing.Agent{
-				Host: "127.0.0.1",
-				Port: "6831",
-			},
+			Enabled:  false,
+			Ratio:    0.1,
+			Endpoint: "127.0.0.1:4317",
 		},
 		Validator: Validator{
 			URL:     "http://validator-lb",
@@ -42,7 +39,7 @@ func Default() Config {
 	}
 }
 
-//nolint:funlen
+// nolint: funlen
 func SnappVendor() Vendor {
 	return Vendor{
 		UseValidator: false,
