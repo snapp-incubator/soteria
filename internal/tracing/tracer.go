@@ -23,7 +23,7 @@ func New(cfg Config, logger *zap.Logger) trace.Tracer { //nolint: ireturn
 		otlptracegrpc.WithEndpoint(cfg.Endpoint), otlptracegrpc.WithInsecure(),
 	)
 	if err != nil {
-		log.Fatalf("failed to initialize export pipeline for traces (otlp with grpc): %v", err)
+		logger.Fatal("failed to initialize export pipeline for traces (otlp with grpc)", zap.Error(err))
 	}
 
 	res, err := resource.Merge(
