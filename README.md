@@ -8,6 +8,8 @@
     <img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/snapp-incubator/soteria/test.yaml?logo=github&style=for-the-badge">
     <img alt="Codecov" src="https://img.shields.io/codecov/c/github/snapp-incubator/soteria?logo=codecov&style=for-the-badge">
     <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/snapp-incubator/soteria?logo=github&style=for-the-badge">
+    <img alt="GitHub tag (with filter)" src="https://img.shields.io/github/v/tag/snapp-incubator/soteria?style=for-the-badge&logo=git">
+    <img alt="GitHub go.mod Go version (subdirectory of monorepo)" src="https://img.shields.io/github/go-mod/go-version/snapp-incubator/soteria?style=for-the-badge&logo=go">
 </p>
 
 ## Introduction
