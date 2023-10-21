@@ -7,9 +7,9 @@ labels:
   createdby: mozart
 
 image:
-  registry: image-registry.openshift-image-registry.svc:5000
-  repository: mozart/soteria
-  tag: main
+  registry: ghcr.io
+  repository: snapp-incubator/soteria
+  tag: latest
   pullPolicy: Always
 
 config:
