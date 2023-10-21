@@ -51,9 +51,9 @@ jobs:
           TAG: ${{ github.ref_name }}
         with:
           push: true
-          files: 'docker-bake.json'
+          files: 'build/package/docker-bake.json'
       - uses: docker/bake-action@v4
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         with:
           push: true
-          files: 'docker-bake.json'
+          files: 'build/package/docker-bake.json'
