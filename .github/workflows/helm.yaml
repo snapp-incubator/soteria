@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - deployments/soteria/**
+      - charts/soteria/**
 
 jobs:
   release:
