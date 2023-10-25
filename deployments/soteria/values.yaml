@@ -1,16 +1,13 @@
 ---
 replicaCount: 1
 
-namespace: dispatching-staging
-region: teh-1
-
 labels:
-  managedby: dispatching-team
-  createdby: dispatching-team
+  managedby: cloud-platform-team
+  createdby: cloud-platform-team
 
 image:
-  registry: image-registry.openshift-image-registry.svc:5000
-  repository: mozart/soteria
+  registry: ghcr.io
+  repository: snapp-incubator/soteria
   pullPolicy: Always
 
 timezone: Asia/Tehran
@@ -25,10 +22,10 @@ service:
 resources:
   limits:
     memory: 128Mi
-    cpu: 2
+    cpu: 1
   requests:
     memory: 128Mi
-    cpu: 1
+    cpu: 500m
 
 autoscaling:
   enabled: false
