@@ -47,10 +47,6 @@ config:
     level: "debug"
   tracer:
     enabled: false
-    ratio: 0.1
-    agent:
-      host: 127.0.0.1
-      port: 6831
 
 vendors:
   snapp:
