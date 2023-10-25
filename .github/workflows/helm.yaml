@@ -2,7 +2,10 @@
 name: helm
 
 on:
-  - push
+  push:
+    paths:
+      /charts/**
+      /.github/workflows/**
 
 jobs:
   test:
