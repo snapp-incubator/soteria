@@ -15,7 +15,7 @@ spec:
       {{ range .Values.service.ports }}
       {{ if eq .name "http"}}
       args:
-        - {{ include "soteria.fullname" $ }}:{{ .port }}/healthz
+        - {{ include "soteria.fullname" $ }}:{{ .port }}/metrics
       {{ end }}
       {{ end }}
   restartPolicy: Never
