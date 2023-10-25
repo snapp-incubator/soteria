@@ -3,13 +3,11 @@ name: helm
 
 on:
   push:
-    tags:
-      - 'v*'
+    paths:
+      /charts/**
 
 jobs:
-  release:
-    permissions:
-      contents: write
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -18,7 +16,7 @@ jobs:
       - name: set up helm
         uses: azure/setup-helm@v3
         with:
-          version: v3.5.0
+          version: v3.13.0
 
       - uses: actions/setup-python@v4
         with:
@@ -36,13 +34,26 @@ jobs:
       - name: run chart-testing (install)
         run: ct install --all
 
-      - name: configure git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+  release:
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
 
-      - name: run chart-releaser
-        uses: helm/chart-releaser-action@v1.5.0
-        env:
-          CR_SKIP_EXISTING: false
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: set up helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.13.0
+
+      - name: login to github container registry using helm
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io/snapp-incubator/soteria --username ${{ github.repository_owner }} --password-stdin
+
+      - name: save helm chart to local registry
+        run: |
+          helm chart save / ghcr.io/snapp-incubator/soteria-chart:${{ github.sha }}
+
+      - name: publish chart to acr
+        run: |
+          helm chart push ghcr.io/snapp-incubator/soteria-chart:${{ github.sha }}
