@@ -18,7 +18,7 @@ jobs:
       - name: set up helm
         uses: azure/setup-helm@v3
         with:
-          version: v3.4.0
+          version: v3.14.0
 
       - uses: actions/setup-python@v4
         with:
@@ -41,14 +41,8 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: install helm
-        uses: azure/setup-helm@v3
-        with:
-          version: v3.4.0
-
       - name: run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0
-        with:
-          skip_existing: false
         env:
+          CR_SKIP_EXISTING: false
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
