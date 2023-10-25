@@ -55,4 +55,4 @@ jobs:
       - name: publish soteria chart to github container registry
         run: |
           version=${{ github.ref_name }}
-          helm push "soteria-${version##v}".tgz ghcr.io/snapp-incubator/soteria-chart
+          helm push "soteria-${version##v}".tgz oci://ghcr.io/snapp-incubator/soteria-chart
