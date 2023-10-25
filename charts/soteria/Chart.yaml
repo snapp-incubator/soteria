@@ -11,6 +11,5 @@ maintainers:
 
 type: application
 
-version: 8.0.0
-
-appVersion: "v8.0.0"
+version: 0.0.0
+appVersion: latest
