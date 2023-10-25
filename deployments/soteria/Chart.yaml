@@ -1,7 +1,7 @@
 ---
 apiVersion: v2
 name: soteria
-description: Soteria Helm Chart
+description: Soteria provides EMQX authentication using HTTP
 
 type: application
 
