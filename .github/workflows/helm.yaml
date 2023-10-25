@@ -3,10 +3,8 @@ name: helm
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - charts/soteria/**
+    tags:
+      - 'v*'
 
 jobs:
   release:
