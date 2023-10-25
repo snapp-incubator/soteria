@@ -2,9 +2,7 @@
 name: helm
 
 on:
-  push:
-    paths:
-      /charts/**
+  - push
 
 jobs:
   test:
