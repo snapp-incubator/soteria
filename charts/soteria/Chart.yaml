@@ -1,7 +1,13 @@
 ---
 apiVersion: v2
 name: soteria
+icon: https://github.com/snapp-incubator/soteria/blob/main/.github/assets/logo.jpg
 description: Soteria provides EMQX authentication using HTTP
+
+maintainers:
+  - name: 1995parham
+    url: https://github.com/1995parham
+    email: parham.alvani@gmail.com
 
 type: application
 
