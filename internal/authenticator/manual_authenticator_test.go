@@ -16,12 +16,10 @@ import (
 func TestManualAuthenticator_suite(t *testing.T) {
 	t.Parallel()
 
-	st := new(AuthenticatorTestSuite)
-
-	pkey0, err := st.getPublicKey(topics.DriverIss)
+	pkey0, err := getPublicKey("0")
 	require.NoError(t, err)
 
-	pkey1, err := st.getPublicKey(topics.PassengerIss)
+	pkey1, err := getPublicKey("1")
 	require.NoError(t, err)
 
 	cfg := config.SnappVendor()
@@ -29,7 +27,8 @@ func TestManualAuthenticator_suite(t *testing.T) {
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(t, err)
 
-	// nolint: exhaustruct
+	st := new(AuthenticatorTestSuite)
+
 	st.Authenticator = authenticator.ManualAuthenticator{
 		Keys: map[string]any{
 			topics.DriverIss:    pkey0,
@@ -47,4 +46,26 @@ func TestManualAuthenticator_suite(t *testing.T) {
 	}
 
 	suite.Run(t, st)
+}
+
+func TestManualAuthenticator_ValidateTopicBySender(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.SnappVendor()
+
+	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
+	require.NoError(t, err)
+
+	// nolint: exhaustruct
+	authenticator := authenticator.ManualAuthenticator{
+		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
+		Company:            "snapp",
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
+	}
+
+	t.Run("testing valid driver cab event", func(t *testing.T) {
+		t.Parallel()
+		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topics.DriverIss, "DXKgaNQa7N5Y7bo")
+		require.NotNil(t, topicTemplate)
+	})
 }
