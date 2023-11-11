@@ -39,6 +39,11 @@ func TestManualAuthenticator_suite(t *testing.T) {
 		Company:            "snapp",
 		Parser:             jwt.NewParser(),
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
+		JwtConfig: config.Jwt{
+			IssName:       "iss",
+			SubName:       "sub",
+			SigningMethod: "rsa256",
+		},
 	}
 
 	suite.Run(t, st)
