@@ -25,8 +25,6 @@ type AutoAuthenticator struct {
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a AutoAuthenticator) Auth(tokenString string) error {
-	fmt.Println("I am here")
-
 	if _, err := a.Validator.Validate(context.Background(), http.Header{
 		validator.ServiceNameHeader: []string{"soteria"},
 		"user-agent":                []string{},
