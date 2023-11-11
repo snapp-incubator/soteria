@@ -129,3 +129,7 @@ func (a ManualAuthenticator) ValidateAccessType(accessType acl.AccessType) bool 
 func (a ManualAuthenticator) GetCompany() string {
 	return a.Company
 }
+
+func (a ManualAuthenticator) IsSuperuser() bool {
+	return false
+}

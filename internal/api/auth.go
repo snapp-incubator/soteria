@@ -144,6 +144,6 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	return c.Status(http.StatusOK).JSON(authResponse{
 		Result:      "allow",
-		IsSuperuser: false,
+		IsSuperuser: authenticator.IsSuperuser(),
 	})
 }

@@ -58,3 +58,7 @@ func (a AdminAuthenticator) ValidateAccessType(_ acl.AccessType) bool {
 func (a AdminAuthenticator) GetCompany() string {
 	return a.Company
 }
+
+func (a AdminAuthenticator) IsSuperuser() bool {
+	return true
+}
