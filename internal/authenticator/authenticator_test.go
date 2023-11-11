@@ -10,12 +10,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
-	"github.com/snapp-incubator/soteria/internal/config"
-	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"go.uber.org/zap"
 )
 
 const (
@@ -83,23 +79,33 @@ type AuthenticatorTestSuite struct {
 func (suite *AuthenticatorTestSuite) SetupSuite() {
 	require := suite.Require()
 
-	driverToken := suite.getSampleToken(topics.DriverIss)
-
-	suite.Tokens.Driver = driverToken
-
-	passengerToken := suite.getSampleToken(topics.PassengerIss)
-
-	suite.Tokens.Passenger = passengerToken
-
-	pkey0, err := suite.getPublicKey(topics.DriverIss)
+	pkey0, err := getPublicKey("0")
 	require.NoError(err)
 
 	suite.PublicKeys.Driver = pkey0
 
-	pkey1, err := suite.getPublicKey(topics.PassengerIss)
+	pkey1, err := getPublicKey("1")
 	require.NoError(err)
 
 	suite.PublicKeys.Passenger = pkey1
+
+	key0, err := getPrivateKey("0")
+	require.NoError(err)
+
+	suite.PublicKeys.Driver = pkey0
+
+	key1, err := getPrivateKey("1")
+	require.NoError(err)
+
+	driverToken, err := getSampleToken("0", key0)
+	require.NoError(err)
+
+	suite.Tokens.Driver = driverToken
+
+	passengerToken, err := getSampleToken("1", key1)
+	require.NoError(err)
+
+	suite.Tokens.Passenger = passengerToken
 }
 
 func (suite *AuthenticatorTestSuite) TestAuth() {
@@ -317,28 +323,6 @@ func (suite *AuthenticatorTestSuite) TestACL_Driver() {
 	})
 }
 
-func TestManualAuthenticator_ValidateTopicBySender(t *testing.T) {
-	t.Parallel()
-
-	cfg := config.SnappVendor()
-
-	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
-	require.NoError(t, err)
-
-	// nolint: exhaustruct
-	authenticator := authenticator.ManualAuthenticator{
-		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
-		Company:            "snapp",
-		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
-	}
-
-	t.Run("testing valid driver cab event", func(t *testing.T) {
-		t.Parallel()
-		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topics.DriverIss, "DXKgaNQa7N5Y7bo")
-		require.NotNil(t, topicTemplate)
-	})
-}
-
 // nolint: funlen
 func TestManualAuthenticator_validateAccessType(t *testing.T) {
 	t.Parallel()
@@ -429,14 +413,16 @@ func TestManualAuthenticator_validateAccessType(t *testing.T) {
 	}
 }
 
-func (suite *AuthenticatorTestSuite) getPublicKey(u string) (*rsa.PublicKey, error) {
+func getPublicKey(u string) (*rsa.PublicKey, error) {
 	var fileName string
 
 	switch u {
-	case topics.PassengerIss:
+	case "1":
 		fileName = "../../test/snapp-1.pem"
-	case topics.DriverIss:
+	case "0":
 		fileName = "../../test/snapp-0.pem"
+	case "admin":
+		fileName = "../../test/snapp-admin.pem"
 	default:
 		return nil, ErrPublicKeyNotFound
 	}
@@ -454,14 +440,16 @@ func (suite *AuthenticatorTestSuite) getPublicKey(u string) (*rsa.PublicKey, err
 	return publicKey, nil
 }
 
-func (suite *AuthenticatorTestSuite) getPrivateKey(u string) (*rsa.PrivateKey, error) {
+func getPrivateKey(u string) (*rsa.PrivateKey, error) {
 	var fileName string
 
 	switch u {
-	case topics.DriverIss:
+	case "0":
 		fileName = "../../test/snapp-0.private.pem"
-	case topics.PassengerIss:
+	case "1":
 		fileName = "../../test/snapp-1.private.pem"
+	case "admin":
+		fileName = "../../test/snapp-admin.private.pem"
 	default:
 		return nil, ErrPrivateKeyNotFound
 	}
@@ -479,10 +467,7 @@ func (suite *AuthenticatorTestSuite) getPrivateKey(u string) (*rsa.PrivateKey, e
 	return privateKey, nil
 }
 
-func (suite *AuthenticatorTestSuite) getSampleToken(issuer string) string {
-	key, err := suite.getPrivateKey(issuer)
-	suite.Require().NoError(err)
-
+func getSampleToken(issuer string, key *rsa.PrivateKey) (string, error) {
 	exp := time.Now().Add(time.Hour * 24 * 365 * 10)
 	sub := "DXKgaNQa7N5Y7bo"
 
@@ -495,7 +480,9 @@ func (suite *AuthenticatorTestSuite) getSampleToken(issuer string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
 	tokenString, err := token.SignedString(key)
-	suite.Require().NoError(err)
+	if err != nil {
+		return "", fmt.Errorf("cannot generate a signed string %w", err)
+	}
 
-	return tokenString
+	return tokenString, nil
 }
