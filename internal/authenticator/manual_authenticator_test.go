@@ -31,6 +31,8 @@ type ManualAuthenticatorTestSuite struct {
 }
 
 func TestManualAuthenticator_suite(t *testing.T) {
+	t.Parallel()
+
 	suite.Run(t, new(ManualAuthenticatorTestSuite))
 }
 
