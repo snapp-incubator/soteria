@@ -2,6 +2,7 @@ package authenticator_test
 
 import (
 	"crypto/rsa"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -58,8 +59,8 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 	require.NoError(err)
 
 	testServer := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		authHeader := req.Header.Get("Authentication")
-		tokenString := strings.TrimSuffix(authHeader, "Bearer")
+		authHeader := req.Header.Get("Authorization")
+		tokenString := strings.TrimPrefix(authHeader, "bearer ")
 
 		_, err := jwt.Parse(tokenString, func(
 			token *jwt.Token,
@@ -68,8 +69,13 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 		})
 		if err != nil {
 			res.WriteHeader(http.StatusUnauthorized)
+
 			return
 		}
+
+		userData, err := json.Marshal(map[string]any{})
+		require.NoError(err)
+		res.Header().Add("X-User-Data", string(userData))
 
 		res.WriteHeader(http.StatusOK)
 	}))
