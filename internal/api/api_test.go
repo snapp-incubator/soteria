@@ -1,9 +1,18 @@
 package api_test
 
 import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/snapp-incubator/soteria/internal/api"
+	"github.com/snapp-incubator/soteria/internal/authenticator"
+	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel/trace/noop"
+	"go.uber.org/zap"
 )
 
 // nolint: funlen
@@ -77,4 +86,37 @@ func TestExtractVendorToken(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAuthv2(t *testing.T) {
+	t.Parallel()
+
+	require := require.New(t)
+
+	app := fiber.New()
+
+	a := api.API{
+		Authenticators: map[string]authenticator.Authenticator{},
+		DefaultVendor:  "snapp",
+		Tracer:         noop.NewTracerProvider().Tracer(""),
+		Logger:         zap.NewExample(),
+	}
+
+	app.Post("/v2/auth", a.Authv2)
+
+	t.Run("bad request because it doesn't have json heaer", func(_ *testing.T) {
+		body, err := json.Marshal(api.AuthRequest{
+			Token:    "",
+			Username: "not-found:token",
+			Password: "",
+		})
+		require.NoError(err)
+
+		req := httptest.NewRequest(http.MethodPost, "/v2/auth", bytes.NewReader(body))
+
+		resp, err := app.Test(req)
+		require.NoError(err)
+
+		require.Equal(http.StatusBadRequest, resp.StatusCode)
+	})
 }
