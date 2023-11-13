@@ -12,12 +12,12 @@ import (
 	"go.uber.org/zap"
 )
 
-type aclResponse struct {
+type AclResponse struct {
 	Result string `json:"result,omitempty"`
 }
 
-// aclRequest is the body payload structure of the ACL endpoint.
-type aclRequest struct {
+// AclRequest is the body payload structure of the ACL endpoint.
+type AclRequest struct {
 	Access   acl.AccessType `form:"access"`
 	Token    string         `form:"token"`
 	Username string         `from:"username"`
@@ -31,7 +31,7 @@ func (a API) ACLv1(c *fiber.Ctx) error {
 	_, span := a.Tracer.Start(c.Context(), "api.v1.acl")
 	defer span.End()
 
-	request := new(aclRequest)
+	request := new(AclRequest)
 	if err := c.BodyParser(request); err != nil {
 		a.Logger.
 			Warn("acl bad request",
@@ -133,7 +133,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 				zap.String("password", request.Password),
 			)
 
-		return c.Status(http.StatusBadRequest).JSON(aclResponse{
+		return c.Status(http.StatusBadRequest).JSON(AclResponse{
 			Result: "deny",
 		})
 	}
@@ -191,7 +191,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 					zap.String("authenticator", auth.GetCompany()))
 		}
 
-		return c.Status(http.StatusUnauthorized).JSON(aclResponse{
+		return c.Status(http.StatusUnauthorized).JSON(AclResponse{
 			Result: "deny",
 		})
 	}
@@ -206,7 +206,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 			zap.String("authenticator", auth.GetCompany()),
 		)
 
-	return c.Status(http.StatusOK).JSON(aclResponse{
+	return c.Status(http.StatusOK).JSON(AclResponse{
 		Result: "allow",
 	})
 }
