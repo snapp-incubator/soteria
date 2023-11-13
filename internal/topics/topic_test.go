@@ -10,6 +10,8 @@ import (
 )
 
 func TestTopic(t *testing.T) {
+	t.Parallel()
+
 	require := require.New(t)
 
 	topic := topics.Topic{
