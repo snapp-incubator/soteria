@@ -9,7 +9,8 @@ import (
 	"github.com/snapp-incubator/soteria/pkg/acl"
 )
 
-// ManualAuthenticator is responsible for Acl/Auth/Token of users.
+// ManualAuthenticator is responsible for Acl/Auth/Token of users without calling
+// any http client, etc.
 type ManualAuthenticator struct {
 	Keys               map[string]any
 	AllowedAccessTypes []acl.AccessType
@@ -19,8 +20,7 @@ type ManualAuthenticator struct {
 	Parser             *jwt.Parser
 }
 
-// Auth check user authentication by checking the user's token
-// isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
+// Auth check user authentication by checking the user's token.
 func (a ManualAuthenticator) Auth(tokenString string) error {
 	_, err := a.Parser.Parse(tokenString, func(
 		token *jwt.Token,
@@ -128,4 +128,8 @@ func (a ManualAuthenticator) ValidateAccessType(accessType acl.AccessType) bool 
 
 func (a ManualAuthenticator) GetCompany() string {
 	return a.Company
+}
+
+func (a ManualAuthenticator) IsSuperuser() bool {
+	return false
 }

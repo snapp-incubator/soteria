@@ -43,6 +43,7 @@ func Default() Config {
 func SnappVendor() Vendor {
 	return Vendor{
 		UseValidator: false,
+		IsInternal:   false,
 		AllowedAccessTypes: []string{
 			"pub",
 			"sub",
