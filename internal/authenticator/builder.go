@@ -17,6 +17,7 @@ type Builder struct {
 	ValidatorConfig config.Validator
 }
 
+// nolint: funlen
 func (b Builder) Authenticators() map[string]Authenticator {
 	all := make(map[string]Authenticator)
 
@@ -30,11 +31,12 @@ func (b Builder) Authenticators() map[string]Authenticator {
 			b.Logger.Fatal("cannot create hash-id manager", zap.Error(err))
 		}
 
-		client := validator.New(b.ValidatorConfig.URL, b.ValidatorConfig.Timeout)
-
 		var auth Authenticator
 
-		if vendor.UseValidator {
+		switch {
+		case vendor.UseValidator:
+			client := validator.New(b.ValidatorConfig.URL, b.ValidatorConfig.Timeout)
+
 			auth = &AutoAuthenticator{
 				AllowedAccessTypes: allowedAccessTypes,
 				Company:            vendor.Company,
@@ -50,7 +52,20 @@ func (b Builder) Authenticators() map[string]Authenticator {
 				Validator: client,
 				Parser:    jwt.NewParser(),
 			}
-		} else {
+		case vendor.IsInternal:
+			if _, ok := vendor.Keys["system"]; !ok || len(vendor.Keys) != 1 {
+				b.Logger.Fatal("admin authenticator supports only one key named system")
+			}
+
+			keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
+
+			auth = &AdminAuthenticator{
+				Key:       keys["system"],
+				Company:   vendor.Company,
+				JwtConfig: vendor.Jwt,
+				Parser:    jwt.NewParser(),
+			}
+		default:
 			keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
 
 			auth = &ManualAuthenticator{
