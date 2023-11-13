@@ -3,17 +3,42 @@ package api_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/api"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
-	"github.com/stretchr/testify/require"
+	"github.com/snapp-incubator/soteria/internal/config"
+	"github.com/stretchr/testify/suite"
 	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/zap"
 )
+
+func getSampleToken(key string) (string, error) {
+	exp := time.Now().Add(time.Hour * 24 * 365 * 10)
+	sub := "DXKgaNQa7N5Y7bo"
+
+	// nolint: exhaustruct
+	claims := jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(exp),
+		Issuer:    "Colony",
+		Subject:   sub,
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+
+	tokenString, err := token.SignedString([]byte(key))
+	if err != nil {
+		return "", fmt.Errorf("cannot generate a signed string %w", err)
+	}
+
+	return tokenString, nil
+}
 
 // nolint: funlen
 func TestExtractVendorToken(t *testing.T) {
@@ -88,39 +113,96 @@ func TestExtractVendorToken(t *testing.T) {
 	}
 }
 
-func TestAuthv2(t *testing.T) {
-	t.Parallel()
+type APITestSuite struct {
+	suite.Suite
 
-	require := require.New(t)
+	app *fiber.App
+	key string
+}
+
+func (suite *APITestSuite) SetupSuite() {
+	suite.key = "secret"
 
 	app := fiber.New()
 
 	a := api.API{
-		Authenticators: map[string]authenticator.Authenticator{},
-		DefaultVendor:  "snapp",
-		Tracer:         noop.NewTracerProvider().Tracer(""),
-		Logger:         zap.NewExample(),
+		Authenticators: map[string]authenticator.Authenticator{
+			"snapp-admin": authenticator.AdminAuthenticator{
+				Key:     []byte(suite.key),
+				Company: "snapp-admin",
+				JwtConfig: config.Jwt{
+					IssName:       "iss",
+					SubName:       "sub",
+					SigningMethod: "HS512",
+				},
+				Parser: jwt.NewParser(),
+			},
+		},
+		DefaultVendor: "snapp",
+		Tracer:        noop.NewTracerProvider().Tracer(""),
+		Logger:        zap.NewExample(),
 	}
 
 	app.Post("/v2/auth", a.Authv2)
 
-	t.Run("bad request because it doesn't have json heaer", func(t *testing.T) {
-		t.Parallel()
+	suite.app = app
+}
 
-		body, err := json.Marshal(api.AuthRequest{
-			Token:    "",
-			Username: "not-found:token",
-			Password: "",
-		})
-		require.NoError(err)
+func (suite *APITestSuite) BadRequest() {
+	require := suite.Require()
 
-		req := httptest.NewRequest(http.MethodPost, "/v2/auth", bytes.NewReader(body))
-
-		resp, err := app.Test(req)
-		require.NoError(err)
-
-		defer resp.Body.Close()
-
-		require.Equal(http.StatusBadRequest, resp.StatusCode)
+	body, err := json.Marshal(api.AuthRequest{
+		Token:    "",
+		Username: "not-found:token",
+		Password: "",
 	})
+	require.NoError(err)
+
+	req := httptest.NewRequest(http.MethodPost, "/v2/auth", bytes.NewReader(body))
+
+	resp, err := suite.app.Test(req)
+	require.NoError(err)
+
+	defer resp.Body.Close()
+
+	require.Equal(http.StatusBadRequest, resp.StatusCode)
+}
+
+func (suite *APITestSuite) ValidToken() {
+	require := suite.Require()
+
+	token, err := getSampleToken(suite.key)
+	require.NoError(err)
+
+	body, err := json.Marshal(api.AuthRequest{
+		Token:    "",
+		Username: fmt.Sprintf("snapp-admin:%s", token),
+		Password: "",
+	})
+	require.NoError(err)
+
+	req := httptest.NewRequest(http.MethodPost, "/v2/auth", bytes.NewReader(body))
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := suite.app.Test(req)
+	require.NoError(err)
+
+	defer resp.Body.Close()
+
+	require.Equal(http.StatusOK, resp.StatusCode)
+
+	data, err := io.ReadAll(resp.Body)
+	require.NoError(err)
+
+	var authResp api.AuthResponse
+	require.NoError(json.Unmarshal(data, &authResp))
+
+	require.Equal("allow", authResp.Result)
+	require.True(authResp.IsSuperuser)
+}
+
+func TestAPITestSuite(t *testing.T) {
+	t.Parallel()
+
+	suite.Run(t, new(APITestSuite))
 }
