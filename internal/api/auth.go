@@ -10,14 +10,14 @@ import (
 	"go.uber.org/zap"
 )
 
-// authRequest is the body payload structure of the auth endpoint.
-type authRequest struct {
+// AuthRequest is the body payload structure of the auth endpoint.
+type AuthRequest struct {
 	Token    string `form:"token"    json:"token,omitempty"`
 	Username string `from:"username" json:"username,omitempty"`
 	Password string `form:"password" json:"password,omitempty"`
 }
 
-type authResponse struct {
+type AuthResponse struct {
 	Result      string `json:"result,omitempty"`
 	IsSuperuser bool   `json:"is_superuser,omitempty"`
 }
@@ -28,7 +28,7 @@ func (a API) Authv1(c *fiber.Ctx) error {
 	_, span := a.Tracer.Start(c.Context(), "api.v1.auth")
 	defer span.End()
 
-	request := new(authRequest)
+	request := new(AuthRequest)
 
 	if err := c.BodyParser(request); err != nil {
 		span.RecordError(err)
@@ -87,7 +87,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 	_, span := a.Tracer.Start(c.Context(), "api.v2.auth")
 	defer span.End()
 
-	request := new(authRequest)
+	request := new(AuthRequest)
 
 	if err := c.BodyParser(request); err != nil {
 		span.RecordError(err)
@@ -97,7 +97,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 				zap.Error(err),
 			)
 
-		return c.Status(http.StatusBadRequest).JSON(authResponse{
+		return c.Status(http.StatusBadRequest).JSON(AuthResponse{
 			Result:      "deny",
 			IsSuperuser: false,
 		})
@@ -128,7 +128,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 				)
 		}
 
-		return c.Status(http.StatusUnauthorized).JSON(authResponse{
+		return c.Status(http.StatusUnauthorized).JSON(AuthResponse{
 			Result:      "deny",
 			IsSuperuser: false,
 		})
@@ -142,7 +142,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 			zap.String("authenticator", authenticator.GetCompany()),
 		)
 
-	return c.Status(http.StatusOK).JSON(authResponse{
+	return c.Status(http.StatusOK).JSON(AuthResponse{
 		Result:      "allow",
 		IsSuperuser: false,
 	})
