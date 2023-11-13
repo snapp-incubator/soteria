@@ -99,3 +99,7 @@ func (a AutoAuthenticator) ValidateAccessType(accessType acl.AccessType) bool {
 func (a AutoAuthenticator) GetCompany() string {
 	return a.Company
 }
+
+func (a AutoAuthenticator) IsSuperuser() bool {
+	return false
+}

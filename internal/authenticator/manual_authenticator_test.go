@@ -2,10 +2,7 @@ package authenticator_test
 
 import (
 	"crypto/rsa"
-	"errors"
-	"os"
 	"testing"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
@@ -33,33 +30,48 @@ type ManualAuthenticatorTestSuite struct {
 	Authenticator authenticator.Authenticator
 }
 
+func TestManualAuthenticator_suite(t *testing.T) {
+	t.Parallel()
+
+	suite.Run(t, new(ManualAuthenticatorTestSuite))
+}
+
 func (suite *ManualAuthenticatorTestSuite) SetupSuite() {
+	cfg := config.SnappVendor()
+
 	require := suite.Require()
 
-	driverToken := suite.getSampleToken(topics.DriverIss)
-
-	suite.Tokens.Driver = driverToken
-
-	passengerToken := suite.getSampleToken(topics.PassengerIss)
-
-	suite.Tokens.Passenger = passengerToken
-
-	pkey0, err := suite.getPublicKey(topics.DriverIss)
+	pkey0, err := getPublicKey("0")
 	require.NoError(err)
 
 	suite.PublicKeys.Driver = pkey0
 
-	pkey1, err := suite.getPublicKey(topics.PassengerIss)
+	pkey1, err := getPublicKey("1")
 	require.NoError(err)
 
 	suite.PublicKeys.Passenger = pkey1
 
-	cfg := config.SnappVendor()
+	key0, err := getPrivateKey("0")
+	require.NoError(err)
+
+	suite.PublicKeys.Driver = pkey0
+
+	key1, err := getPrivateKey("1")
+	require.NoError(err)
+
+	driverToken, err := getSampleToken("0", key0)
+	require.NoError(err)
+
+	suite.Tokens.Driver = driverToken
+
+	passengerToken, err := getSampleToken("1", key1)
+	require.NoError(err)
+
+	suite.Tokens.Passenger = passengerToken
 
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(err)
 
-	// nolint: exhaustruct
 	suite.Authenticator = authenticator.ManualAuthenticator{
 		Keys: map[string]any{
 			topics.DriverIss:    pkey0,
@@ -67,7 +79,13 @@ func (suite *ManualAuthenticatorTestSuite) SetupSuite() {
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
+		Parser:             jwt.NewParser(),
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
+		JwtConfig: config.Jwt{
+			IssName:       "iss",
+			SubName:       "sub",
+			SigningMethod: "rsa256",
+		},
 	}
 }
 
@@ -87,7 +105,6 @@ func (suite *ManualAuthenticatorTestSuite) TestAuth() {
 	})
 }
 
-// nolint: dupl
 func (suite *ManualAuthenticatorTestSuite) TestACL_Basics() {
 	require := suite.Require()
 
@@ -102,7 +119,7 @@ func (suite *ManualAuthenticatorTestSuite) TestACL_Basics() {
 		ok, err := suite.Authenticator.ACL(acl.Pub, invalidToken, validDriverCabEventTopic)
 		require.False(ok)
 		require.Error(err)
-		require.Equal("token is invalid illegal base64 data at input byte 36", err.Error())
+		require.ErrorIs(err, jwt.ErrTokenMalformed)
 	})
 
 	suite.Run("testing acl with valid inputs", func() {
@@ -308,7 +325,7 @@ func TestManualAuthenticator_ValidateTopicBySender(t *testing.T) {
 	})
 }
 
-// nolint: funlen, dupl
+// nolint: funlen
 func TestManualAuthenticator_validateAccessType(t *testing.T) {
 	t.Parallel()
 
@@ -396,77 +413,4 @@ func TestManualAuthenticator_validateAccessType(t *testing.T) {
 			}
 		})
 	}
-}
-
-// nolint: goerr113, wrapcheck
-func (suite *ManualAuthenticatorTestSuite) getPublicKey(u string) (*rsa.PublicKey, error) {
-	var fileName string
-
-	switch u {
-	case topics.PassengerIss:
-		fileName = "../../test/1.pem"
-	case topics.DriverIss:
-		fileName = "../../test/0.pem"
-	default:
-		return nil, errors.New("invalid user, public key not found")
-	}
-
-	pem, err := os.ReadFile(fileName)
-	if err != nil {
-		return nil, err
-	}
-
-	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(pem)
-	if err != nil {
-		return nil, err
-	}
-
-	return publicKey, nil
-}
-
-// nolint: goerr113, wrapcheck
-func (suite *ManualAuthenticatorTestSuite) getPrivateKey(u string) (*rsa.PrivateKey, error) {
-	var fileName string
-
-	switch u {
-	case topics.DriverIss:
-		fileName = "../../test/0.private.pem"
-	case topics.PassengerIss:
-		fileName = "../../test/1.private.pem"
-	default:
-		return nil, errors.New("invalid user, private key not found")
-	}
-
-	pem, err := os.ReadFile(fileName)
-	if err != nil {
-		return nil, err
-	}
-
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(pem)
-	if err != nil {
-		return nil, err
-	}
-
-	return privateKey, nil
-}
-
-func (suite *ManualAuthenticatorTestSuite) getSampleToken(issuer string) string {
-	key, err := suite.getPrivateKey(issuer)
-	suite.Require().NoError(err)
-
-	exp := time.Now().Add(time.Hour * 24 * 365 * 10)
-	sub := "DXKgaNQa7N5Y7bo"
-
-	// nolint: exhaustruct
-	claims := jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(exp),
-		Issuer:    issuer,
-		Subject:   sub,
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-
-	tokenString, err := token.SignedString(key)
-	suite.Require().NoError(err)
-
-	return tokenString
 }
