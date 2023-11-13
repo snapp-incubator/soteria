@@ -41,10 +41,13 @@ type (
 		IssEntityMap       map[string]string `json:"iss_entity_map,omitempty"       koanf:"iss_entity_map"`
 		IssPeerMap         map[string]string `json:"iss_peer_map,omitempty"         koanf:"iss_peer_map"`
 		Jwt                Jwt               `json:"jwt,omitempty"                  koanf:"jwt"`
-		// by setting do validate to false we don't validate the jwt token and deligate
-		// it into a function.
-		UseValidator bool                       `json:"use_validator,omitempty" koanf:"use_validator"`
-		HashIDMap    map[string]topics.HashData `json:"hash_id_map,omitempty"   koanf:"hashid_map"`
+		// by setting use validator to true we don't validate the jwt token and deligate
+		// it into an http client.
+		UseValidator bool `json:"use_validator,omitempty" koanf:"use_validator"`
+		// by setting is internal to true we use internal authenticator which provides admin access
+		// on the authentication method.
+		IsInternal bool                       `json:"is_internal,omitempty" koanf:"is_internal"`
+		HashIDMap  map[string]topics.HashData `json:"hash_id_map,omitempty" koanf:"hashid_map"`
 	}
 
 	Jwt struct {
