@@ -104,7 +104,9 @@ func TestAuthv2(t *testing.T) {
 
 	app.Post("/v2/auth", a.Authv2)
 
-	t.Run("bad request because it doesn't have json heaer", func(_ *testing.T) {
+	t.Run("bad request because it doesn't have json heaer", func(t *testing.T) {
+		t.Parallel()
+
 		body, err := json.Marshal(api.AuthRequest{
 			Token:    "",
 			Username: "not-found:token",
@@ -116,6 +118,8 @@ func TestAuthv2(t *testing.T) {
 
 		resp, err := app.Test(req)
 		require.NoError(err)
+
+		defer resp.Body.Close()
 
 		require.Equal(http.StatusBadRequest, resp.StatusCode)
 	})
