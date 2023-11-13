@@ -9,7 +9,7 @@ import (
 )
 
 // nolint: funlen
-func TestTopic_GetType(t *testing.T) {
+func TestTopicManager(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
