@@ -195,6 +195,7 @@ func (suite *APITestSuite) ValidToken() {
 	require.NoError(err)
 
 	var authResp api.AuthResponse
+
 	require.NoError(json.Unmarshal(data, &authResp))
 
 	require.Equal("allow", authResp.Result)
