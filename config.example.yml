@@ -1,10 +1,15 @@
+# Company name of the vendor to use if the incoming ACL request vendor is not found withing the registered vendors.
 default_vendor: snapp
+# Port of the HTTP server:
 http_port: 9999
+# Application logger config:
 logger:
   level: debug
+# Validator is the upstream backend service that can validate the tokens:
 validator:
   url: http://validator-lb
   timeout: "5s"
+# The list of different vendors or companies that Soteria should work with:
 vendors:
   - allowed_access_types:
       - pub
@@ -52,6 +57,16 @@ vendors:
                 YMuhTePaIWwOifzRQt8HDsAOpzqJuLCoYX7HmBfpGAnwu4BuTZgXVwpvPNb+KlgS
                 pQIDAQAB
         -----END PUBLIC KEY-----
+    # Examples of different use cases of template functions:
+    # Topics are dynamics and their patterns can be defined using some GoTemplate functions.
+    #
+    #
+    # IssToEntity: converts iss claim token to company name.
+    #
+    # EncodeMD5: encode MD5 of the input
+    #
+    # DecodeHashID: runs hashid algorithm on the input. The first argument is the input of hashid and the second argument
+    # is the issuer of id of hash_id_map.
     topics:
       - accesses:
           "0": "1"
