@@ -1,0 +1,124 @@
+# Company name of the vendor to use if the incoming ACL request vendor is not found withing the registered vendors.
+default_vendor: snapp
+# Port of the HTTP server:
+http_port: 9999
+# Application logger config:
+logger:
+  level: debug
+# Validator is the upstream backend service that can validate the tokens:
+validator:
+  url: http://validator-lb
+  timeout: "5s"
+# The list of different vendors or companies that Soteria should work with:
+vendors:
+  - allowed_access_types:
+      - pub
+      - sub
+    company: snapp
+    hash_id_map:
+      "0":
+        alphabet: ""
+        length: 15
+        salt: secret
+      "1":
+        alphabet: ""
+        length: 15
+        salt: secret
+    iss_entity_map:
+      "0": driver
+      "1": passenger
+      default: ""
+    iss_peer_map:
+      "0": passenger
+      "1": driver
+      default: ""
+    jwt:
+      iss_name: iss
+      signing_method: RS512
+      sub_name: sub
+    keys:
+      "0": |-
+        -----BEGIN PUBLIC KEY-----
+        			MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyG4XpV9TpDfgWJF9TiIv
+        			va4hNhDuqYMJO6iXLzr3y8oCvoB7zUK0EjtbLH+A3gr1kUvyZKDWT4qHTvU2Sshm
+        			X+ttWGK34EhCvF3Lb18yxmVDSSK8JIcTaJjMqmyubxzamQnNoWazJ7ea9BIo2YGL
+        			C9rgPbi1hihhdb07xPGUkJRqbWkI98xjDhKdMqiwW1hIRXm/apo++FjptvqvF84s
+        			ynC5gWGFHiGNICRsLJBczLEAf2Atbafigq6/tovzMabnp2yRtr1ReEgioH1RO4gX
+        			J7F4N5f6y/VWd8+sDOSxtS/HcnP/7g8/A54G2IbXxr+EiwOO/1F+pyMPKq7sGDSU
+        			DwIDAQAB
+        -----END PUBLIC KEY-----
+      "1": |-
+        -----BEGIN PUBLIC KEY-----
+        			MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5SeRfOdTyvQZ7N9ahFHl
+                +J05r7e9fgOQ2cpOtnnsIjAjCt1dF7/NkqVifEaxABRBGG9iXIw//G4hi0TqoKqK
+                aoSHMGf6q9pSRLGyB8FatxZf2RBTgrXYqVvpasbnB1ZNv858yTpRjV9NzJXYHLp8
+                8Hbd/yYTR6Q7ajs11/SMLGO7KBELsI1pBz7UW/fngJ2pRmd+RkG+EcGrOIZ27TkI
+                Xjtog6bgfmtV9FWxSVdKACOY0OmW+g7jIMik2eZTYG3kgCmW2odu3zRoUa7l9VwN
+                YMuhTePaIWwOifzRQt8HDsAOpzqJuLCoYX7HmBfpGAnwu4BuTZgXVwpvPNb+KlgS
+                pQIDAQAB
+        -----END PUBLIC KEY-----
+    # Examples of different use cases of template functions:
+    # Topics are dynamics and their patterns can be defined using some GoTemplate functions.
+    #
+    #
+    # IssToEntity: converts iss claim token to company name.
+    #
+    # EncodeMD5: encode MD5 of the input
+    #
+    # DecodeHashID: runs hashid algorithm on the input. The first argument is the input of hashid and the second argument
+    # is the issuer of id of hash_id_map.
+    topics:
+      - accesses:
+          "0": "1"
+          "1": "1"
+        template: ^{{IssToEntity .iss}}-event-{{ EncodeMD5 (DecodeHashID .sub .iss) }}$
+        type: cab_event
+      - accesses:
+          "0": "2"
+          "1": "-1"
+        template: ^{{.company}}/driver/{{.sub}}/location$
+        type: driver_location
+      - accesses:
+          "0": "2"
+          "1": "2"
+        template: ^{{.company}}/passenger/{{.sub}}/location$
+        type: passenger_location
+      - accesses:
+          "0": "1"
+          "1": "1"
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/superapp$
+        type: superapp_event
+      - accesses:
+          "0": "-1"
+          "1": "-1"
+        template: ^bucks$
+        type: box_event
+      - accesses:
+          "0": "1"
+          "1": "1"
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/{{IssToPeer .iss}}-location$
+        type: shared_location
+      - accesses:
+          "0": "1"
+          "1": "1"
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/chat$
+        type: chat
+      - accesses:
+          "0": "2"
+          "1": "2"
+        template: ^shared/{{.company}}/{{IssToEntity .iss}}/{{.sub}}/call/send$
+        type: general_call_entry
+      - accesses:
+          "0": "2"
+          "1": "2"
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/call/[a-zA-Z0-9-_]+/send$
+        type: node_call_entry
+      - accesses:
+          "0": "1"
+          "1": "1"
+        template: ^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/call/receive$
+        type: call_outgoing
+tracer:
+  enabled: false
+  endpoint: 127.0.0.1:4317
+  ratio: 0.1
