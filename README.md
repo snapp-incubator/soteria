@@ -112,9 +112,11 @@ This component only works for passenger and driver issuers.
 
 ### Keys
 
-This is a map of issuer to key for opening JWT token.
+The following is a mapping that associates vendors (companies) with the keys used for opening JWT tokens.
+If symmetrical keys are utilized, it is important to use their base64 representation.
+It should also be noted that Soteria only requires public keys in cases where asymmetrical keys are employed.
 
-#### IssEntityMap & IssPeerMap
+### IssEntityMap & IssPeerMap
 
 These two configuration map iss to entity and peer respectively.
 
