@@ -82,6 +82,7 @@ func (a API) Authv1(c *fiber.Ctx) error {
 
 // Auth is the handler responsible for authentication.
 // Endpoint will be used by EMQ version 5 which supports JSON on both request and response.
+// https://www.emqx.io/docs/en/latest/access-control/authn/http.html
 // nolint: wrapcheck, funlen
 func (a API) Authv2(c *fiber.Ctx) error {
 	_, span := a.Tracer.Start(c.Context(), "api.v2.auth")
@@ -97,7 +98,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 				zap.Error(err),
 			)
 
-		return c.Status(http.StatusBadRequest).JSON(AuthResponse{
+		return c.Status(http.StatusOK).JSON(AuthResponse{
 			Result:      "deny",
 			IsSuperuser: false,
 		})
@@ -128,7 +129,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 				)
 		}
 
-		return c.Status(http.StatusUnauthorized).JSON(AuthResponse{
+		return c.Status(http.StatusOK).JSON(AuthResponse{
 			Result:      "deny",
 			IsSuperuser: false,
 		})
