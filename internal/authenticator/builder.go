@@ -1,6 +1,7 @@
 package authenticator
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -11,77 +12,43 @@ import (
 	"go.uber.org/zap"
 )
 
+var (
+	ErrAdminAuthenticatorSystemKey = errors.New("admin authenticator supports only one key named system")
+	ErrNoAuthenticator             = errors.New("at least one vendor should be enable to have soteria")
+	ErrNoDefaultCaseIssEntry       = errors.New("default case for iss-entity map is required")
+	ErrNoDefaultCaseIssPeer        = errors.New("default case for iss-peer map is required")
+)
+
 type Builder struct {
 	Vendors         []config.Vendor
-	Logger          zap.Logger
+	Logger          *zap.Logger
 	ValidatorConfig config.Validator
 }
 
-// nolint: funlen
-func (b Builder) Authenticators() map[string]Authenticator {
+func (b Builder) Authenticators() (map[string]Authenticator, error) {
 	all := make(map[string]Authenticator)
 
 	for _, vendor := range b.Vendors {
-		b.ValidateMappers(vendor.IssEntityMap, vendor.IssPeerMap)
-
-		allowedAccessTypes := b.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
-
-		hid, err := topics.NewHashIDManager(vendor.HashIDMap)
-		if err != nil {
-			b.Logger.Fatal("cannot create hash-id manager", zap.Error(err))
-		}
-
-		var auth Authenticator
+		var (
+			auth Authenticator
+			err  error
+		)
 
 		switch {
 		case vendor.UseValidator:
-			client := validator.New(b.ValidatorConfig.URL, b.ValidatorConfig.Timeout)
-
-			auth = &AutoAuthenticator{
-				AllowedAccessTypes: allowedAccessTypes,
-				Company:            vendor.Company,
-				TopicManager: topics.NewTopicManager(
-					vendor.Topics,
-					hid,
-					vendor.Company,
-					vendor.IssEntityMap,
-					vendor.IssPeerMap,
-					b.Logger.Named("topic-manager"),
-				),
-				JwtConfig: vendor.Jwt,
-				Validator: client,
-				Parser:    jwt.NewParser(),
+			auth, err = b.autoAuthenticator(vendor)
+			if err != nil {
+				return nil, fmt.Errorf("cannot build auto authenticator %w", err)
 			}
 		case vendor.IsInternal:
-			if _, ok := vendor.Keys["system"]; !ok || len(vendor.Keys) != 1 {
-				b.Logger.Fatal("admin authenticator supports only one key named system")
-			}
-
-			keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
-
-			auth = &AdminAuthenticator{
-				Key:       keys["system"],
-				Company:   vendor.Company,
-				JwtConfig: vendor.Jwt,
-				Parser:    jwt.NewParser(),
+			auth, err = b.adminAuthenticator(vendor)
+			if err != nil {
+				return nil, fmt.Errorf("cannot build admin authenticator %w", err)
 			}
 		default:
-			keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
-
-			auth = &ManualAuthenticator{
-				Keys:               keys,
-				AllowedAccessTypes: allowedAccessTypes,
-				Company:            vendor.Company,
-				TopicManager: topics.NewTopicManager(
-					vendor.Topics,
-					hid,
-					vendor.Company,
-					vendor.IssEntityMap,
-					vendor.IssPeerMap,
-					b.Logger.Named("topic-manager"),
-				),
-				JwtConfig: vendor.Jwt,
-				Parser:    jwt.NewParser(jwt.WithValidMethods([]string{vendor.Jwt.SigningMethod})),
+			auth, err = b.manualAuthenticator(vendor)
+			if err != nil {
+				return nil, fmt.Errorf("cannot build manual authenticator %w", err)
 			}
 		}
 
@@ -89,27 +56,105 @@ func (b Builder) Authenticators() map[string]Authenticator {
 	}
 
 	if len(all) == 0 {
-		b.Logger.Fatal("at least one vendor should be enable to have soteria")
+		return nil, ErrNoAuthenticator
 	}
 
-	return all
+	return all, nil
+}
+
+func (b Builder) adminAuthenticator(vendor config.Vendor) (*AdminAuthenticator, error) {
+	if _, ok := vendor.Keys["system"]; !ok || len(vendor.Keys) != 1 {
+		return nil, ErrAdminAuthenticatorSystemKey
+	}
+
+	keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
+
+	return &AdminAuthenticator{
+		Key:       keys["system"],
+		Company:   vendor.Company,
+		JwtConfig: vendor.Jwt,
+		Parser:    jwt.NewParser(),
+	}, nil
+}
+
+func (b Builder) manualAuthenticator(vendor config.Vendor) (*ManualAuthenticator, error) {
+	if err := b.ValidateMappers(vendor.IssEntityMap, vendor.IssPeerMap); err != nil {
+		return nil, fmt.Errorf("failed to validate mappers %w", err)
+	}
+
+	allowedAccessTypes, err := b.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse allowed access types %w", err)
+	}
+
+	hid, err := topics.NewHashIDManager(vendor.HashIDMap)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create hash-id manager %w", err)
+	}
+
+	keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
+
+	return &ManualAuthenticator{
+		Keys:               keys,
+		AllowedAccessTypes: allowedAccessTypes,
+		Company:            vendor.Company,
+		TopicManager: topics.NewTopicManager(
+			vendor.Topics,
+			hid,
+			vendor.Company,
+			vendor.IssEntityMap,
+			vendor.IssPeerMap,
+			b.Logger.Named("topic-manager"),
+		),
+		JwtConfig: vendor.Jwt,
+		Parser:    jwt.NewParser(jwt.WithValidMethods([]string{vendor.Jwt.SigningMethod})),
+	}, nil
+}
+
+func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, error) {
+	allowedAccessTypes, err := b.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse allowed access types %w", err)
+	}
+
+	hid, err := topics.NewHashIDManager(vendor.HashIDMap)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create hash-id manager %w", err)
+	}
+
+	client := validator.New(b.ValidatorConfig.URL, b.ValidatorConfig.Timeout)
+
+	return &AutoAuthenticator{
+		AllowedAccessTypes: allowedAccessTypes,
+		Company:            vendor.Company,
+		TopicManager: topics.NewTopicManager(
+			vendor.Topics,
+			hid,
+			vendor.Company,
+			vendor.IssEntityMap,
+			vendor.IssPeerMap,
+			b.Logger.Named("topic-manager"),
+		),
+		JwtConfig: vendor.Jwt,
+		Validator: client,
+		Parser:    jwt.NewParser(),
+	}, nil
 }
 
 // GetAllowedAccessTypes will return all allowed access types in Soteria.
-func (b Builder) GetAllowedAccessTypes(accessTypes []string) []acl.AccessType {
+func (b Builder) GetAllowedAccessTypes(accessTypes []string) ([]acl.AccessType, error) {
 	allowedAccessTypes := make([]acl.AccessType, 0, len(accessTypes))
 
 	for _, a := range accessTypes {
 		at, err := toUserAccessType(a)
 		if err != nil {
-			err = fmt.Errorf("could not convert %s: %w", at, err)
-			b.Logger.Fatal("error while getting allowed access types", zap.Error(err))
+			return nil, fmt.Errorf("could not convert %s: %w", at, err)
 		}
 
 		allowedAccessTypes = append(allowedAccessTypes, at)
 	}
 
-	return allowedAccessTypes
+	return allowedAccessTypes, nil
 }
 
 // toUserAccessType will convert string access type to it's own type.
@@ -126,12 +171,14 @@ func toUserAccessType(access string) (acl.AccessType, error) {
 	return "", ErrInvalidAccessType
 }
 
-func (b Builder) ValidateMappers(issEntityMap, issPeerMap map[string]string) {
+func (b Builder) ValidateMappers(issEntityMap, issPeerMap map[string]string) error {
 	if _, ok := issEntityMap[topics.Default]; !ok {
-		b.Logger.Fatal("default case for iss-entity map is required")
+		return ErrNoDefaultCaseIssEntry
 	}
 
 	if _, ok := issPeerMap[topics.Default]; !ok {
-		b.Logger.Fatal("default case for iss-peer map is required")
+		return ErrNoDefaultCaseIssPeer
 	}
+
+	return nil
 }

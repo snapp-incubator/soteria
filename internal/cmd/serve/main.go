@@ -17,19 +17,25 @@ import (
 
 type Serve struct {
 	Cfg    config.Config
-	Logger zap.Logger
+	Logger *zap.Logger
 	Tracer trace.Tracer
 }
 
 func (s Serve) main() {
+	auth, err := authenticator.Builder{
+		Vendors:         s.Cfg.Vendors,
+		Logger:          s.Logger,
+		ValidatorConfig: s.Cfg.Validator,
+	}.Authenticators()
+	if err != nil {
+		s.Logger.Fatal("authenticator building failed", zap.Error(err))
+	}
+
 	api := api.API{
-		DefaultVendor: s.Cfg.DefaultVendor,
-		Authenticators: authenticator.Builder{
-			Vendors: s.Cfg.Vendors, Logger: s.Logger,
-			ValidatorConfig: s.Cfg.Validator,
-		}.Authenticators(),
-		Tracer: s.Tracer,
-		Logger: s.Logger.Named("api"),
+		DefaultVendor:  s.Cfg.DefaultVendor,
+		Authenticators: auth,
+		Tracer:         s.Tracer,
+		Logger:         s.Logger.Named("api"),
 	}
 
 	if _, ok := api.Authenticators[s.Cfg.DefaultVendor]; !ok {
