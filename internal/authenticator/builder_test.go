@@ -9,6 +9,24 @@ import (
 	"go.uber.org/zap"
 )
 
+func TestBuilderWithoutAuthenticator(t *testing.T) {
+	t.Parallel()
+
+	require := require.New(t)
+
+	b := authenticator.Builder{
+		Vendors: []config.Vendor{},
+		Logger:  zap.NewNop(),
+		ValidatorConfig: config.Validator{
+			URL:     "",
+			Timeout: 0,
+		},
+	}
+
+	_, err := b.Authenticators()
+	require.ErrorIs(err, authenticator.ErrNoAuthenticator)
+}
+
 func TestBuilderInternalAuthenticator(t *testing.T) {
 	t.Parallel()
 
