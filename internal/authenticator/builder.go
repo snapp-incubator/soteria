@@ -113,7 +113,6 @@ func (b Builder) GetAllowedAccessTypes(accessTypes []string) []acl.AccessType {
 }
 
 // toUserAccessType will convert string access type to it's own type.
-// nolint: goerr113
 func toUserAccessType(access string) (acl.AccessType, error) {
 	switch access {
 	case "pub":
@@ -124,7 +123,7 @@ func toUserAccessType(access string) (acl.AccessType, error) {
 		return acl.PubSub, nil
 	}
 
-	return "", fmt.Errorf("%v is a invalid acces type", access)
+	return "", ErrInvalidAccessType
 }
 
 func (b Builder) ValidateMappers(issEntityMap, issPeerMap map[string]string) {
