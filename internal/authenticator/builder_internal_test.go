@@ -25,6 +25,36 @@ func TestToUserAccessType(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
+			name:        "success",
+			input:       "publish",
+			expected:    acl.Pub,
+			expectedErr: nil,
+		},
+		{
+			name:        "success",
+			input:       "sub",
+			expected:    acl.Sub,
+			expectedErr: nil,
+		},
+		{
+			name:        "success",
+			input:       "subscribe",
+			expected:    acl.Sub,
+			expectedErr: nil,
+		},
+		{
+			name:        "success",
+			input:       "pubsub",
+			expected:    acl.PubSub,
+			expectedErr: nil,
+		},
+		{
+			name:        "success",
+			input:       "subpub",
+			expected:    acl.PubSub,
+			expectedErr: nil,
+		},
+		{
 			name:        "failed",
 			input:       "-",
 			expected:    "",
