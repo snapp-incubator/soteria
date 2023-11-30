@@ -115,11 +115,11 @@ func (b Builder) GetAllowedAccessTypes(accessTypes []string) []acl.AccessType {
 // toUserAccessType will convert string access type to it's own type.
 func toUserAccessType(access string) (acl.AccessType, error) {
 	switch access {
-	case "pub":
+	case "pub", "publish":
 		return acl.Pub, nil
-	case "sub":
+	case "sub", "subscribe":
 		return acl.Sub, nil
-	case "pubsub":
+	case "pubsub", "subpub":
 		return acl.PubSub, nil
 	}
 
