@@ -36,8 +36,6 @@ func (b Builder) Authenticators() (map[string]Authenticator, error) {
 		)
 
 		switch {
-		case vendor.UseValidator && vendor.IsInternal:
-			return nil, ErrInvalidAuthenticator
 		case vendor.UseValidator:
 			auth, err = b.autoAuthenticator(vendor)
 			if err != nil {
@@ -66,6 +64,10 @@ func (b Builder) Authenticators() (map[string]Authenticator, error) {
 }
 
 func (b Builder) adminAuthenticator(vendor config.Vendor) (*AdminAuthenticator, error) {
+	if vendor.UseValidator {
+		return nil, ErrInvalidAuthenticator
+	}
+
 	if _, ok := vendor.Keys["system"]; !ok || len(vendor.Keys) != 1 {
 		return nil, ErrAdminAuthenticatorSystemKey
 	}
@@ -115,6 +117,10 @@ func (b Builder) manualAuthenticator(vendor config.Vendor) (*ManualAuthenticator
 }
 
 func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, error) {
+	if vendor.IsInternal {
+		return nil, ErrInvalidAuthenticator
+	}
+
 	allowedAccessTypes, err := b.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse allowed access types %w", err)
