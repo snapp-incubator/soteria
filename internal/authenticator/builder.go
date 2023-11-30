@@ -72,7 +72,10 @@ func (b Builder) adminAuthenticator(vendor config.Vendor) (*AdminAuthenticator, 
 		return nil, ErrAdminAuthenticatorSystemKey
 	}
 
-	keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
+	keys, err := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
+	if err != nil {
+		return nil, fmt.Errorf("loading keys failed %w", err)
+	}
 
 	return &AdminAuthenticator{
 		Key:       keys["system"],
@@ -97,7 +100,10 @@ func (b Builder) manualAuthenticator(vendor config.Vendor) (*ManualAuthenticator
 		return nil, fmt.Errorf("cannot create hash-id manager %w", err)
 	}
 
-	keys := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
+	keys, err := b.GenerateKeys(vendor.Jwt.SigningMethod, vendor.Keys)
+	if err != nil {
+		return nil, fmt.Errorf("loading keys failed %w", err)
+	}
 
 	return &ManualAuthenticator{
 		Keys:               keys,
