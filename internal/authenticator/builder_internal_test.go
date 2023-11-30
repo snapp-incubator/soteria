@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// nolint: funlen
 func TestToUserAccessType(t *testing.T) {
 	t.Parallel()
 
