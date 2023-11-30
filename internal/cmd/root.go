@@ -28,14 +28,14 @@ func Execute() {
 		Use:   "soteria",
 		Short: "Soteria is the authentication service.",
 		Long:  `Soteria is responsible for Authentication and Authorization of every request witch send to EMQ Server.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			cmd.Println("Run `soteria serve` to start serving requests")
 		},
 	}
 
 	serve.Serve{
 		Cfg:    cfg,
-		Logger: *logger.Named("serve"),
+		Logger: logger.Named("serve"),
 		Tracer: tracer,
 	}.Register(root)
 
