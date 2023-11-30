@@ -106,8 +106,8 @@ func (a API) ACLv1(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).SendString("ok")
 }
 
-// aclRequest is the body payload structure of the ACL endpoint.
-type aclv2Request struct {
+// ACLv2Request is the body payload structure of the ACL endpoint.
+type ACLv2Request struct {
 	Token    string `json:"token"`
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -115,13 +115,14 @@ type aclv2Request struct {
 	Action   string `json:"action"`
 }
 
-// ACL is the handler responsible for ACL requests.
+// ACLv2 is the handler responsible for ACL requests coming from EMQv5.
+// https://www.emqx.io/docs/en/latest/access-control/authz/http.html
 // nolint: wrapcheck, funlen
 func (a API) ACLv2(c *fiber.Ctx) error {
 	_, span := a.Tracer.Start(c.Context(), "api.v2.acl")
 	defer span.End()
 
-	request := new(aclv2Request)
+	request := new(ACLv2Request)
 	if err := c.BodyParser(request); err != nil {
 		a.Logger.
 			Warn("acl bad request",
@@ -133,7 +134,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 				zap.String("password", request.Password),
 			)
 
-		return c.Status(http.StatusBadRequest).JSON(ACLResponse{
+		return c.Status(http.StatusOK).JSON(ACLResponse{
 			Result: "deny",
 		})
 	}
@@ -191,7 +192,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 					zap.String("authenticator", auth.GetCompany()))
 		}
 
-		return c.Status(http.StatusUnauthorized).JSON(ACLResponse{
+		return c.Status(http.StatusOK).JSON(ACLResponse{
 			Result: "deny",
 		})
 	}
