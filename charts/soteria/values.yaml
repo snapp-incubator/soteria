@@ -51,6 +51,7 @@ config:
 vendors:
   snapp:
     company: "snapp"
+    type: "manual"
     hashid_map:
       0:
         salt: "secret"
