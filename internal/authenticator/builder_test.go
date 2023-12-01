@@ -28,6 +28,42 @@ func TestBuilderWithoutAuthenticator(t *testing.T) {
 	require.ErrorIs(err, authenticator.ErrNoAuthenticator)
 }
 
+func TestBuilderInvalidAuthenticator(t *testing.T) {
+	t.Parallel()
+
+	require := require.New(t)
+
+	b := authenticator.Builder{
+		Vendors: []config.Vendor{
+			{
+				Company: "internal",
+				Jwt: config.JWT{
+					IssName:       "iss",
+					SubName:       "sub",
+					SigningMethod: "HS512",
+				},
+				Type:               "invalid",
+				AllowedAccessTypes: nil,
+				Topics:             nil,
+				HashIDMap:          nil,
+				IssEntityMap:       nil,
+				IssPeerMap:         nil,
+				Keys: map[string]string{
+					"system": "c2VjcmV0",
+				},
+			},
+		},
+		Logger: zap.NewNop(),
+		ValidatorConfig: config.Validator{
+			URL:     "",
+			Timeout: 0,
+		},
+	}
+
+	_, err := b.Authenticators()
+	require.ErrorIs(err, authenticator.ErrInvalidAuthenticator)
+}
+
 func TestBuilderInternalAuthenticator(t *testing.T) {
 	t.Parallel()
 
@@ -74,7 +110,7 @@ func TestBuilderInternalAuthenticatorWithInvalidKey(t *testing.T) {
 	b := authenticator.Builder{
 		Vendors: []config.Vendor{
 			{
-				Company: "internal",
+				Company: "admin",
 				Jwt: config.JWT{
 					IssName:       "iss",
 					SubName:       "sub",
