@@ -41,8 +41,8 @@ type (
 		IssEntityMap       map[string]string          `json:"iss_entity_map,omitempty"       koanf:"iss_entity_map"`
 		IssPeerMap         map[string]string          `json:"iss_peer_map,omitempty"         koanf:"iss_peer_map"`
 		Jwt                JWT                        `json:"jwt,omitempty"                  koanf:"jwt"`
-		Type               string                     `json:"type" koanf:"type"`
-		HashIDMap          map[string]topics.HashData `json:"hash_id_map,omitempty" koanf:"hashid_map"`
+		Type               string                     `json:"type,omitempty"                 koanf:"type"`
+		HashIDMap          map[string]topics.HashData `json:"hash_id_map,omitempty"          koanf:"hashid_map"`
 	}
 
 	JWT struct {
