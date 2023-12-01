@@ -87,7 +87,7 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 		Company:            "snapp",
 		Parser:             jwt.NewParser(),
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
-		JwtConfig: config.Jwt{
+		JwtConfig: config.JWT{
 			IssName:       "iss",
 			SubName:       "sub",
 			SigningMethod: "rsa256",

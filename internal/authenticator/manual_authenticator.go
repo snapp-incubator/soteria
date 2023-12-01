@@ -16,7 +16,7 @@ type ManualAuthenticator struct {
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
 	Company            string
-	JwtConfig          config.Jwt
+	JwtConfig          config.JWT
 	Parser             *jwt.Parser
 }
 

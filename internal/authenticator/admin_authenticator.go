@@ -13,7 +13,7 @@ import (
 type AdminAuthenticator struct {
 	Key       any
 	Company   string
-	JwtConfig config.Jwt
+	JwtConfig config.JWT
 	Parser    *jwt.Parser
 }
 
