@@ -15,7 +15,7 @@ import (
 var (
 	ErrAdminAuthenticatorSystemKey = errors.New("admin authenticator supports only one key named system")
 	ErrNoAuthenticator             = errors.New("at least one vendor should be enable to have soteria")
-	ErrNoDefaultCaseIssEntry       = errors.New("default case for iss-entity map is required")
+	ErrNoDefaultCaseIssEntity      = errors.New("default case for iss-entity map is required")
 	ErrNoDefaultCaseIssPeer        = errors.New("default case for iss-peer map is required")
 	ErrInvalidAuthenticator        = errors.New("there is no authenticator to support your request")
 )
@@ -182,7 +182,7 @@ func toUserAccessType(access string) (acl.AccessType, error) {
 
 func (b Builder) ValidateMappers(issEntityMap, issPeerMap map[string]string) error {
 	if _, ok := issEntityMap[topics.Default]; !ok {
-		return ErrNoDefaultCaseIssEntry
+		return ErrNoDefaultCaseIssEntity
 	}
 
 	if _, ok := issPeerMap[topics.Default]; !ok {
