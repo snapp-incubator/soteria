@@ -42,8 +42,7 @@ func Default() Config {
 // nolint: funlen
 func SnappVendor() Vendor {
 	return Vendor{
-		UseValidator: false,
-		IsInternal:   false,
+		Type: "manual",
 		AllowedAccessTypes: []string{
 			"pub",
 			"sub",
@@ -174,7 +173,7 @@ func SnappVendor() Vendor {
 			"1":       "driver",
 			"default": "",
 		},
-		Jwt: Jwt{
+		Jwt: JWT{
 			IssName:       "iss",
 			SubName:       "sub",
 			SigningMethod: "RS512",
