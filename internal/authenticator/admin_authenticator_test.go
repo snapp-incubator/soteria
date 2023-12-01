@@ -30,7 +30,7 @@ func TestAdminAuthenticator_suite(t *testing.T) {
 		Key:     pkey0,
 		Company: "snapp-admin",
 		Parser:  jwt.NewParser(),
-		JwtConfig: config.Jwt{
+		JwtConfig: config.JWT{
 			IssName:       "iss",
 			SubName:       "sub",
 			SigningMethod: "rsa256",

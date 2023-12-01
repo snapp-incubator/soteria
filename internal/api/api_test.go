@@ -130,7 +130,7 @@ func (suite *APITestSuite) SetupSuite() {
 			"snapp-admin": authenticator.AdminAuthenticator{
 				Key:     []byte(suite.key),
 				Company: "snapp-admin",
-				JwtConfig: config.Jwt{
+				JwtConfig: config.JWT{
 					IssName:       "iss",
 					SubName:       "sub",
 					SigningMethod: "HS512",
