@@ -35,22 +35,24 @@ func (b Builder) Authenticators() (map[string]Authenticator, error) {
 			err  error
 		)
 
-		switch {
-		case vendor.UseValidator:
+		switch vendor.Type {
+		case "auto":
 			auth, err = b.autoAuthenticator(vendor)
 			if err != nil {
 				return nil, fmt.Errorf("cannot build auto authenticator %w", err)
 			}
-		case vendor.IsInternal:
+		case "admin", "internal":
 			auth, err = b.adminAuthenticator(vendor)
 			if err != nil {
 				return nil, fmt.Errorf("cannot build admin authenticator %w", err)
 			}
-		default:
+		case "manual":
 			auth, err = b.manualAuthenticator(vendor)
 			if err != nil {
 				return nil, fmt.Errorf("cannot build manual authenticator %w", err)
 			}
+		default:
+			return nil, ErrInvalidAuthenticator
 		}
 
 		all[vendor.Company] = auth
@@ -64,10 +66,6 @@ func (b Builder) Authenticators() (map[string]Authenticator, error) {
 }
 
 func (b Builder) adminAuthenticator(vendor config.Vendor) (*AdminAuthenticator, error) {
-	if vendor.UseValidator {
-		return nil, ErrInvalidAuthenticator
-	}
-
 	if _, ok := vendor.Keys["system"]; !ok || len(vendor.Keys) != 1 {
 		return nil, ErrAdminAuthenticatorSystemKey
 	}
@@ -123,10 +121,6 @@ func (b Builder) manualAuthenticator(vendor config.Vendor) (*ManualAuthenticator
 }
 
 func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, error) {
-	if vendor.IsInternal {
-		return nil, ErrInvalidAuthenticator
-	}
-
 	allowedAccessTypes, err := b.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse allowed access types %w", err)
