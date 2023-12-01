@@ -37,13 +37,12 @@ func TestBuilderInternalAuthenticator(t *testing.T) {
 		Vendors: []config.Vendor{
 			{
 				Company: "internal",
-				Jwt: config.Jwt{
+				Jwt: config.JWT{
 					IssName:       "iss",
 					SubName:       "sub",
 					SigningMethod: "HS512",
 				},
-				IsInternal:         true,
-				UseValidator:       false,
+				Type:               "internal",
 				AllowedAccessTypes: nil,
 				Topics:             nil,
 				HashIDMap:          nil,
@@ -76,13 +75,12 @@ func TestBuilderInternalAuthenticatorWithInvalidKey(t *testing.T) {
 		Vendors: []config.Vendor{
 			{
 				Company: "internal",
-				Jwt: config.Jwt{
+				Jwt: config.JWT{
 					IssName:       "iss",
 					SubName:       "sub",
 					SigningMethod: "HS512",
 				},
-				IsInternal:         true,
-				UseValidator:       false,
+				Type:               "internal",
 				AllowedAccessTypes: nil,
 				Topics:             nil,
 				HashIDMap:          nil,
@@ -113,13 +111,12 @@ func TestBuilderManualAuthenticatorWithoutKey(t *testing.T) {
 		Vendors: []config.Vendor{
 			{
 				Company: "snapp",
-				Jwt: config.Jwt{
+				Jwt: config.JWT{
 					IssName:       "iss",
 					SubName:       "sub",
 					SigningMethod: "HS512",
 				},
-				IsInternal:         false,
-				UseValidator:       false,
+				Type:               "manual",
 				AllowedAccessTypes: []string{"pub", "sub"},
 				Topics:             nil,
 				HashIDMap: map[string]topics.HashData{
@@ -168,13 +165,12 @@ func TestBuilderManualAuthenticator(t *testing.T) {
 		Vendors: []config.Vendor{
 			{
 				Company: "snapp",
-				Jwt: config.Jwt{
+				Jwt: config.JWT{
 					IssName:       "iss",
 					SubName:       "sub",
 					SigningMethod: "RSA512",
 				},
-				IsInternal:         false,
-				UseValidator:       false,
+				Type:               "manual",
 				AllowedAccessTypes: []string{"pub", "sub"},
 				Topics:             nil,
 				HashIDMap: map[string]topics.HashData{

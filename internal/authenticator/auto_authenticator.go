@@ -17,7 +17,7 @@ type AutoAuthenticator struct {
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
 	Company            string
-	JwtConfig          config.Jwt
+	JwtConfig          config.JWT
 	Validator          validator.Client
 	Parser             *jwt.Parser
 }
