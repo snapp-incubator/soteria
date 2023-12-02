@@ -121,12 +121,11 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestAuth() {
 	})
 }
 
-func (suite *ManualAuthenticatorSnappTestSuite) TestACL_Basics() {
+func (suite *ManualAuthenticatorSnappTestSuite) TestACLBasics() {
 	require := suite.Require()
 
 	suite.Run("testing acl with invalid access type", func() {
 		ok, err := suite.Authenticator.ACL("invalid-access", suite.Tokens.Passenger, "test")
-		require.Error(err)
 		require.False(ok)
 		require.ErrorIs(err, authenticator.ErrInvalidAccessType)
 	})
@@ -134,7 +133,6 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestACL_Basics() {
 	suite.Run("testing acl with invalid token", func() {
 		ok, err := suite.Authenticator.ACL(acl.Pub, invalidToken, validDriverCabEventTopic)
 		require.False(ok)
-		require.Error(err)
 		require.ErrorIs(err, jwt.ErrTokenMalformed)
 	})
 
@@ -158,7 +156,7 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestACL_Basics() {
 }
 
 // nolint: funlen
-func (suite *ManualAuthenticatorSnappTestSuite) TestACL_Passenger() {
+func (suite *ManualAuthenticatorSnappTestSuite) TestACLPassenger() {
 	require := suite.Require()
 	token := suite.Tokens.Passenger
 
@@ -232,7 +230,7 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestACL_Passenger() {
 }
 
 // nolint: funlen
-func (suite *ManualAuthenticatorSnappTestSuite) TestACL_Driver() {
+func (suite *ManualAuthenticatorSnappTestSuite) TestACLDriver() {
 	require := suite.Require()
 	token := suite.Tokens.Driver
 
