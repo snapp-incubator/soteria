@@ -16,7 +16,7 @@ type ManualAuthenticator struct {
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
 	Company            string
-	JwtConfig          config.JWT
+	JWTConfig          config.JWT
 	Parser             *jwt.Parser
 }
 
@@ -29,13 +29,15 @@ func (a ManualAuthenticator) Auth(tokenString string) error {
 		if !ok {
 			return nil, ErrInvalidClaims
 		}
-		if claims[a.JwtConfig.IssName] == nil {
+		if claims[a.JWTConfig.IssName] == nil {
 			return nil, ErrIssNotFound
 		}
 
-		issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
-
+		issuer := fmt.Sprintf("%v", claims[a.JWTConfig.IssName])
 		key := a.Keys[issuer]
+		if key == nil {
+			return nil, KeyNotFoundError{Issuer: issuer}
+		}
 
 		return key, nil
 	})
@@ -62,14 +64,14 @@ func (a ManualAuthenticator) ACL(
 		if !ok {
 			return nil, ErrInvalidClaims
 		}
-		if claims[a.JwtConfig.IssName] == nil {
+		if claims[a.JWTConfig.IssName] == nil {
 			return nil, ErrIssNotFound
 		}
-		if claims[a.JwtConfig.SubName] == nil {
+		if claims[a.JWTConfig.SubName] == nil {
 			return nil, ErrSubNotFound
 		}
 
-		issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
+		issuer := fmt.Sprintf("%v", claims[a.JWTConfig.IssName])
 		key := a.Keys[issuer]
 		if key == nil {
 			return nil, KeyNotFoundError{Issuer: issuer}
@@ -86,17 +88,17 @@ func (a ManualAuthenticator) ACL(
 		return false, ErrInvalidClaims
 	}
 
-	if claims[a.JwtConfig.IssName] == nil {
+	if claims[a.JWTConfig.IssName] == nil {
 		return false, ErrIssNotFound
 	}
 
-	issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
+	issuer := fmt.Sprintf("%v", claims[a.JWTConfig.IssName])
 
-	if claims[a.JwtConfig.SubName] == nil {
+	if claims[a.JWTConfig.SubName] == nil {
 		return false, ErrSubNotFound
 	}
 
-	sub, _ := claims[a.JwtConfig.SubName].(string)
+	sub, _ := claims[a.JWTConfig.SubName].(string)
 
 	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub)
 	if topicTemplate == nil {
