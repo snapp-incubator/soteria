@@ -206,7 +206,9 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestACL_Passenger() {
 
 	suite.Run("testing passenger subscribe on invalid call entry topic", func() {
 		ok, err := suite.Authenticator.ACL(acl.Pub, token, invalidPassengerCallEntryTopic)
-		require.Error(err)
+		require.ErrorIs(err, authenticator.InvalidTopicError{
+			Topic: invalidPassengerCallEntryTopic,
+		})
 		require.False(ok)
 	})
 
