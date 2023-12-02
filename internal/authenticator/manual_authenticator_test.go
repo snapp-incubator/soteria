@@ -27,6 +27,11 @@ type ManualAuthenticatorTestSuite struct {
 		Driver    *rsa.PublicKey
 	}
 
+	PrivateKeys struct {
+		Passenger *rsa.PrivateKey
+		Driver    *rsa.PrivateKey
+	}
+
 	Authenticator authenticator.Authenticator
 }
 
@@ -54,10 +59,12 @@ func (suite *ManualAuthenticatorTestSuite) SetupSuite() {
 	key0, err := getPrivateKey("0")
 	require.NoError(err)
 
-	suite.PublicKeys.Driver = pkey0
+	suite.PrivateKeys.Driver = key0
 
 	key1, err := getPrivateKey("1")
 	require.NoError(err)
+
+	suite.PrivateKeys.Passenger = key1
 
 	driverToken, err := getSampleToken("0", key0)
 	require.NoError(err)
@@ -102,6 +109,13 @@ func (suite *ManualAuthenticatorTestSuite) TestAuth() {
 
 	suite.Run("testing invalid token auth", func() {
 		require.Error(suite.Authenticator.Auth(invalidToken))
+	})
+
+	suite.Run("testing token with invalid iss", func() {
+		token, err := getSampleToken("-1", suite.PrivateKeys.Passenger)
+		require.NoError(err)
+
+		require.ErrorAs(suite.Authenticator.Auth(token), new(authenticator.KeyNotFoundError))
 	})
 }
 
