@@ -115,7 +115,7 @@ func (b Builder) manualAuthenticator(vendor config.Vendor) (*ManualAuthenticator
 			vendor.IssPeerMap,
 			b.Logger.Named("topic-manager"),
 		),
-		JwtConfig: vendor.Jwt,
+		JWTConfig: vendor.Jwt,
 		Parser:    jwt.NewParser(jwt.WithValidMethods([]string{vendor.Jwt.SigningMethod})),
 	}, nil
 }
