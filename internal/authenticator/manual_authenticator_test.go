@@ -115,7 +115,9 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestAuth() {
 		token, err := getSampleToken("-1", suite.PrivateKeys.Passenger)
 		require.NoError(err)
 
-		require.ErrorAs(suite.Authenticator.Auth(token), new(authenticator.KeyNotFoundError))
+		require.ErrorIs(suite.Authenticator.Auth(token), authenticator.KeyNotFoundError{
+			Issuer: "-1",
+		})
 	})
 }
 
