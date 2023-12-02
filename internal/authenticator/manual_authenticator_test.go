@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type ManualAuthenticatorTestSuite struct {
+type ManualAuthenticatorSnappTestSuite struct {
 	suite.Suite
 
 	Tokens struct {
@@ -38,10 +38,10 @@ type ManualAuthenticatorTestSuite struct {
 func TestManualAuthenticator_suite(t *testing.T) {
 	t.Parallel()
 
-	suite.Run(t, new(ManualAuthenticatorTestSuite))
+	suite.Run(t, new(ManualAuthenticatorSnappTestSuite))
 }
 
-func (suite *ManualAuthenticatorTestSuite) SetupSuite() {
+func (suite *ManualAuthenticatorSnappTestSuite) SetupSuite() {
 	cfg := config.SnappVendor()
 
 	require := suite.Require()
@@ -96,7 +96,7 @@ func (suite *ManualAuthenticatorTestSuite) SetupSuite() {
 	}
 }
 
-func (suite *ManualAuthenticatorTestSuite) TestAuth() {
+func (suite *ManualAuthenticatorSnappTestSuite) TestAuth() {
 	require := suite.Require()
 
 	suite.Run("testing driver token auth", func() {
@@ -119,7 +119,7 @@ func (suite *ManualAuthenticatorTestSuite) TestAuth() {
 	})
 }
 
-func (suite *ManualAuthenticatorTestSuite) TestACL_Basics() {
+func (suite *ManualAuthenticatorSnappTestSuite) TestACL_Basics() {
 	require := suite.Require()
 
 	suite.Run("testing acl with invalid access type", func() {
@@ -156,7 +156,7 @@ func (suite *ManualAuthenticatorTestSuite) TestACL_Basics() {
 }
 
 // nolint: funlen
-func (suite *ManualAuthenticatorTestSuite) TestACL_Passenger() {
+func (suite *ManualAuthenticatorSnappTestSuite) TestACL_Passenger() {
 	require := suite.Require()
 	token := suite.Tokens.Passenger
 
@@ -228,7 +228,7 @@ func (suite *ManualAuthenticatorTestSuite) TestACL_Passenger() {
 }
 
 // nolint: funlen
-func (suite *ManualAuthenticatorTestSuite) TestACL_Driver() {
+func (suite *ManualAuthenticatorSnappTestSuite) TestACL_Driver() {
 	require := suite.Require()
 	token := suite.Tokens.Driver
 
