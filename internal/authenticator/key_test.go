@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// nolint: funlen
 func TestGenerateKeys(t *testing.T) {
 	t.Parallel()
 
@@ -31,6 +32,15 @@ func TestGenerateKeys(t *testing.T) {
 		{
 			name:   "hmac based method with invalid key",
 			method: "HS512",
+			keys: map[string]string{
+				"snpay": "YWRtaW4",
+			},
+			haveErr: true,
+			err:     nil,
+		},
+		{
+			name:   "rsa method with invalid key",
+			method: "RSA512",
 			keys: map[string]string{
 				"snpay": "YWRtaW4",
 			},
