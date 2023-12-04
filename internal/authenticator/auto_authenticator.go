@@ -17,7 +17,7 @@ type AutoAuthenticator struct {
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
 	Company            string
-	JwtConfig          config.JWT
+	JWTConfig          config.JWT
 	Validator          validator.Client
 	Parser             *jwt.Parser
 }
@@ -56,17 +56,17 @@ func (a AutoAuthenticator) ACL(
 		return false, ErrInvalidClaims
 	}
 
-	if claims[a.JwtConfig.IssName] == nil {
+	if claims[a.JWTConfig.IssName] == nil {
 		return false, ErrIssNotFound
 	}
 
-	issuer := fmt.Sprintf("%v", claims[a.JwtConfig.IssName])
+	issuer := fmt.Sprintf("%v", claims[a.JWTConfig.IssName])
 
-	if claims[a.JwtConfig.SubName] == nil {
+	if claims[a.JWTConfig.SubName] == nil {
 		return false, ErrSubNotFound
 	}
 
-	sub, _ := claims[a.JwtConfig.SubName].(string)
+	sub, _ := claims[a.JWTConfig.SubName].(string)
 
 	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub)
 	if topicTemplate == nil {
