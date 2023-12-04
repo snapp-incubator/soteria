@@ -144,7 +144,7 @@ func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, er
 			vendor.IssPeerMap,
 			b.Logger.Named("topic-manager"),
 		),
-		JwtConfig: vendor.Jwt,
+		JWTConfig: vendor.Jwt,
 		Validator: client,
 		Parser:    jwt.NewParser(),
 	}, nil
