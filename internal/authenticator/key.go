@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
-	"go.uber.org/zap"
 )
 
 var (
@@ -50,7 +49,7 @@ func (b Builder) GenerateRSAKeys(raw map[string]string) (map[string]any, error) 
 	for iss, publicKey := range raw {
 		bytes, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicKey))
 		if err != nil {
-			b.Logger.Fatal("could not read public key", zap.String("issuer", iss), zap.Error(err))
+			return nil, fmt.Errorf("could not read public key %w", err)
 		}
 
 		keys[iss] = bytes
@@ -65,7 +64,7 @@ func (b Builder) GenerateECDSAKeys(raw map[string]string) (map[string]any, error
 	for iss, publicKey := range raw {
 		bytes, err := jwt.ParseECPublicKeyFromPEM([]byte(publicKey))
 		if err != nil {
-			b.Logger.Fatal("could not read public key", zap.String("issuer", iss), zap.Error(err))
+			return nil, fmt.Errorf("could not read public key %w", err)
 		}
 
 		keys[iss] = bytes
