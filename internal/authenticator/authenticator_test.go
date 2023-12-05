@@ -110,15 +110,14 @@ func getPrivateKey(u string) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func getSampleToken(issuer string, key *rsa.PrivateKey) (string, error) {
+func getSampleTokenWithClaims(issuer string, key *rsa.PrivateKey, iss, sub string) (string, error) {
 	exp := time.Now().Add(time.Hour * 24 * 365 * 10)
-	sub := "DXKgaNQa7N5Y7bo"
 
 	// nolint: exhaustruct
-	claims := jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(exp),
-		Issuer:    issuer,
-		Subject:   sub,
+	claims := jwt.MapClaims{
+		"exp": jwt.NewNumericDate(exp),
+		iss:   issuer,
+		sub:   "DXKgaNQa7N5Y7bo",
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
@@ -128,4 +127,8 @@ func getSampleToken(issuer string, key *rsa.PrivateKey) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func getSampleToken(issuer string, key *rsa.PrivateKey) (string, error) {
+	return getSampleTokenWithClaims(issuer, key, "iss", "sub")
 }

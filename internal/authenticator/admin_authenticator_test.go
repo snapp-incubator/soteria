@@ -1,6 +1,7 @@
 package authenticator_test
 
 import (
+	"crypto/rsa"
 	"testing"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -14,6 +15,7 @@ type AdminAuthenticatorTestSuite struct {
 	suite.Suite
 
 	AdminToken string
+	key        *rsa.PrivateKey
 
 	Authenticator authenticator.Authenticator
 }
@@ -46,6 +48,8 @@ func (suite *AdminAuthenticatorTestSuite) SetupSuite() {
 	key, err := getPrivateKey("admin")
 	require.NoError(err)
 
+	suite.key = key
+
 	adminToken, err := getSampleToken("admin", key)
 	require.NoError(err)
 
@@ -61,5 +65,12 @@ func (suite *AdminAuthenticatorTestSuite) TestAuth() {
 
 	suite.Run("testing invalid token auth", func() {
 		require.Error(suite.Authenticator.Auth(invalidToken))
+	})
+
+	suite.Run("testing invalid iss in auth token", func() {
+		token, err := getSampleTokenWithClaims("admin", suite.key, "issuer", "sub")
+		require.NoError(err)
+
+		require.Error(suite.Authenticator.Auth(token), authenticator.ErrIssNotFound)
 	})
 }
