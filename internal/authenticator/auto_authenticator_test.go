@@ -12,7 +12,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/config"
-	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/internal/topic"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
 	"github.com/stretchr/testify/require"
@@ -55,7 +55,7 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 
 	suite.Token = token
 
-	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
+	hid, err := topic.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(err)
 
 	testServer := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -86,7 +86,7 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
 		Parser:             jwt.NewParser(),
-		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
+		TopicManager:       topic.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
 		JWTConfig: config.JWT{
 			IssName:       "iss",
 			SubName:       "sub",
@@ -116,19 +116,19 @@ func TestAutoAuthenticator_ValidateTopicBySender(t *testing.T) {
 
 	cfg := config.SnappVendor()
 
-	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
+	hid, err := topic.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(t, err)
 
 	// nolint: exhaustruct
 	authenticator := authenticator.AutoAuthenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",
-		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
+		TopicManager:       topic.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
 		t.Parallel()
-		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topics.DriverIss, "DXKgaNQa7N5Y7bo")
+		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topic.DriverIss, "DXKgaNQa7N5Y7bo")
 		require.NotNil(t, topicTemplate)
 	})
 }

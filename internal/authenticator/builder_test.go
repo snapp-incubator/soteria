@@ -5,7 +5,7 @@ import (
 
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/config"
-	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/internal/topic"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
@@ -155,7 +155,7 @@ func TestBuilderManualAuthenticatorWithoutKey(t *testing.T) {
 				Type:               "manual",
 				AllowedAccessTypes: []string{"pub", "sub"},
 				Topics:             nil,
-				HashIDMap: map[string]topics.HashData{
+				HashIDMap: map[string]topic.HashData{
 					"0": {
 						Alphabet: "",
 						Length:   15,
@@ -209,7 +209,7 @@ func TestBuilderManualAuthenticator(t *testing.T) {
 				Type:               "manual",
 				AllowedAccessTypes: []string{"pub", "sub"},
 				Topics:             nil,
-				HashIDMap: map[string]topics.HashData{
+				HashIDMap: map[string]topic.HashData{
 					"0": {
 						Alphabet: "",
 						Length:   15,
@@ -285,7 +285,7 @@ func TestBuilderManualAuthenticatorInvalidMapping_1(t *testing.T) {
 				Type:               "manual",
 				AllowedAccessTypes: []string{"pub", "sub"},
 				Topics:             nil,
-				HashIDMap: map[string]topics.HashData{
+				HashIDMap: map[string]topic.HashData{
 					"0": {
 						Alphabet: "",
 						Length:   15,
@@ -355,7 +355,7 @@ func TestBuilderManualAuthenticatorInvalidMapping_2(t *testing.T) {
 				Type:               "manual",
 				AllowedAccessTypes: []string{"pub", "sub"},
 				Topics:             nil,
-				HashIDMap: map[string]topics.HashData{
+				HashIDMap: map[string]topic.HashData{
 					"0": {
 						Alphabet: "",
 						Length:   15,
@@ -428,7 +428,7 @@ func TestBuilderManualAuthenticatorInvalidAccess(t *testing.T) {
 				Type:               "manual",
 				AllowedAccessTypes: []string{"pub", "superuser"},
 				Topics:             nil,
-				HashIDMap: map[string]topics.HashData{
+				HashIDMap: map[string]topic.HashData{
 					"0": {
 						Alphabet: "",
 						Length:   15,

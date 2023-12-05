@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/config"
-	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/internal/topic"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 )
 
@@ -14,7 +14,7 @@ import (
 type ManualAuthenticator struct {
 	Keys               map[string]any
 	AllowedAccessTypes []acl.AccessType
-	TopicManager       *topics.Manager
+	TopicManager       *topic.Manager
 	Company            string
 	JWTConfig          config.JWT
 	Parser             *jwt.Parser

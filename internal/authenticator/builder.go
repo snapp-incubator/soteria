@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/config"
-	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/internal/topic"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
 	"go.uber.org/zap"
@@ -93,7 +93,7 @@ func (b Builder) manualAuthenticator(vendor config.Vendor) (*ManualAuthenticator
 		return nil, fmt.Errorf("cannot parse allowed access types %w", err)
 	}
 
-	hid, err := topics.NewHashIDManager(vendor.HashIDMap)
+	hid, err := topic.NewHashIDManager(vendor.HashIDMap)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create hash-id manager %w", err)
 	}
@@ -107,7 +107,7 @@ func (b Builder) manualAuthenticator(vendor config.Vendor) (*ManualAuthenticator
 		Keys:               keys,
 		AllowedAccessTypes: allowedAccessTypes,
 		Company:            vendor.Company,
-		TopicManager: topics.NewTopicManager(
+		TopicManager: topic.NewTopicManager(
 			vendor.Topics,
 			hid,
 			vendor.Company,
@@ -126,7 +126,7 @@ func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, er
 		return nil, fmt.Errorf("cannot parse allowed access types %w", err)
 	}
 
-	hid, err := topics.NewHashIDManager(vendor.HashIDMap)
+	hid, err := topic.NewHashIDManager(vendor.HashIDMap)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create hash-id manager %w", err)
 	}
@@ -136,7 +136,7 @@ func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, er
 	return &AutoAuthenticator{
 		AllowedAccessTypes: allowedAccessTypes,
 		Company:            vendor.Company,
-		TopicManager: topics.NewTopicManager(
+		TopicManager: topic.NewTopicManager(
 			vendor.Topics,
 			hid,
 			vendor.Company,
@@ -181,11 +181,11 @@ func toUserAccessType(access string) (acl.AccessType, error) {
 }
 
 func (b Builder) ValidateMappers(issEntityMap, issPeerMap map[string]string) error {
-	if _, ok := issEntityMap[topics.Default]; !ok {
+	if _, ok := issEntityMap[topic.Default]; !ok {
 		return ErrNoDefaultCaseIssEntity
 	}
 
-	if _, ok := issPeerMap[topics.Default]; !ok {
+	if _, ok := issPeerMap[topic.Default]; !ok {
 		return ErrNoDefaultCaseIssPeer
 	}
 

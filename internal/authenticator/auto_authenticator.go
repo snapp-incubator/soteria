@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/config"
-	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/internal/topic"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
 )
@@ -15,7 +15,7 @@ import (
 // AutoAuthenticator is responsible for Acl/Auth/Token of users.
 type AutoAuthenticator struct {
 	AllowedAccessTypes []acl.AccessType
-	TopicManager       *topics.Manager
+	TopicManager       *topic.Manager
 	Company            string
 	JWTConfig          config.JWT
 	Validator          validator.Client

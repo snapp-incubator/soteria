@@ -7,7 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/config"
-	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/internal/topic"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -76,18 +76,18 @@ func (suite *ManualAuthenticatorSnappTestSuite) SetupSuite() {
 
 	suite.Tokens.Passenger = passengerToken
 
-	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
+	hid, err := topic.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(err)
 
 	suite.Authenticator = authenticator.ManualAuthenticator{
 		Keys: map[string]any{
-			topics.DriverIss:    pkey0,
-			topics.PassengerIss: pkey1,
+			topic.DriverIss:    pkey0,
+			topic.PassengerIss: pkey1,
 		},
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
 		Company:            "snapp",
 		Parser:             jwt.NewParser(),
-		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
+		TopicManager:       topic.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
 		JWTConfig: config.JWT{
 			IssName:       "iss",
 			SubName:       "sub",
@@ -324,19 +324,19 @@ func TestManualAuthenticator_ValidateTopicBySender(t *testing.T) {
 
 	cfg := config.SnappVendor()
 
-	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
+	hid, err := topic.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(t, err)
 
 	// nolint: exhaustruct
 	authenticator := authenticator.ManualAuthenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",
-		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
+		TopicManager:       topic.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
 		t.Parallel()
-		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topics.DriverIss, "DXKgaNQa7N5Y7bo")
+		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topic.DriverIss, "DXKgaNQa7N5Y7bo")
 		require.NotNil(t, topicTemplate)
 	})
 }
