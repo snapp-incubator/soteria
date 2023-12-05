@@ -71,6 +71,6 @@ func (suite *AdminAuthenticatorTestSuite) TestAuth() {
 		token, err := getSampleTokenWithClaims("admin", suite.key, "issuer", "sub")
 		require.NoError(err)
 
-		require.Error(suite.Authenticator.Auth(token), authenticator.ErrIssNotFound)
+		require.ErrorIs(suite.Authenticator.Auth(token), authenticator.ErrIssNotFound)
 	})
 }
