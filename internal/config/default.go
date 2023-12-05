@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/snapp-incubator/soteria/internal/logger"
-	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/internal/topic"
 	"github.com/snapp-incubator/soteria/internal/tracing"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 )
@@ -47,7 +47,7 @@ func SnappVendor() Vendor {
 			"pub",
 			"sub",
 		},
-		HashIDMap: map[string]topics.HashData{
+		HashIDMap: map[string]topic.HashData{
 			"0": {
 				Alphabet: "",
 				Length:   DefaultDriverHashLength,
@@ -60,85 +60,85 @@ func SnappVendor() Vendor {
 			},
 		},
 		Company: "snapp",
-		Topics: []topics.Topic{
+		Topics: []topic.Topic{
 			{
-				Type:     topics.CabEvent,
+				Type:     topic.CabEvent,
 				Template: "^{{IssToEntity .iss}}-event-{{ EncodeMD5 (DecodeHashID .sub .iss) }}$",
 				Accesses: map[string]acl.AccessType{
-					topics.DriverIss:    acl.Sub,
-					topics.PassengerIss: acl.Sub,
+					topic.DriverIss:    acl.Sub,
+					topic.PassengerIss: acl.Sub,
 				},
 			},
 			{
-				Type:     topics.DriverLocation,
+				Type:     topic.DriverLocation,
 				Template: "^{{.company}}/driver/{{.sub}}/location$",
 				Accesses: map[string]acl.AccessType{
-					topics.DriverIss:    acl.Pub,
-					topics.PassengerIss: acl.None,
+					topic.DriverIss:    acl.Pub,
+					topic.PassengerIss: acl.None,
 				},
 			},
 			{
-				Type:     topics.PassengerLocation,
+				Type:     topic.PassengerLocation,
 				Template: "^{{.company}}/passenger/{{.sub}}/location$",
 				Accesses: map[string]acl.AccessType{
-					topics.DriverIss:    acl.Pub,
-					topics.PassengerIss: acl.Pub,
+					topic.DriverIss:    acl.Pub,
+					topic.PassengerIss: acl.Pub,
 				},
 			},
 			{
-				Type:     topics.SuperappEvent,
+				Type:     topic.SuperappEvent,
 				Template: "^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/superapp$",
 				Accesses: map[string]acl.AccessType{
-					topics.DriverIss:    acl.Sub,
-					topics.PassengerIss: acl.Sub,
+					topic.DriverIss:    acl.Sub,
+					topic.PassengerIss: acl.Sub,
 				},
 			},
 			{
-				Type:     topics.BoxEvent,
+				Type:     topic.BoxEvent,
 				Template: "^bucks$",
 				Accesses: map[string]acl.AccessType{
-					topics.DriverIss:    acl.None,
-					topics.PassengerIss: acl.None,
+					topic.DriverIss:    acl.None,
+					topic.PassengerIss: acl.None,
 				},
 			},
 			{
-				Type:     topics.SharedLocation,
+				Type:     topic.SharedLocation,
 				Template: "^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/{{IssToPeer .iss}}-location$", //nolint:lll
 				Accesses: map[string]acl.AccessType{
-					topics.DriverIss:    acl.Sub,
-					topics.PassengerIss: acl.Sub,
+					topic.DriverIss:    acl.Sub,
+					topic.PassengerIss: acl.Sub,
 				},
 			},
 			{
-				Type:     topics.Chat,
+				Type:     topic.Chat,
 				Template: "^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/chat$",
 				Accesses: map[string]acl.AccessType{
-					topics.DriverIss:    acl.Sub,
-					topics.PassengerIss: acl.Sub,
+					topic.DriverIss:    acl.Sub,
+					topic.PassengerIss: acl.Sub,
 				},
 			},
 			{
-				Type:     topics.GeneralCallEntry,
+				Type:     topic.GeneralCallEntry,
 				Template: "^shared/{{.company}}/{{IssToEntity .iss}}/{{.sub}}/call/send$",
 				Accesses: map[string]acl.AccessType{
-					topics.DriverIss:    acl.Pub,
-					topics.PassengerIss: acl.Pub,
+					topic.DriverIss:    acl.Pub,
+					topic.PassengerIss: acl.Pub,
 				},
 			},
 			{
-				Type:     topics.NodeCallEntry,
+				Type:     topic.NodeCallEntry,
 				Template: "^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/call/[a-zA-Z0-9-_]+/send$", //nolint: lll
 				Accesses: map[string]acl.AccessType{
-					topics.DriverIss:    acl.Pub,
-					topics.PassengerIss: acl.Pub,
+					topic.DriverIss:    acl.Pub,
+					topic.PassengerIss: acl.Pub,
 				},
 			},
 			{
-				Type:     topics.CallOutgoing,
+				Type:     topic.CallOutgoing,
 				Template: "^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/call/receive$",
 				Accesses: map[string]acl.AccessType{
-					topics.DriverIss:    acl.Sub,
-					topics.PassengerIss: acl.Sub,
+					topic.DriverIss:    acl.Sub,
+					topic.PassengerIss: acl.Sub,
 				},
 			},
 		},

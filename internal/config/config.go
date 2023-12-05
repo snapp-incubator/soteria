@@ -12,7 +12,7 @@ import (
 	"github.com/knadh/koanf/providers/structs"
 	"github.com/knadh/koanf/v2"
 	"github.com/snapp-incubator/soteria/internal/logger"
-	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/internal/topic"
 	"github.com/snapp-incubator/soteria/internal/tracing"
 	"github.com/tidwall/pretty"
 )
@@ -34,15 +34,15 @@ type (
 	}
 
 	Vendor struct {
-		AllowedAccessTypes []string                   `json:"allowed_access_types,omitempty" koanf:"allowed_access_types"`
-		Company            string                     `json:"company,omitempty"              koanf:"company"`
-		Topics             []topics.Topic             `json:"topics,omitempty"               koanf:"topics"`
-		Keys               map[string]string          `json:"keys,omitempty"                 koanf:"keys"`
-		IssEntityMap       map[string]string          `json:"iss_entity_map,omitempty"       koanf:"iss_entity_map"`
-		IssPeerMap         map[string]string          `json:"iss_peer_map,omitempty"         koanf:"iss_peer_map"`
-		Jwt                JWT                        `json:"jwt,omitempty"                  koanf:"jwt"`
-		Type               string                     `json:"type,omitempty"                 koanf:"type"`
-		HashIDMap          map[string]topics.HashData `json:"hash_id_map,omitempty"          koanf:"hashid_map"`
+		AllowedAccessTypes []string                  `json:"allowed_access_types,omitempty" koanf:"allowed_access_types"`
+		Company            string                    `json:"company,omitempty"              koanf:"company"`
+		Topics             []topic.Topic             `json:"topics,omitempty"               koanf:"topics"`
+		Keys               map[string]string         `json:"keys,omitempty"                 koanf:"keys"`
+		IssEntityMap       map[string]string         `json:"iss_entity_map,omitempty"       koanf:"iss_entity_map"`
+		IssPeerMap         map[string]string         `json:"iss_peer_map,omitempty"         koanf:"iss_peer_map"`
+		Jwt                JWT                       `json:"jwt,omitempty"                  koanf:"jwt"`
+		Type               string                    `json:"type,omitempty"                 koanf:"type"`
+		HashIDMap          map[string]topic.HashData `json:"hash_id_map,omitempty"          koanf:"hashid_map"`
 	}
 
 	JWT struct {

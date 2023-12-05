@@ -1,4 +1,4 @@
-package topics
+package topic
 
 type HashData struct {
 	Length   int    `koanf:"length"`
