@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.6.1
 	github.com/gofiber/contrib/fiberzap v1.0.2
-	github.com/gofiber/fiber/v2 v2.51.0
+	github.com/gofiber/fiber/v2 v2.52.0
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/knadh/koanf v1.5.0
 	github.com/knadh/koanf/v2 v2.0.1
@@ -33,7 +33,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gofiber/adaptor/v2 v2.2.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/uuid v1.4.0 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect
