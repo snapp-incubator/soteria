@@ -102,12 +102,10 @@ func TestExtractVendorToken(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			vendor, token := api.ExtractVendorToken(tt.fields.Token, tt.fields.Username, tt.fields.Password)
-			if vendor != tt.vendor {
+			if vendor != tt.vendor || token != tt.token {
 				t.Errorf("ExtractVendorToken() vendor = %v, vendor %v", vendor, tt.vendor)
-			}
-			if token != tt.token {
-				t.Errorf("ExtractVendorToken() token = %v, vendor %v", token, tt.token)
 			}
 		})
 	}
@@ -176,7 +174,7 @@ func (suite *APITestSuite) ValidToken() {
 
 	body, err := json.Marshal(api.AuthRequest{
 		Token:    "",
-		Username: fmt.Sprintf("snapp-admin:%s", token),
+		Username: "snapp-admin:" + token,
 		Password: "",
 	})
 	require.NoError(err)

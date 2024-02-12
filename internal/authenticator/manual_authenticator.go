@@ -29,11 +29,13 @@ func (a ManualAuthenticator) Auth(tokenString string) error {
 		if !ok {
 			return nil, ErrInvalidClaims
 		}
+
 		if claims[a.JWTConfig.IssName] == nil {
 			return nil, ErrIssNotFound
 		}
 
 		issuer := fmt.Sprintf("%v", claims[a.JWTConfig.IssName])
+
 		key := a.Keys[issuer]
 		if key == nil {
 			return nil, KeyNotFoundError{Issuer: issuer}
@@ -64,14 +66,17 @@ func (a ManualAuthenticator) ACL(
 		if !ok {
 			return nil, ErrInvalidClaims
 		}
+
 		if claims[a.JWTConfig.IssName] == nil {
 			return nil, ErrIssNotFound
 		}
+
 		if claims[a.JWTConfig.SubName] == nil {
 			return nil, ErrSubNotFound
 		}
 
 		issuer := fmt.Sprintf("%v", claims[a.JWTConfig.IssName])
+
 		key := a.Keys[issuer]
 		if key == nil {
 			return nil, KeyNotFoundError{Issuer: issuer}
