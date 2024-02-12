@@ -63,7 +63,7 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 		tokenString := strings.TrimPrefix(authHeader, "bearer ")
 
 		_, err := jwt.Parse(tokenString, func(
-			token *jwt.Token,
+			_ *jwt.Token,
 		) (interface{}, error) {
 			return pkey0, nil
 		})
@@ -128,6 +128,7 @@ func TestAutoAuthenticator_ValidateTopicBySender(t *testing.T) {
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {
 		t.Parallel()
+
 		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topics.DriverIss, "DXKgaNQa7N5Y7bo")
 		require.NotNil(t, topicTemplate)
 	})

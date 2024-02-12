@@ -146,6 +146,7 @@ func TestTopicManager(t *testing.T) {
 			t.Parallel()
 
 			topic := tc.arg
+
 			topicTemplate := topicManager.ParseTopic(topic, tc.issuer, sub)
 			if topicTemplate != nil {
 				if len(tc.want) == 0 {

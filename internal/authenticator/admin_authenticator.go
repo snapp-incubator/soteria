@@ -27,6 +27,7 @@ func (a AdminAuthenticator) Auth(tokenString string) error {
 		if !ok {
 			return nil, ErrInvalidClaims
 		}
+
 		if claims[a.JwtConfig.IssName] == nil {
 			return nil, ErrIssNotFound
 		}
