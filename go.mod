@@ -6,7 +6,7 @@ require (
 	github.com/ansrivas/fiberprometheus/v2 v2.6.1
 	github.com/gofiber/contrib/fiberzap v1.0.2
 	github.com/gofiber/fiber/v2 v2.52.2
-	github.com/golang-jwt/jwt/v5 v5.2.0
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/knadh/koanf v1.5.0
 	github.com/knadh/koanf/v2 v2.1.0
 	github.com/speps/go-hashids/v2 v2.0.1
