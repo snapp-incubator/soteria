@@ -141,7 +141,6 @@ func TestTopicManager(t *testing.T) {
 	sub := "DXKgaNQa7N5Y7bo"
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 

@@ -1,7 +1,7 @@
 package topics
 
 type HashData struct {
-	Length   int    `koanf:"length"`
-	Salt     string `koanf:"salt"`
-	Alphabet string `koanf:"alphabet"`
+	Length   int    `json:"length,omitempty"   koanf:"length"`
+	Salt     string `json:"salt,omitempty"     koanf:"salt"`
+	Alphabet string `json:"alphabet,omitempty" koanf:"alphabet"`
 }

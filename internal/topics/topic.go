@@ -8,9 +8,9 @@ import (
 )
 
 type Topic struct {
-	Type     string                    `koanf:"type"`
-	Template string                    `koanf:"template"`
-	Accesses map[string]acl.AccessType `koanf:"accesses"`
+	Type     string                    `json:"type,omitempty"     koanf:"type"`
+	Template string                    `json:"template,omitempty" koanf:"template"`
+	Accesses map[string]acl.AccessType `json:"accesses,omitempty" koanf:"accesses"`
 }
 
 type Template struct {
