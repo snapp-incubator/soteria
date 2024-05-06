@@ -75,7 +75,7 @@ func ExtractVendorToken(rawToken, username, password string) (string, string) {
 
 	var vendor, token string
 
-	if len(split) == 2 { //nolint:gomnd
+	if len(split) == 2 { //nolint:mnd
 		vendor = split[0]
 		token = split[1]
 	} else {
