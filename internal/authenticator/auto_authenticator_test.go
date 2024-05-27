@@ -74,7 +74,12 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 		}
 
 		userData, err := json.Marshal(map[string]any{})
-		require.NoError(err)
+		if err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+
+			return
+		}
+
 		res.Header().Add("X-User-Data", string(userData))
 
 		res.WriteHeader(http.StatusOK)
