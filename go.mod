@@ -10,7 +10,7 @@ require (
 	github.com/knadh/koanf v1.5.0
 	github.com/knadh/koanf/v2 v2.1.1
 	github.com/speps/go-hashids/v2 v2.0.1
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/pretty v1.2.1
 	go.opentelemetry.io/otel v1.27.0
