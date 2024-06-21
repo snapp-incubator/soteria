@@ -8,6 +8,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
+
+	"github.com/snapp-incubator/soteria/internal/authenticator"
 )
 
 // AuthRequest is the body payload structure of the auth endpoint.
@@ -97,6 +99,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 			Warn("bad request",
 				zap.Error(err),
 			)
+		authenticator.IncrementWithErrorAuthCounter("unknown", err)
 
 		return c.Status(http.StatusOK).JSON(AuthResponse{
 			Result:      "deny",
@@ -106,16 +109,17 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	vendor, token := ExtractVendorToken(request.Token, request.Username, request.Password)
 
-	authenticator := a.Authenticator(vendor)
+	auth := a.Authenticator(vendor)
 
 	span.SetAttributes(
 		attribute.String("token", request.Token),
 		attribute.String("username", request.Username),
 		attribute.String("password", request.Password),
-		attribute.String("authenticator", authenticator.GetCompany()),
+		attribute.String("authenticator", auth.GetCompany()),
 	)
 
-	if err := authenticator.Auth(token); err != nil {
+	err := auth.Auth(token)
+	if err != nil {
 		span.RecordError(err)
 
 		if !errors.Is(err, jwt.ErrTokenExpired) {
@@ -125,7 +129,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 					zap.String("token", request.Token),
 					zap.String("username", request.Username),
 					zap.String("password", request.Password),
-					zap.String("authenticator", authenticator.GetCompany()),
+					zap.String("authenticator", auth.GetCompany()),
 				)
 		}
 
@@ -140,11 +144,12 @@ func (a API) Authv2(c *fiber.Ctx) error {
 			zap.String("token", request.Token),
 			zap.String("username", request.Username),
 			zap.String("password", request.Password),
-			zap.String("authenticator", authenticator.GetCompany()),
+			zap.String("authenticator", auth.GetCompany()),
 		)
+	authenticator.IncrementWithErrorAuthCounter(vendor, err)
 
 	return c.Status(http.StatusOK).JSON(AuthResponse{
 		Result:      "allow",
-		IsSuperuser: authenticator.IsSuperuser(),
+		IsSuperuser: auth.IsSuperuser(),
 	})
 }
