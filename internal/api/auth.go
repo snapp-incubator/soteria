@@ -6,10 +6,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
-
-	"github.com/snapp-incubator/soteria/internal/authenticator"
 )
 
 // AuthRequest is the body payload structure of the auth endpoint.
