@@ -7,6 +7,7 @@ import (
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/zap"
 )
 
@@ -18,6 +19,7 @@ func TestBuilderWithoutAuthenticator(t *testing.T) {
 	b := authenticator.Builder{
 		Vendors: []config.Vendor{},
 		Logger:  zap.NewNop(),
+		Tracer:  noop.NewTracerProvider().Tracer(""),
 		ValidatorConfig: config.Validator{
 			URL:     "",
 			Timeout: 0,
@@ -34,6 +36,7 @@ func TestBuilderInvalidAuthenticator(t *testing.T) {
 	require := require.New(t)
 
 	b := authenticator.Builder{
+		Tracer: noop.NewTracerProvider().Tracer(""),
 		Vendors: []config.Vendor{
 			{
 				Company: "internal",
@@ -70,6 +73,7 @@ func TestBuilderInternalAuthenticator(t *testing.T) {
 	require := require.New(t)
 
 	b := authenticator.Builder{
+		Tracer: noop.NewTracerProvider().Tracer(""),
 		Vendors: []config.Vendor{
 			{
 				Company: "internal",
@@ -108,6 +112,7 @@ func TestBuilderInternalAuthenticatorWithInvalidKey(t *testing.T) {
 	require := require.New(t)
 
 	b := authenticator.Builder{
+		Tracer: noop.NewTracerProvider().Tracer(""),
 		Vendors: []config.Vendor{
 			{
 				Company: "admin",
@@ -144,6 +149,7 @@ func TestBuilderManualAuthenticatorWithoutKey(t *testing.T) {
 	require := require.New(t)
 
 	b := authenticator.Builder{
+		Tracer: noop.NewTracerProvider().Tracer(""),
 		Vendors: []config.Vendor{
 			{
 				Company: "snapp",
@@ -198,6 +204,7 @@ func TestBuilderManualAuthenticator(t *testing.T) {
 	require := require.New(t)
 
 	b := authenticator.Builder{
+		Tracer: noop.NewTracerProvider().Tracer(""),
 		Vendors: []config.Vendor{
 			{
 				Company: "snapp",
@@ -274,6 +281,7 @@ func TestBuilderManualAuthenticatorInvalidMapping_1(t *testing.T) {
 	require := require.New(t)
 
 	b := authenticator.Builder{
+		Tracer: noop.NewTracerProvider().Tracer(""),
 		Vendors: []config.Vendor{
 			{
 				Company: "snapp",
@@ -344,6 +352,7 @@ func TestBuilderManualAuthenticatorInvalidMapping_2(t *testing.T) {
 	require := require.New(t)
 
 	b := authenticator.Builder{
+		Tracer: noop.NewTracerProvider().Tracer(""),
 		Vendors: []config.Vendor{
 			{
 				Company: "snapp",
@@ -417,6 +426,7 @@ func TestBuilderManualAuthenticatorInvalidAccess(t *testing.T) {
 	require := require.New(t)
 
 	b := authenticator.Builder{
+		Tracer: noop.NewTracerProvider().Tracer(""),
 		Vendors: []config.Vendor{
 			{
 				Company: "snapp",

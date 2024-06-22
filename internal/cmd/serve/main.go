@@ -26,6 +26,7 @@ func (s Serve) main() {
 		Vendors:         s.Cfg.Vendors,
 		Logger:          s.Logger,
 		ValidatorConfig: s.Cfg.Validator,
+		Tracer:          s.Tracer,
 	}.Authenticators()
 	if err != nil {
 		s.Logger.Fatal("authenticator building failed", zap.Error(err))
