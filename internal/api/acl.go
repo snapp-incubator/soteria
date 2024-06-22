@@ -42,6 +42,7 @@ func (a API) ACLv1(c *fiber.Ctx) error {
 				zap.String("username", request.Username),
 				zap.String("password", request.Password),
 			)
+		authenticator.IncrementWithErrorAuthCounter("unknown_company_before_parse_body", err)
 
 		return c.Status(http.StatusBadRequest).SendString("bad request")
 	}
@@ -65,6 +66,8 @@ func (a API) ACLv1(c *fiber.Ctx) error {
 		if err != nil {
 			span.RecordError(err)
 		}
+
+		authenticator.IncrementWithErrorAuthCounter(vendor, err)
 
 		var tnaErr authenticator.TopicNotAllowedError
 
@@ -102,6 +105,7 @@ func (a API) ACLv1(c *fiber.Ctx) error {
 			zap.String("password", request.Password),
 			zap.String("authenticator", auth.GetCompany()),
 		)
+	authenticator.IncrementWithErrorAuthCounter(vendor, err)
 
 	return c.Status(http.StatusOK).SendString("ok")
 }
@@ -133,6 +137,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 				zap.String("username", request.Username),
 				zap.String("password", request.Password),
 			)
+		authenticator.IncrementWithErrorAuthCounter("unknown_company_before_parse_body", err)
 
 		return c.Status(http.StatusOK).JSON(ACLResponse{
 			Result: "deny",
@@ -167,6 +172,8 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 		if err != nil {
 			span.RecordError(err)
 		}
+
+		authenticator.IncrementWithErrorAuthCounter(vendor, err)
 
 		var tnaErr authenticator.TopicNotAllowedError
 
@@ -206,6 +213,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 			zap.String("password", request.Password),
 			zap.String("authenticator", auth.GetCompany()),
 		)
+	authenticator.IncrementWithErrorAuthCounter(vendor, err)
 
 	return c.Status(http.StatusOK).JSON(ACLResponse{
 		Result: "allow",
