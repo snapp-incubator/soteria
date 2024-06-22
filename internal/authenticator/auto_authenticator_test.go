@@ -17,6 +17,7 @@ import (
 	"github.com/snapp-incubator/soteria/pkg/validator"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/zap"
 )
 
@@ -37,6 +38,7 @@ func TestAutoAuthenticator_suite(t *testing.T) {
 	suite.Run(t, new(AutoAuthenticatorTestSuite))
 }
 
+// nolint: funlen
 func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 	cfg := config.SnappVendor()
 
@@ -89,6 +91,7 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 	suite.Authenticator = authenticator.AutoAuthenticator{
 		Validator:          validator.New(testServer.URL, time.Second),
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub, acl.PubSub},
+		Tracer:             noop.NewTracerProvider().Tracer(""),
 		Company:            "snapp",
 		Parser:             jwt.NewParser(),
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
