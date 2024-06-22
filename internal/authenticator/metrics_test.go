@@ -4,6 +4,6 @@ import (
 	"testing"
 )
 
-func TestIncrementWithErrorAuthCounter(t *testing.T) {
+func TestIncrementWithErrorAuthCounter(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", ErrIssNotFound)
 }
