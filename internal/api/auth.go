@@ -98,7 +98,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 			Warn("bad request",
 				zap.Error(err),
 			)
-		authenticator.IncrementWithErrorAuthCounter("unknown", err)
+		authenticator.IncrementWithErrorAuthCounter("unknown_company_before_parse_body", err)
 
 		return c.Status(http.StatusOK).JSON(AuthResponse{
 			Result:      "deny",
