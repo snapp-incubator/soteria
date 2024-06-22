@@ -15,7 +15,6 @@ var AuthenticateCounterMetric = promauto.NewCounterVec(prometheus.CounterOpts{
 	Help:      "Total number of authentication attempts",
 }, []string{"company", "status"})
 
-// GCOVR_EXCL_START
 // nolint:cyclop
 func IncrementWithErrorAuthCounter(company string, err error) {
 	var (
@@ -55,5 +54,3 @@ func IncrementWithErrorAuthCounter(company string, err error) {
 
 	AuthenticateCounterMetric.WithLabelValues(company, status).Inc()
 }
-
-// GCOVR_EXCL_STOP
