@@ -10,6 +10,9 @@ import (
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // AutoAuthenticator is responsible for Acl/Auth/Token of users.
@@ -20,19 +23,27 @@ type AutoAuthenticator struct {
 	JWTConfig          config.JWT
 	Validator          validator.Client
 	Parser             *jwt.Parser
+	Tracer             trace.Tracer
 }
 
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a AutoAuthenticator) Auth(tokenString string) error {
-	if _, err := a.Validator.Validate(context.Background(), http.Header{
+	ctx, span := a.Tracer.Start(context.Background(), "auto-authenticator.auth")
+	span.End()
+
+	headers := http.Header{
 		validator.ServiceNameHeader: []string{"soteria"},
 		"user-agent":                []string{},
 		"X-APP-Version-Code":        []string{""},
 		"X-APP-Version":             []string{""},
 		"X-APP-Name":                []string{"soteria"},
 		"locale":                    []string{"en-US"},
-	}, "bearer "+tokenString); err != nil {
+	}
+
+	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(headers))
+
+	if _, err := a.Validator.Validate(ctx, headers, "bearer "+tokenString); err != nil {
 		return fmt.Errorf("token is invalid: %w", err)
 	}
 

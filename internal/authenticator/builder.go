@@ -9,6 +9,7 @@ import (
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -24,6 +25,7 @@ type Builder struct {
 	Vendors         []config.Vendor
 	Logger          *zap.Logger
 	ValidatorConfig config.Validator
+	Tracer          trace.Tracer
 }
 
 func (b Builder) Authenticators() (map[string]Authenticator, error) {
@@ -144,6 +146,7 @@ func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, er
 			vendor.IssPeerMap,
 			b.Logger.Named("topic-manager"),
 		),
+		Tracer:    b.Tracer,
 		JWTConfig: vendor.Jwt,
 		Validator: client,
 		Parser:    jwt.NewParser(),
