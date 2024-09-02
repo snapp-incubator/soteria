@@ -347,6 +347,48 @@ func TestManualAuthenticator_ValidateTopicBySender(t *testing.T) {
 	})
 }
 
+// Provide a topic which we don't have at snapp to test functions and fields that
+// are used during the templating.
+func TestManualAuthenticator_ValidateTopicBySenderAndClaims(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.SnappVendor()
+
+	cfg.Topics = append(cfg.Topics, topics.Topic{
+		Type:     topics.SharedLocation,
+		Template: "^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/{{.uid}}/{{DecodeHashID (EncodeHashID .sub .iss) .iss}}$",
+		Accesses: map[string]acl.AccessType{
+			topics.DriverIss:    acl.Sub,
+			topics.PassengerIss: acl.Sub,
+		},
+	},
+	)
+
+	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
+	require.NoError(t, err)
+
+	// nolint: exhaustruct
+	authenticator := authenticator.ManualAuthenticator{
+		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
+		Company:            "snapp",
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
+	}
+
+	t.Run("testing valid driver cab event", func(t *testing.T) {
+		t.Parallel()
+
+		topicTemplate := authenticator.TopicManager.ParseTopic(
+			"snapp/driver/123/456/123",
+			topics.DriverIss,
+			"123",
+			map[string]any{
+				"uid": "456",
+			},
+		)
+		require.NotNil(t, topicTemplate)
+	})
+}
+
 // nolint: funlen
 func TestManualAuthenticator_validateAccessType(t *testing.T) {
 	t.Parallel()
