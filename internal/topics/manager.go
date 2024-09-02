@@ -75,6 +75,7 @@ func NewTopicManager(
 	manager.Functions = template.FuncMap{
 		"IssToEntity":  manager.IssEntityMapper,
 		"DecodeHashID": manager.DecodeHashID,
+		"EncodeHashID": manager.EncodeHashID,
 		"EncodeMD5":    manager.EncodeMD5,
 		"IssToPeer":    manager.IssPeerMapper,
 	}
@@ -146,6 +147,24 @@ func (t *Manager) DecodeHashID(sub, iss string) string {
 	}
 
 	return strconv.Itoa(id[0])
+}
+
+func (t *Manager) EncodeHashID(sub, iss string) string {
+	subInt, err := strconv.Atoi(sub)
+	if err != nil {
+		t.Logger.Error("encoding sub failed", zap.Error(err), zap.String("sub", sub))
+
+		return ""
+	}
+
+	id, err := t.HashIDSManager[iss].Encode([]int{subInt})
+	if err != nil {
+		t.Logger.Error("encoding sub failed", zap.Error(err), zap.String("sub", sub))
+
+		return ""
+	}
+
+	return id
 }
 
 func (t *Manager) IssEntityMapper(iss string) string {
