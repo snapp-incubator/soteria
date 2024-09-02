@@ -96,8 +96,13 @@ func NewTopicManager(
 }
 
 // ParseTopic checks if a topic is valid based on the given parameters.
-func (t *Manager) ParseTopic(topic, iss, sub string) *Template {
+func (t *Manager) ParseTopic(topic, iss, sub string, claims map[string]any) *Template {
 	fields := make(map[string]any)
+
+	for k, v := range claims {
+		fields[k] = v
+	}
+
 	fields["iss"] = iss
 	fields["company"] = t.Company
 	fields["sub"] = sub

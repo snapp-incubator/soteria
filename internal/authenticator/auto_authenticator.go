@@ -79,7 +79,7 @@ func (a AutoAuthenticator) ACL(
 
 	sub, _ := claims[a.JWTConfig.SubName].(string)
 
-	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub)
+	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub, map[string]any(claims))
 	if topicTemplate == nil {
 		return false, InvalidTopicError{Topic: topic}
 	}
