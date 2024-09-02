@@ -337,7 +337,12 @@ func TestManualAuthenticator_ValidateTopicBySender(t *testing.T) {
 	t.Run("testing valid driver cab event", func(t *testing.T) {
 		t.Parallel()
 
-		topicTemplate := authenticator.TopicManager.ParseTopic(validDriverCabEventTopic, topics.DriverIss, "DXKgaNQa7N5Y7bo")
+		topicTemplate := authenticator.TopicManager.ParseTopic(
+			validDriverCabEventTopic,
+			topics.DriverIss,
+			"DXKgaNQa7N5Y7bo",
+			nil,
+		)
 		require.NotNil(t, topicTemplate)
 	})
 }
