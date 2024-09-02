@@ -146,7 +146,7 @@ func TestTopicManager(t *testing.T) {
 
 			topic := tc.arg
 
-			topicTemplate := topicManager.ParseTopic(topic, tc.issuer, sub)
+			topicTemplate := topicManager.ParseTopic(topic, tc.issuer, sub, nil)
 			if topicTemplate != nil {
 				if len(tc.want) == 0 {
 					t.Errorf("topic %s is invalid, must throw error.", tc.arg)
