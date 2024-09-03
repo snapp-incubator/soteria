@@ -98,10 +98,10 @@ func NewTopicManager(
 
 // ParseTopic checks if a topic is valid based on the given parameters.
 func (t *Manager) ParseTopic(topic, iss, sub string, claims map[string]any) *Template {
-	fields := make(map[string]any)
+	fields := make(map[string]string)
 
 	for k, v := range claims {
-		fields[k] = v
+		fields[k] = fmt.Sprintf("%v", v)
 	}
 
 	fields["iss"] = iss
