@@ -10,18 +10,9 @@ linters:
     - varnamelen
     - ireturn
     # deprecated linters
-    - maligned
-    - scopelint
-    - golint
-    - ifshort
-    - interfacer
-    - exhaustivestruct
-    - nosnakecase
-    - varcheck
-    - deadcode
-    - structcheck
     - gomnd
     - execinquery
+    - exportloopref
 
 linters-settings:
   wrapcheck:
