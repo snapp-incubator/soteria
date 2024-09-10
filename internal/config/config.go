@@ -14,7 +14,6 @@ import (
 	"github.com/snapp-incubator/soteria/internal/logger"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/internal/tracing"
-	"github.com/tidwall/pretty"
 )
 
 const (
@@ -58,7 +57,7 @@ type (
 	}
 
 	BlackListUserLogging struct {
-		Iss     int   `json:"iss,omitempty"     koanf:"iss"`
+		Iss     int   `json:"iss,omitempty"       koanf:"iss"`
 		UserIDs []int `json:"user_ids,omitempty"  koanf:"user_ids"`
 	}
 )
