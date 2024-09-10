@@ -29,7 +29,7 @@ func New(cfg Config) *zap.Logger {
 	}
 
 	core := zapcore.NewTee(cores...)
-	var zapOpts = make([]zap.Option, 0, 2)
+	zapOpts := make([]zap.Option, 0, 2)
 	zapOpts = append(zapOpts, zap.AddCaller())
 
 	if cfg.Stacktrace {
