@@ -4,21 +4,19 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/golang-jwt/jwt/v5"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
-
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
 
-// AutoAuthenticator is responsible for Acl/Auth/Token of userIDs.
+// AutoAuthenticator is responsible for Acl/Auth/Token of users.
 type AutoAuthenticator struct {
 	AllowedAccessTypes []acl.AccessType
 	TopicManager       *topics.Manager
@@ -53,7 +51,7 @@ func (a AutoAuthenticator) Auth(tokenString string) error {
 		return fmt.Errorf("token is invalid: %w", err)
 	}
 
-	if a.blackList.isBlackListByUserID(payload.UserID, payload.Iss) {
+	if a.blackList.isBlackList(payload.UserID, payload.Iss) {
 		a.Logger.Warn("blacklisted user is requesting!",
 			zap.Int("iat", payload.IAT),
 			zap.String("aud", payload.Aud),
@@ -97,14 +95,7 @@ func (a AutoAuthenticator) ACL(
 		return false, ErrSubNotFound
 	}
 
-	issInt, _ := strconv.Atoi(issuer)
-
 	sub, _ := claims[a.JWTConfig.SubName].(string)
-	if a.blackList.isBlackListByHashedUserID(sub, issInt) {
-		a.Logger.Warn("blacklisted user is requesting!",
-			zap.Any("claims", claims),
-		)
-	}
 
 	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub, map[string]any(claims))
 	if topicTemplate == nil {
@@ -143,9 +134,8 @@ func (a AutoAuthenticator) IsSuperuser() bool {
 }
 
 type autoBlackListChecker struct {
-	userIDs       map[int]struct{}
-	userHashedIDs map[string]struct{}
-	iss           int
+	users map[int]struct{}
+	iss   int
 }
 
 func newAutoBlackListChecker(cfg config.BlackListUserLogging) autoBlackListChecker {
@@ -154,34 +144,18 @@ func newAutoBlackListChecker(cfg config.BlackListUserLogging) autoBlackListCheck
 		users[userID] = struct{}{}
 	}
 
-	userHashedIDs := make(map[string]struct{})
-	for _, userHashID := range cfg.UserHashedIDs {
-		userHashedIDs[userHashID] = struct{}{}
-	}
-
 	return autoBlackListChecker{
-		userIDs:       users,
-		userHashedIDs: userHashedIDs,
-		iss:           cfg.Iss,
+		users: users,
+		iss:   cfg.Iss,
 	}
 }
 
-func (a autoBlackListChecker) isBlackListByUserID(userID, iss int) bool {
+func (a autoBlackListChecker) isBlackList(userID, iss int) bool {
 	if iss != a.iss {
 		return false
 	}
 
-	_, ok := a.userIDs[userID]
-
-	return ok
-}
-
-func (a autoBlackListChecker) isBlackListByHashedUserID(hashedUserID string, iss int) bool {
-	if iss != a.iss {
-		return false
-	}
-
-	_, ok := a.userHashedIDs[hashedUserID]
+	_, ok := a.users[userID]
 
 	return ok
 }

@@ -58,9 +58,8 @@ type (
 	}
 
 	BlackListUserLogging struct {
-		Iss           int      `json:"iss,omitempty"             koanf:"iss"`
-		UserIDs       []int    `json:"user_ids,omitempty"        koanf:"user_ids"`
-		UserHashedIDs []string `json:"user_hashed_ids,omitempty" koanf:"user_hashed_ids"`
+		Iss     int   `json:"iss,omitempty"      koanf:"iss"`
+		UserIDs []int `json:"user_ids,omitempty" koanf:"user_ids"`
 	}
 )
 
