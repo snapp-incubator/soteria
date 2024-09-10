@@ -25,8 +25,9 @@ func TestBuilderWithoutAuthenticator(t *testing.T) {
 			Timeout: 0,
 		},
 		BlackListUserLoggingConfig: config.BlackListUserLogging{
-			Iss:     0,
-			UserIDs: []int{},
+			Iss:           0,
+			UserIDs:       []int{},
+			UserHashedIDs: []string{},
 		},
 	}
 
@@ -66,8 +67,9 @@ func TestBuilderInvalidAuthenticator(t *testing.T) {
 			Timeout: 0,
 		},
 		BlackListUserLoggingConfig: config.BlackListUserLogging{
-			Iss:     0,
-			UserIDs: []int{},
+			Iss:           0,
+			UserIDs:       []int{},
+			UserHashedIDs: []string{},
 		},
 	}
 
@@ -107,8 +109,9 @@ func TestBuilderInternalAuthenticator(t *testing.T) {
 			Timeout: 0,
 		},
 		BlackListUserLoggingConfig: config.BlackListUserLogging{
-			Iss:     0,
-			UserIDs: []int{},
+			Iss:           0,
+			UserIDs:       []int{},
+			UserHashedIDs: []string{},
 		},
 	}
 
@@ -150,8 +153,9 @@ func TestBuilderInternalAuthenticatorWithInvalidKey(t *testing.T) {
 			Timeout: 0,
 		},
 		BlackListUserLoggingConfig: config.BlackListUserLogging{
-			Iss:     0,
-			UserIDs: []int{},
+			Iss:           0,
+			UserIDs:       []int{},
+			UserHashedIDs: []string{},
 		},
 	}
 
@@ -208,8 +212,9 @@ func TestBuilderManualAuthenticatorWithoutKey(t *testing.T) {
 			Timeout: 0,
 		},
 		BlackListUserLoggingConfig: config.BlackListUserLogging{
-			Iss:     0,
-			UserIDs: []int{},
+			Iss:           0,
+			UserIDs:       []int{},
+			UserHashedIDs: []string{},
 		},
 	}
 
@@ -288,8 +293,9 @@ func TestBuilderManualAuthenticator(t *testing.T) {
 			Timeout: 0,
 		},
 		BlackListUserLoggingConfig: config.BlackListUserLogging{
-			Iss:     0,
-			UserIDs: []int{},
+			Iss:           0,
+			UserIDs:       []int{},
+			UserHashedIDs: []string{},
 		},
 	}
 
@@ -365,8 +371,9 @@ func TestBuilderManualAuthenticatorInvalidMapping_1(t *testing.T) {
 			Timeout: 0,
 		},
 		BlackListUserLoggingConfig: config.BlackListUserLogging{
-			Iss:     0,
-			UserIDs: []int{},
+			Iss:           0,
+			UserIDs:       []int{},
+			UserHashedIDs: []string{},
 		},
 	}
 
@@ -443,8 +450,9 @@ func TestBuilderManualAuthenticatorInvalidMapping_2(t *testing.T) {
 			Timeout: 0,
 		},
 		BlackListUserLoggingConfig: config.BlackListUserLogging{
-			Iss:     0,
-			UserIDs: []int{},
+			Iss:           0,
+			UserIDs:       []int{},
+			UserHashedIDs: []string{},
 		},
 	}
 
@@ -523,8 +531,9 @@ func TestBuilderManualAuthenticatorInvalidAccess(t *testing.T) {
 			Timeout: 0,
 		},
 		BlackListUserLoggingConfig: config.BlackListUserLogging{
-			Iss:     0,
-			UserIDs: []int{},
+			Iss:           0,
+			UserIDs:       []int{},
+			UserHashedIDs: []string{},
 		},
 	}
 

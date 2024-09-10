@@ -38,8 +38,9 @@ func Default() Config {
 			Timeout: 5 * time.Second,
 		},
 		BlackListUserLogging: BlackListUserLogging{
-			Iss:     0,
-			UserIDs: []int{},
+			Iss:           0,
+			UserIDs:       []int{},
+			UserHashedIDs: []string{},
 		},
 	}
 }
