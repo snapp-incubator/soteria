@@ -124,7 +124,8 @@ func (b Builder) manualAuthenticator(vendor config.Vendor) (*ManualAuthenticator
 }
 
 func (b Builder) autoAuthenticator(vendorCfg config.Vendor, blackListUserLoggingCfg config.BlackListUserLogging) (
-	*AutoAuthenticator, error) {
+	*AutoAuthenticator, error,
+) {
 	allowedAccessTypes, err := b.GetAllowedAccessTypes(vendorCfg.AllowedAccessTypes)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse allowed access types %w", err)
