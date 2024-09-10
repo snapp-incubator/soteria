@@ -14,6 +14,7 @@ import (
 	"github.com/snapp-incubator/soteria/internal/logger"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/internal/tracing"
+	"github.com/tidwall/pretty"
 )
 
 const (
