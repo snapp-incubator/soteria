@@ -25,13 +25,13 @@ const (
 type (
 	// Config is the main container of Soteria's config.
 	Config struct {
-		Vendors              []Vendor             `json:"vendors,omitempty"                  koanf:"vendors"`
-		Logger               logger.Config        `json:"logger,omitempty"                   koanf:"logger"`
-		HTTPPort             int                  `json:"http_port,omitempty"                koanf:"http_port"`
-		Tracer               tracing.Config       `json:"tracer,omitempty"                   koanf:"tracer"`
-		DefaultVendor        string               `json:"default_vendor,omitempty"           koanf:"default_vendor"`
-		Validator            Validator            `json:"validator,omitempty"                koanf:"validator"`
-		BlackListUserLogging BlackListUserLogging `json:"black_list_user_logging,omitempty"  koanf:"black_list_user_logging"`
+		Vendors              []Vendor             `json:"vendors,omitempty"                 koanf:"vendors"`
+		Logger               logger.Config        `json:"logger,omitempty"                  koanf:"logger"`
+		HTTPPort             int                  `json:"http_port,omitempty"               koanf:"http_port"`
+		Tracer               tracing.Config       `json:"tracer,omitempty"                  koanf:"tracer"`
+		DefaultVendor        string               `json:"default_vendor,omitempty"          koanf:"default_vendor"`
+		Validator            Validator            `json:"validator,omitempty"               koanf:"validator"`
+		BlackListUserLogging BlackListUserLogging `json:"black_list_user_logging,omitempty" koanf:"black_list_user_logging"`
 	}
 
 	Vendor struct {
@@ -58,8 +58,8 @@ type (
 	}
 
 	BlackListUserLogging struct {
-		Iss     int   `json:"iss,omitempty"       koanf:"iss"`
-		UserIDs []int `json:"user_ids,omitempty"  koanf:"user_ids"`
+		Iss     int   `json:"iss,omitempty"      koanf:"iss"`
+		UserIDs []int `json:"user_ids,omitempty" koanf:"user_ids"`
 	}
 )
 
