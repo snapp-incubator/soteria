@@ -9,6 +9,7 @@ logger:
 black_list_user_logging:
   iss: 0
   user_ids: []
+  user_hashed_ids: []
 
 # Validator is the upstream backend service that can validate the tokens:
 validator:

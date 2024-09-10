@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
+
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 )
 
-// AdminAuthenticator is responsible for Acl/Auth/Token of the internal system users,
-// these users have admin access.
+// AdminAuthenticator is responsible for Acl/Auth/Token of the internal system userIDs,
+// these userIDs have admin access.
 type AdminAuthenticator struct {
 	Key       any
 	Company   string
