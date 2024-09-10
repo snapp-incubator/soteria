@@ -223,6 +223,7 @@ func TestBuilderManualAuthenticator(t *testing.T) {
 
 	require := require.New(t)
 
+	// nolint: dupl
 	b := authenticator.Builder{
 		Tracer: noop.NewTracerProvider().Tracer(""),
 		Vendors: []config.Vendor{
@@ -457,6 +458,7 @@ func TestBuilderManualAuthenticatorInvalidAccess(t *testing.T) {
 
 	require := require.New(t)
 
+	// nolint: dupl
 	b := authenticator.Builder{
 		Tracer: noop.NewTracerProvider().Tracer(""),
 		Vendors: []config.Vendor{
