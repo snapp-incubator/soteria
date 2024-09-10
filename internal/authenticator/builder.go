@@ -41,7 +41,7 @@ func (b Builder) Authenticators() (map[string]Authenticator, error) {
 
 		switch vendor.Type {
 		case "auto", "validator", "validator-based", "using-validator":
-			auth, err = b.autoAuthenticator(vendor)
+			auth, err = b.autoAuthenticator(vendor, b.BlackListUserLoggingConfig)
 			if err != nil {
 				return nil, fmt.Errorf("cannot build auto authenticator %w", err)
 			}

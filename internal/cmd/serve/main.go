@@ -7,12 +7,13 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/snapp-incubator/soteria/internal/api"
-	"github.com/snapp-incubator/soteria/internal/authenticator"
-	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/spf13/cobra"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
+
+	"github.com/snapp-incubator/soteria/internal/api"
+	"github.com/snapp-incubator/soteria/internal/authenticator"
+	"github.com/snapp-incubator/soteria/internal/config"
 )
 
 type Serve struct {
@@ -23,10 +24,11 @@ type Serve struct {
 
 func (s Serve) main() {
 	auth, err := authenticator.Builder{
-		Vendors:         s.Cfg.Vendors,
-		Logger:          s.Logger,
-		ValidatorConfig: s.Cfg.Validator,
-		Tracer:          s.Tracer,
+		Vendors:                    s.Cfg.Vendors,
+		Logger:                     s.Logger,
+		ValidatorConfig:            s.Cfg.Validator,
+		Tracer:                     s.Tracer,
+		BlackListUserLoggingConfig: s.Cfg.BlackListUserLogging,
 	}.Authenticators()
 	if err != nil {
 		s.Logger.Fatal("authenticator building failed", zap.Error(err))
