@@ -7,15 +7,14 @@ import (
 	"strconv"
 
 	"github.com/golang-jwt/jwt/v5"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
-
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
 
 // AutoAuthenticator is responsible for Acl/Auth/Token of userIDs.
