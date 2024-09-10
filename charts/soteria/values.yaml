@@ -46,6 +46,7 @@ config:
   http_port: 9999
   logger:
     level: "debug"
+    stacktrace: true
   tracer:
     enabled: false
 
