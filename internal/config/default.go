@@ -24,7 +24,8 @@ func Default() Config {
 			SnappVendor(),
 		},
 		Logger: logger.Config{
-			Level: "debug",
+			Level:      "debug",
+			Stacktrace: true,
 		},
 		HTTPPort: DefaultHTTPPort,
 		Tracer: tracing.Config{
