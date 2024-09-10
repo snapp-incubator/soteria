@@ -24,6 +24,10 @@ func TestBuilderWithoutAuthenticator(t *testing.T) {
 			URL:     "",
 			Timeout: 0,
 		},
+		BlackListUserLoggingConfig: config.BlackListUserLogging{
+			Iss:     0,
+			UserIDs: []int{},
+		},
 	}
 
 	_, err := b.Authenticators()
@@ -61,6 +65,10 @@ func TestBuilderInvalidAuthenticator(t *testing.T) {
 			URL:     "",
 			Timeout: 0,
 		},
+		BlackListUserLoggingConfig: config.BlackListUserLogging{
+			Iss:     0,
+			UserIDs: []int{},
+		},
 	}
 
 	_, err := b.Authenticators()
@@ -97,6 +105,10 @@ func TestBuilderInternalAuthenticator(t *testing.T) {
 		ValidatorConfig: config.Validator{
 			URL:     "",
 			Timeout: 0,
+		},
+		BlackListUserLoggingConfig: config.BlackListUserLogging{
+			Iss:     0,
+			UserIDs: []int{},
 		},
 	}
 
@@ -136,6 +148,10 @@ func TestBuilderInternalAuthenticatorWithInvalidKey(t *testing.T) {
 		ValidatorConfig: config.Validator{
 			URL:     "",
 			Timeout: 0,
+		},
+		BlackListUserLoggingConfig: config.BlackListUserLogging{
+			Iss:     0,
+			UserIDs: []int{},
 		},
 	}
 
@@ -190,6 +206,10 @@ func TestBuilderManualAuthenticatorWithoutKey(t *testing.T) {
 		ValidatorConfig: config.Validator{
 			URL:     "",
 			Timeout: 0,
+		},
+		BlackListUserLoggingConfig: config.BlackListUserLogging{
+			Iss:     0,
+			UserIDs: []int{},
 		},
 	}
 
@@ -266,6 +286,10 @@ func TestBuilderManualAuthenticator(t *testing.T) {
 			URL:     "",
 			Timeout: 0,
 		},
+		BlackListUserLoggingConfig: config.BlackListUserLogging{
+			Iss:     0,
+			UserIDs: []int{},
+		},
 	}
 
 	vendors, err := b.Authenticators()
@@ -338,6 +362,10 @@ func TestBuilderManualAuthenticatorInvalidMapping_1(t *testing.T) {
 		ValidatorConfig: config.Validator{
 			URL:     "",
 			Timeout: 0,
+		},
+		BlackListUserLoggingConfig: config.BlackListUserLogging{
+			Iss:     0,
+			UserIDs: []int{},
 		},
 	}
 
@@ -413,6 +441,10 @@ func TestBuilderManualAuthenticatorInvalidMapping_2(t *testing.T) {
 			URL:     "",
 			Timeout: 0,
 		},
+		BlackListUserLoggingConfig: config.BlackListUserLogging{
+			Iss:     0,
+			UserIDs: []int{},
+		},
 	}
 
 	_, err := b.Authenticators()
@@ -487,6 +519,10 @@ func TestBuilderManualAuthenticatorInvalidAccess(t *testing.T) {
 		ValidatorConfig: config.Validator{
 			URL:     "",
 			Timeout: 0,
+		},
+		BlackListUserLoggingConfig: config.BlackListUserLogging{
+			Iss:     0,
+			UserIDs: []int{},
 		},
 	}
 
