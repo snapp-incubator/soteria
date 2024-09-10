@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	Level      string `json:"level,omitempty" koanf:"level"`
+	Level      string `json:"level,omitempty"      koanf:"level"`
 	Stacktrace bool   `json:"stacktrace,omitempty" koanf:"stacktrace"`
 }
 
@@ -31,9 +31,11 @@ func New(cfg Config) *zap.Logger {
 	core := zapcore.NewTee(cores...)
 	var zapOpts = make([]zap.Option, 0, 2)
 	zapOpts = append(zapOpts, zap.AddCaller())
+
 	if cfg.Stacktrace {
 		zapOpts = append(zapOpts, zap.AddStacktrace(zap.ErrorLevel))
 	}
+
 	logger := zap.New(core, zapOpts...)
 
 	return logger
