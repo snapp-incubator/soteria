@@ -10,16 +10,15 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
-	"go.opentelemetry.io/otel/trace/noop"
-	"go.uber.org/zap"
-
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+	"go.opentelemetry.io/otel/trace/noop"
+	"go.uber.org/zap"
 )
 
 type AutoAuthenticatorTestSuite struct {
