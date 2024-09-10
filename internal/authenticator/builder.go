@@ -5,12 +5,13 @@ import (
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
+
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
-	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
 )
 
 var (
@@ -22,10 +23,11 @@ var (
 )
 
 type Builder struct {
-	Vendors         []config.Vendor
-	Logger          *zap.Logger
-	ValidatorConfig config.Validator
-	Tracer          trace.Tracer
+	Vendors                    []config.Vendor
+	Logger                     *zap.Logger
+	ValidatorConfig            config.Validator
+	Tracer                     trace.Tracer
+	BlackListUserLoggingConfig config.BlackListUserLogging
 }
 
 func (b Builder) Authenticators() (map[string]Authenticator, error) {
@@ -122,13 +124,13 @@ func (b Builder) manualAuthenticator(vendor config.Vendor) (*ManualAuthenticator
 	}, nil
 }
 
-func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, error) {
-	allowedAccessTypes, err := b.GetAllowedAccessTypes(vendor.AllowedAccessTypes)
+func (b Builder) autoAuthenticator(vendorCfg config.Vendor, blackListUserLoggingCfg config.BlackListUserLogging) (*AutoAuthenticator, error) {
+	allowedAccessTypes, err := b.GetAllowedAccessTypes(vendorCfg.AllowedAccessTypes)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse allowed access types %w", err)
 	}
 
-	hid, err := topics.NewHashIDManager(vendor.HashIDMap)
+	hid, err := topics.NewHashIDManager(vendorCfg.HashIDMap)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create hash-id manager %w", err)
 	}
@@ -137,19 +139,21 @@ func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, er
 
 	return &AutoAuthenticator{
 		AllowedAccessTypes: allowedAccessTypes,
-		Company:            vendor.Company,
+		Company:            vendorCfg.Company,
 		TopicManager: topics.NewTopicManager(
-			vendor.Topics,
+			vendorCfg.Topics,
 			hid,
-			vendor.Company,
-			vendor.IssEntityMap,
-			vendor.IssPeerMap,
+			vendorCfg.Company,
+			vendorCfg.IssEntityMap,
+			vendorCfg.IssPeerMap,
 			b.Logger.Named("topic-manager"),
 		),
 		Tracer:    b.Tracer,
-		JWTConfig: vendor.Jwt,
+		JWTConfig: vendorCfg.Jwt,
 		Validator: client,
 		Parser:    jwt.NewParser(),
+		Logger:    b.Logger.Named("auto-authenticator"),
+		blackList: NewAutoBlackListChecker(blackListUserLoggingCfg),
 	}, nil
 }
 

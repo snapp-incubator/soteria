@@ -10,15 +10,16 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+	"go.opentelemetry.io/otel/trace/noop"
+	"go.uber.org/zap"
+
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
-	"go.opentelemetry.io/otel/trace/noop"
-	"go.uber.org/zap"
 )
 
 type AutoAuthenticatorTestSuite struct {
@@ -100,6 +101,7 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 			SubName:       "sub",
 			SigningMethod: "rsa256",
 		},
+		Logger: zap.NewNop(),
 	}
 }
 
@@ -132,6 +134,7 @@ func TestAutoAuthenticator_ValidateTopicBySender(t *testing.T) {
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
+		Logger:             zap.NewNop(),
 	}
 
 	t.Run("testing valid driver cab event", func(t *testing.T) {

@@ -6,13 +6,15 @@ import (
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
+
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // AutoAuthenticator is responsible for Acl/Auth/Token of users.
@@ -24,6 +26,8 @@ type AutoAuthenticator struct {
 	Validator          validator.Client
 	Parser             *jwt.Parser
 	Tracer             trace.Tracer
+	Logger             *zap.Logger
+	blackList          autoBlackListChecker
 }
 
 // Auth check user authentication by checking the user's token
@@ -43,8 +47,23 @@ func (a AutoAuthenticator) Auth(tokenString string) error {
 
 	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(headers))
 
-	if _, err := a.Validator.Validate(ctx, headers, "bearer "+tokenString); err != nil {
+	payload, err := a.Validator.Validate(ctx, headers, "bearer "+tokenString)
+	if err != nil {
 		return fmt.Errorf("token is invalid: %w", err)
+	}
+
+	if a.blackList.isBlackList(payload.UserID, payload.Iss) {
+		a.Logger.Warn("blacklisted user is requesting!",
+			zap.Int("iat", payload.IAT),
+			zap.String("aud", payload.Aud),
+			zap.Int("iss", payload.Iss),
+			zap.String("sub", payload.Sub),
+			zap.Int("user_id", payload.UserID),
+			zap.String("email", payload.Email),
+			zap.Int("exp", payload.Exp),
+			zap.String("locale", payload.Locale),
+			zap.String("sid", payload.Sid),
+		)
 	}
 
 	return nil
@@ -113,4 +132,31 @@ func (a AutoAuthenticator) GetCompany() string {
 
 func (a AutoAuthenticator) IsSuperuser() bool {
 	return false
+}
+
+type autoBlackListChecker struct {
+	users map[int]struct{}
+	iss   int
+}
+
+func NewAutoBlackListChecker(cfg config.BlackListUserLogging) autoBlackListChecker {
+	users := make(map[int]struct{})
+	for _, userID := range cfg.UserIDs {
+		users[userID] = struct{}{}
+	}
+
+	return autoBlackListChecker{
+		users: users,
+		iss:   cfg.Iss,
+	}
+}
+
+func (a autoBlackListChecker) isBlackList(userID, iss int) bool {
+	if iss != a.iss {
+		return false
+	}
+
+	_, ok := a.users[userID]
+
+	return ok
 }
