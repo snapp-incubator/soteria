@@ -103,7 +103,7 @@ func (a ManualAuthenticator) ACL(
 		return false, ErrSubNotFound
 	}
 
-	sub, _ := claims[a.JWTConfig.SubName].(string)
+	sub := fmt.Sprintf("%v", claims[a.JWTConfig.SubName])
 
 	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub, map[string]any(claims))
 	if topicTemplate == nil {
