@@ -139,7 +139,7 @@ type autoBlackListChecker struct {
 	iss   int
 }
 
-func NewAutoBlackListChecker(cfg config.BlackListUserLogging) autoBlackListChecker {
+func newAutoBlackListChecker(cfg config.BlackListUserLogging) autoBlackListChecker {
 	users := make(map[int]struct{})
 	for _, userID := range cfg.UserIDs {
 		users[userID] = struct{}{}

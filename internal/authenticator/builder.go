@@ -153,7 +153,7 @@ func (b Builder) autoAuthenticator(vendorCfg config.Vendor, blackListUserLogging
 		Validator: client,
 		Parser:    jwt.NewParser(),
 		Logger:    b.Logger.Named("auto-authenticator"),
-		blackList: NewAutoBlackListChecker(blackListUserLoggingCfg),
+		blackList: newAutoBlackListChecker(blackListUserLoggingCfg),
 	}, nil
 }
 
