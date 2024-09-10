@@ -50,6 +50,7 @@ config:
   tracer:
     enabled: false
 
+
 vendors:
   snapp:
     company: "snapp"
