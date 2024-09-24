@@ -18,8 +18,6 @@ type API struct {
 	DefaultVendor  string
 	Tracer         trace.Tracer
 	Logger         *zap.Logger
-
-	Metrics authenticator.Metrics
 }
 
 // MetricLogSkipper check if route is equal "metric" disable log.

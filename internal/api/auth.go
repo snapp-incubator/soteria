@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
@@ -37,7 +38,7 @@ func (a API) Authv1(c *fiber.Ctx) error {
 			Warn("bad request",
 				zap.Error(err),
 			)
-		a.Metrics.AuthIncrementWithError("unknown_company_before_parse_body", err)
+		authenticator.IncrementWithErrorAuthCounter("unknown_company_before_parse_body", err)
 
 		return c.Status(http.StatusBadRequest).SendString("bad request")
 	}
@@ -55,7 +56,7 @@ func (a API) Authv1(c *fiber.Ctx) error {
 
 	err := auth.Auth(token)
 	if err != nil {
-		a.Metrics.AuthIncrementWithError(vendor, err)
+		authenticator.IncrementWithErrorAuthCounter(vendor, err)
 		span.RecordError(err)
 
 		if !errors.Is(err, jwt.ErrTokenExpired) {
@@ -79,7 +80,7 @@ func (a API) Authv1(c *fiber.Ctx) error {
 			zap.String("password", request.Password),
 			zap.String("authenticator", auth.GetCompany()),
 		)
-	a.Metrics.AuthIncrementWithError(vendor, err)
+	authenticator.IncrementWithErrorAuthCounter(vendor, err)
 
 	return c.Status(http.StatusOK).SendString("ok")
 }
@@ -101,7 +102,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 			Warn("bad request",
 				zap.Error(err),
 			)
-		a.Metrics.AuthIncrementWithError("unknown_company_before_parse_body", err)
+		authenticator.IncrementWithErrorAuthCounter("unknown_company_before_parse_body", err)
 
 		return c.Status(http.StatusOK).JSON(AuthResponse{
 			Result:      "deny",
@@ -123,7 +124,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 	err := auth.Auth(token)
 	if err != nil {
 		span.RecordError(err)
-		a.Metrics.AuthIncrementWithError(vendor, err)
+		authenticator.IncrementWithErrorAuthCounter(vendor, err)
 
 		if !errors.Is(err, jwt.ErrTokenExpired) {
 			a.Logger.
@@ -149,7 +150,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 			zap.String("password", request.Password),
 			zap.String("authenticator", auth.GetCompany()),
 		)
-	a.Metrics.AuthIncrementWithError(vendor, err)
+	authenticator.IncrementWithErrorAuthCounter(vendor, err)
 
 	return c.Status(http.StatusOK).JSON(AuthResponse{
 		Result:      "allow",
