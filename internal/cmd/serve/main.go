@@ -37,7 +37,6 @@ func (s Serve) main() {
 		Authenticators: auth,
 		Tracer:         s.Tracer,
 		Logger:         s.Logger.Named("api"),
-		Metrics:        authenticator.NewMetrics(),
 	}
 
 	if _, ok := api.Authenticators[s.Cfg.DefaultVendor]; !ok {
