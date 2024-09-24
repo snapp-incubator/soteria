@@ -30,7 +30,7 @@ type AutoAuthenticator struct {
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
 func (a AutoAuthenticator) Auth(tokenString string) error {
 	ctx, span := a.Tracer.Start(context.Background(), "auto-authenticator.auth")
-	span.End()
+	defer span.End()
 
 	headers := http.Header{
 		validator.ServiceNameHeader: []string{"soteria"},
