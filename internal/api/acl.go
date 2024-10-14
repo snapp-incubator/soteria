@@ -55,9 +55,6 @@ func (a API) ACLv1(c *fiber.Ctx) error {
 	span.SetAttributes(
 		attribute.String("access", request.Access.String()),
 		attribute.String("topic", request.Topic),
-		attribute.String("token", request.Token),
-		attribute.String("username", request.Username),
-		attribute.String("password", request.Password),
 		attribute.String("authenticator", auth.GetCompany()),
 	)
 
@@ -152,9 +149,6 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 	span.SetAttributes(
 		attribute.String("access", request.Action),
 		attribute.String("topic", request.Topic),
-		attribute.String("token", request.Token),
-		attribute.String("username", request.Username),
-		attribute.String("password", request.Password),
 		attribute.String("authenticator", auth.GetCompany()),
 	)
 
