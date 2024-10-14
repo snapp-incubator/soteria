@@ -1,5 +1,5 @@
 // Package topics regular expressions which are used for detecting the topic name.
-// topics are prefix with the company name will be trimed before matching
+// topics are prefix with the company name will be trimemd before matching
 // so they regular expressions should not contain the company prefix.
 package topics
 
