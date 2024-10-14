@@ -104,7 +104,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.SharedLocation,
-				Template: "^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/{{IssToPeer .iss}}-location$", //nolint:lll
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/{{IssToPeer .iss}}-location$",
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Sub,
 					topics.PassengerIss: acl.Sub,
@@ -128,7 +128,7 @@ func SnappVendor() Vendor {
 			},
 			{
 				Type:     topics.NodeCallEntry,
-				Template: "^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/call/[a-zA-Z0-9-_]+/send$", //nolint: lll
+				Template: "^{{.company}}/{{IssToEntity .iss}}/{{.sub}}/call/[a-zA-Z0-9-_]+/send$",
 				Accesses: map[string]acl.AccessType{
 					topics.DriverIss:    acl.Pub,
 					topics.PassengerIss: acl.Pub,
