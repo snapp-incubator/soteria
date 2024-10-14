@@ -6,7 +6,7 @@ import (
 
 type Authenticator interface {
 	// Auth check user authentication by checking the user's token.
-	// it retruns error in case of any issue with the user token.
+	// it returns error in case of any issue with the user token.
 	Auth(tokenString string) error
 
 	// ACL check a user access to a topic.

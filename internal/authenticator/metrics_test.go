@@ -67,7 +67,7 @@ func TestIncrementWithErrorAuthCounter_ErrTopicNotAllowed(_ *testing.T) {
 	})
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrKeyNotFound(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", &KeyNotFoundError{Issuer: "iss"})
 }
