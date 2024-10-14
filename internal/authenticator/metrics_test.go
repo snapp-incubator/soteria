@@ -1,4 +1,4 @@
-//nolint:testpackage
+// nolint: testpackage
 package authenticator
 
 import (
@@ -6,57 +6,57 @@ import (
 	"testing"
 )
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_NoError(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", nil)
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrInvalidSigningMethod(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", ErrInvalidSigningMethod)
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrIssNotFound(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", ErrIssNotFound)
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrSubNotFound(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", ErrSubNotFound)
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrInvalidClaims(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", ErrInvalidClaims)
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrInvalidIP(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", ErrInvalidIP)
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrInvalidAccessType(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", ErrInvalidAccessType)
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrDecodeHashID(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", ErrDecodeHashID)
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrInvalidSecret(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", ErrInvalidSecret)
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrIncorrectPassword(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", ErrIncorrectPassword)
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrTopicNotAllowed(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", &TopicNotAllowedError{
 		Issuer:     "issuer",
@@ -72,7 +72,7 @@ func TestIncrementWithErrorAuthCounter_ErrKeyNotFound(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", &KeyNotFoundError{Issuer: "iss"})
 }
 
-//nolint:paralleltest
+// nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_UnknowError(_ *testing.T) {
 	IncrementWithErrorAuthCounter("snapp", errors.ErrUnsupported)
 }
