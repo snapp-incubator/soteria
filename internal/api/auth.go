@@ -47,9 +47,7 @@ func (a API) Authv1(c *fiber.Ctx) error {
 
 	auth := a.Authenticator(vendor)
 
-	span.SetAttributes(
-		attribute.String("authenticator", auth.GetCompany()),
-	)
+	span.SetAttributes(attribute.String("authenticator", auth.GetCompany()))
 
 	err := auth.Auth(token)
 	if err != nil {
@@ -111,9 +109,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	auth := a.Authenticator(vendor)
 
-	span.SetAttributes(
-		attribute.String("authenticator", auth.GetCompany()),
-	)
+	span.SetAttributes(attribute.String("authenticator", auth.GetCompany()))
 
 	err := auth.Auth(token)
 	if err != nil {
