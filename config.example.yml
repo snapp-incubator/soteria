@@ -1,4 +1,5 @@
-# Company name of the vendor to use if the incoming ACL request vendor is not found withing the registered vendors.
+---
+# Company name of the vendor to use if the incoming ACL request vendor is not found within the registered vendors.
 default_vendor: snapp
 # Port of the HTTP server:
 http_port: 9999
