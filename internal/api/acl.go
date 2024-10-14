@@ -118,7 +118,7 @@ type ACLv2Request struct {
 
 // ACLv2 is the handler responsible for ACL requests coming from EMQv5.
 // https://www.emqx.io/docs/en/latest/access-control/authz/http.html
-// nolint: wrapcheck, funlen
+// nolint: funlen
 func (a API) ACLv2(c *fiber.Ctx) error {
 	_, span := a.Tracer.Start(c.Context(), "api.v2.acl")
 	defer span.End()

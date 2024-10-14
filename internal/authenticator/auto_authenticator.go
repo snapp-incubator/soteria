@@ -51,7 +51,7 @@ func (a AutoAuthenticator) Auth(tokenString string) error {
 }
 
 // ACL check a user access to a topic.
-// nolint: funlen, cyclop, dupl
+// nolint: cyclop, dupl
 func (a AutoAuthenticator) ACL(
 	accessType acl.AccessType,
 	tokenString string,
