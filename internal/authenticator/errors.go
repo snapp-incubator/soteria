@@ -16,7 +16,7 @@ var (
 	ErrInvalidAccessType    = errors.New("requested access type is invalid")
 	ErrDecodeHashID         = errors.New("could not decode hash id")
 	ErrInvalidSecret        = errors.New("invalid secret")
-	ErrIncorrectPassword    = errors.New("username or password is worng")
+	ErrIncorrectPassword    = errors.New("username or password is wrong")
 )
 
 type TopicNotAllowedError struct {

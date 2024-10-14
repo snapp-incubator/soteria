@@ -135,7 +135,6 @@ func TestTopicManager(t *testing.T) {
 		t.Errorf("invalid default hash-id: %s", err)
 	}
 
-	// nolint: exhaustruct
 	topicManager := topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop())
 
 	sub := "DXKgaNQa7N5Y7bo"
