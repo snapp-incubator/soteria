@@ -9,6 +9,7 @@ import (
 
 	"github.com/snapp-incubator/soteria/internal/api"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
+	"github.com/snapp-incubator/soteria/internal/clientid"
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/spf13/cobra"
 	"go.opentelemetry.io/otel/trace"
@@ -37,6 +38,7 @@ func (s Serve) main() {
 		Authenticators: auth,
 		Tracer:         s.Tracer,
 		Logger:         s.Logger.Named("api"),
+		Parser:         clientid.NewParser(s.Cfg.Parser),
 	}
 
 	if _, ok := api.Authenticators[s.Cfg.DefaultVendor]; !ok {

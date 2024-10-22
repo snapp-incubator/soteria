@@ -42,7 +42,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 			Warn("bad request",
 				zap.Error(err),
 			)
-		authenticator.IncrementWithErrorAuthCounter("unknown_company_before_parse_body", err)
+		authenticator.IncrementWithErrorAuthCounter("unknown_company_before_parse_body", "-", err)
 
 		return c.Status(http.StatusOK).JSON(AuthResponse{
 			Result:      "deny",
@@ -55,22 +55,26 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	auth := a.Authenticator(vendor)
 
+	source := a.Parser.Parse(request.ClientID)
+
 	logger := a.Logger.With(
 		zap.String("token", request.Token),
 		zap.String("username", request.Username),
 		zap.String("password", request.Password),
 		zap.String("authenticator", auth.GetCompany()),
 		zap.String("client-id", request.ClientID),
+		zap.String("source", source),
 	)
 
 	span.SetAttributes(
 		attribute.String("authenticator", auth.GetCompany()),
 		attribute.String("cliend-id", request.ClientID),
+		attribute.String("source", source),
 	)
 
 	if err := auth.Auth(ctx, token); err != nil {
 		span.RecordError(err)
-		authenticator.IncrementWithErrorAuthCounter(vendor, err)
+		authenticator.IncrementWithErrorAuthCounter(vendor, source, err)
 
 		if !errors.Is(err, jwt.ErrTokenExpired) {
 			logger.
@@ -88,7 +92,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	logger.
 		Info("auth ok")
-	authenticator.IncrementAuthCounter(vendor)
+	authenticator.IncrementAuthCounter(vendor, source)
 
 	return c.Status(http.StatusOK).JSON(AuthResponse{
 		Result:      "allow",
