@@ -1,6 +1,7 @@
 package authenticator
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -19,7 +20,7 @@ type AdminAuthenticator struct {
 
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
-func (a AdminAuthenticator) Auth(tokenString string) error {
+func (a AdminAuthenticator) Auth(_ context.Context, tokenString string) error {
 	_, err := a.Parser.Parse(tokenString, func(
 		token *jwt.Token,
 	) (interface{}, error) {
@@ -45,6 +46,7 @@ func (a AdminAuthenticator) Auth(tokenString string) error {
 // because we returns is-admin: true, this endpoint shouldn't
 // be called.
 func (a AdminAuthenticator) ACL(
+	_ context.Context,
 	_ acl.AccessType,
 	_ string,
 	_ string,

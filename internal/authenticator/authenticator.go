@@ -1,16 +1,22 @@
 package authenticator
 
 import (
+	"context"
+
 	"github.com/snapp-incubator/soteria/pkg/acl"
 )
 
 type Authenticator interface {
 	// Auth check user authentication by checking the user's token.
 	// it returns error in case of any issue with the user token.
-	Auth(tokenString string) error
+	Auth(
+		ctx context.Context,
+		tokenString string,
+	) error
 
 	// ACL check a user access to a topic.
 	ACL(
+		ctx context.Context,
 		accessType acl.AccessType,
 		tokenString string,
 		topic string,
