@@ -11,6 +11,7 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/structs"
 	"github.com/knadh/koanf/v2"
+	"github.com/snapp-incubator/soteria/internal/clientid"
 	"github.com/snapp-incubator/soteria/internal/logger"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/internal/tracing"
@@ -25,12 +26,13 @@ const (
 type (
 	// Config is the main container of Soteria's config.
 	Config struct {
-		Vendors       []Vendor       `json:"vendors,omitempty"        koanf:"vendors"`
-		Logger        logger.Config  `json:"logger,omitempty"         koanf:"logger"`
-		HTTPPort      int            `json:"http_port,omitempty"      koanf:"http_port"`
-		Tracer        tracing.Config `json:"tracer,omitempty"         koanf:"tracer"`
-		DefaultVendor string         `json:"default_vendor,omitempty" koanf:"default_vendor"`
-		Validator     Validator      `json:"validator,omitempty"      koanf:"validator"`
+		Vendors       []Vendor        `json:"vendors,omitempty"        koanf:"vendors"`
+		Logger        logger.Config   `json:"logger,omitempty"         koanf:"logger"`
+		HTTPPort      int             `json:"http_port,omitempty"      koanf:"http_port"`
+		Tracer        tracing.Config  `json:"tracer,omitempty"         koanf:"tracer"`
+		DefaultVendor string          `json:"default_vendor,omitempty" koanf:"default_vendor"`
+		Validator     Validator       `json:"validator,omitempty"      koanf:"validator"`
+		Parser        clientid.Config `json:"parser,omitempty"         koanf:"parser"`
 	}
 
 	Vendor struct {
