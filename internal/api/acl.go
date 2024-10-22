@@ -43,7 +43,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 				zap.String("username", request.Username),
 				zap.String("password", request.Password),
 			)
-		authenticator.IncrementWithErrorAuthCounter("unknown_company_before_parse_body", err)
+		authenticator.IncrementWithErrorACLCounter("unknown_company_before_parse_body", err)
 
 		return c.Status(http.StatusOK).JSON(ACLResponse{
 			Result: "deny",
@@ -54,6 +54,15 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 
 	topic := request.Topic
 	auth := a.Authenticator(vendor)
+
+	logger := a.Logger.With(
+		zap.String("access", request.Action),
+		zap.String("topic", request.Topic),
+		zap.String("token", request.Token),
+		zap.String("username", request.Username),
+		zap.String("password", request.Password),
+		zap.String("authenticator", auth.GetCompany()),
+	)
 
 	span.SetAttributes(
 		attribute.String("access", request.Action),
@@ -76,30 +85,18 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 			span.RecordError(err)
 		}
 
-		authenticator.IncrementWithErrorAuthCounter(vendor, err)
+		authenticator.IncrementWithErrorACLCounter(vendor, err)
 
 		var tnaErr authenticator.TopicNotAllowedError
 
 		if errors.As(err, &tnaErr) {
-			a.Logger.
+			logger.
 				Warn("acl request is not authorized",
-					zap.Error(tnaErr),
-					zap.String("access", request.Action),
-					zap.String("topic", request.Topic),
-					zap.String("token", request.Token),
-					zap.String("username", request.Username),
-					zap.String("password", request.Password),
-					zap.String("authenticator", auth.GetCompany()))
+					zap.Error(tnaErr))
 		} else if !errors.Is(err, jwt.ErrTokenExpired) {
-			a.Logger.
+			logger.
 				Error("acl request is not authorized",
-					zap.Error(err),
-					zap.String("access", request.Action),
-					zap.String("topic", request.Topic),
-					zap.String("token", request.Token),
-					zap.String("username", request.Username),
-					zap.String("password", request.Password),
-					zap.String("authenticator", auth.GetCompany()))
+					zap.Error(err))
 		}
 
 		return c.Status(http.StatusOK).JSON(ACLResponse{
@@ -107,16 +104,9 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 		})
 	}
 
-	a.Logger.
-		Info("acl ok",
-			zap.String("access", request.Action),
-			zap.String("topic", request.Topic),
-			zap.String("token", request.Token),
-			zap.String("username", request.Username),
-			zap.String("password", request.Password),
-			zap.String("authenticator", auth.GetCompany()),
-		)
-	authenticator.IncrementWithErrorAuthCounter(vendor, err)
+	logger.
+		Info("acl ok")
+	authenticator.IncrementACLCounter(vendor)
 
 	return c.Status(http.StatusOK).JSON(ACLResponse{
 		Result: "allow",
