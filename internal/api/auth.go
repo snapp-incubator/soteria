@@ -55,6 +55,14 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	auth := a.Authenticator(vendor)
 
+	logger := a.Logger.With(
+		zap.String("token", request.Token),
+		zap.String("username", request.Username),
+		zap.String("password", request.Password),
+		zap.String("authenticator", auth.GetCompany()),
+		zap.String("client-id", request.ClientID),
+	)
+
 	span.SetAttributes(
 		attribute.String("authenticator", auth.GetCompany()),
 		attribute.String("cliend-id", request.ClientID),
@@ -65,13 +73,9 @@ func (a API) Authv2(c *fiber.Ctx) error {
 		authenticator.IncrementWithErrorAuthCounter(vendor, err)
 
 		if !errors.Is(err, jwt.ErrTokenExpired) {
-			a.Logger.
+			logger.
 				Error("auth request is not authorized",
 					zap.Error(err),
-					zap.String("token", request.Token),
-					zap.String("username", request.Username),
-					zap.String("password", request.Password),
-					zap.String("authenticator", auth.GetCompany()),
 				)
 		}
 
@@ -82,13 +86,8 @@ func (a API) Authv2(c *fiber.Ctx) error {
 		})
 	}
 
-	a.Logger.
-		Info("auth ok",
-			zap.String("token", request.Token),
-			zap.String("username", request.Username),
-			zap.String("password", request.Password),
-			zap.String("authenticator", auth.GetCompany()),
-		)
+	logger.
+		Info("auth ok")
 	authenticator.IncrementAuthCounter(vendor)
 
 	return c.Status(http.StatusOK).JSON(AuthResponse{
