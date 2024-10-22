@@ -1,6 +1,7 @@
 package authenticator_test
 
 import (
+	"context"
 	"crypto/rsa"
 	"encoding/json"
 	"net/http"
@@ -107,11 +108,11 @@ func (suite *AutoAuthenticatorTestSuite) TestAuth() {
 	require := suite.Require()
 
 	suite.Run("testing valid token auth", func() {
-		require.NoError(suite.Authenticator.Auth(suite.Token))
+		require.NoError(suite.Authenticator.Auth(context.Background(), suite.Token))
 	})
 
 	suite.Run("testing invalid token auth", func() {
-		require.Error(suite.Authenticator.Auth(invalidToken))
+		require.Error(suite.Authenticator.Auth(context.Background(), invalidToken))
 	})
 }
 
