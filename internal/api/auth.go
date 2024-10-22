@@ -55,7 +55,10 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	auth := a.Authenticator(vendor)
 
-	span.SetAttributes(attribute.String("authenticator", auth.GetCompany()))
+	span.SetAttributes(
+		attribute.String("authenticator", auth.GetCompany()),
+		attribute.String("cliend-id", request.ClientID),
+	)
 
 	if err := auth.Auth(ctx, token); err != nil {
 		span.RecordError(err)
