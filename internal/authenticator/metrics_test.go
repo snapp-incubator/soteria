@@ -8,57 +8,57 @@ import (
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_NoError(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", nil)
+	IncrementWithErrorAuthCounter("snapp", "-", nil)
 }
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrInvalidSigningMethod(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", ErrInvalidSigningMethod)
+	IncrementWithErrorAuthCounter("snapp", "-", ErrInvalidSigningMethod)
 }
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrIssNotFound(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", ErrIssNotFound)
+	IncrementWithErrorAuthCounter("snapp", "-", ErrIssNotFound)
 }
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrSubNotFound(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", ErrSubNotFound)
+	IncrementWithErrorAuthCounter("snapp", "-", ErrSubNotFound)
 }
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrInvalidClaims(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", ErrInvalidClaims)
+	IncrementWithErrorAuthCounter("snapp", "-", ErrInvalidClaims)
 }
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrInvalidIP(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", ErrInvalidIP)
+	IncrementWithErrorAuthCounter("snapp", "-", ErrInvalidIP)
 }
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrInvalidAccessType(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", ErrInvalidAccessType)
+	IncrementWithErrorAuthCounter("snapp", "-", ErrInvalidAccessType)
 }
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrDecodeHashID(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", ErrDecodeHashID)
+	IncrementWithErrorAuthCounter("snapp", "-", ErrDecodeHashID)
 }
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrInvalidSecret(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", ErrInvalidSecret)
+	IncrementWithErrorAuthCounter("snapp", "-", ErrInvalidSecret)
 }
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrIncorrectPassword(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", ErrIncorrectPassword)
+	IncrementWithErrorAuthCounter("snapp", "-", ErrIncorrectPassword)
 }
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrTopicNotAllowed(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", &TopicNotAllowedError{
+	IncrementWithErrorAuthCounter("snapp", "-", &TopicNotAllowedError{
 		Issuer:     "issuer",
 		Sub:        "subject",
 		AccessType: "1",
@@ -69,10 +69,10 @@ func TestIncrementWithErrorAuthCounter_ErrTopicNotAllowed(_ *testing.T) {
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_ErrKeyNotFound(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", &KeyNotFoundError{Issuer: "iss"})
+	IncrementWithErrorAuthCounter("snapp", "-", &KeyNotFoundError{Issuer: "iss"})
 }
 
 // nolint: paralleltest
 func TestIncrementWithErrorAuthCounter_UnknowError(_ *testing.T) {
-	IncrementWithErrorAuthCounter("snapp", errors.ErrUnsupported)
+	IncrementWithErrorAuthCounter("snapp", "-", errors.ErrUnsupported)
 }
