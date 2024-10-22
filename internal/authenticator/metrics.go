@@ -13,14 +13,14 @@ var AuthenticateCounterMetric = promauto.NewCounterVec(prometheus.CounterOpts{
 	Subsystem: "soteria",
 	Name:      "auth_total",
 	Help:      "Total number of authentication attempts",
-}, []string{"company", "status"})
+}, []string{"company", "status", "source"})
 
-func IncrementAuthCounter(company string) {
-	AuthenticateCounterMetric.WithLabelValues(company, "success").Inc()
+func IncrementAuthCounter(company, source string) {
+	AuthenticateCounterMetric.WithLabelValues(company, "success", source).Inc()
 }
 
 // nolint:cyclop
-func IncrementWithErrorAuthCounter(company string, err error) {
+func IncrementWithErrorAuthCounter(company, source string, err error) {
 	var (
 		status                     string
 		topicNotAllowedErrorTarget *TopicNotAllowedError
@@ -54,5 +54,5 @@ func IncrementWithErrorAuthCounter(company string, err error) {
 		status = "unknown_error"
 	}
 
-	AuthenticateCounterMetric.WithLabelValues(company, status).Inc()
+	AuthenticateCounterMetric.WithLabelValues(company, status, source).Inc()
 }

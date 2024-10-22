@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/contrib/fiberzap"
 	"github.com/gofiber/fiber/v2"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
+	"github.com/snapp-incubator/soteria/internal/clientid"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
@@ -17,6 +18,7 @@ type API struct {
 	Authenticators map[string]authenticator.Authenticator
 	DefaultVendor  string
 	Tracer         trace.Tracer
+	Parser         *clientid.Parser
 	Logger         *zap.Logger
 }
 
