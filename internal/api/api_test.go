@@ -151,6 +151,7 @@ func (suite *APITestSuite) BadRequest() {
 		Token:    "",
 		Username: "not-found:token",
 		Password: "",
+		ClientID: "",
 	})
 	require.NoError(err)
 
@@ -174,6 +175,7 @@ func (suite *APITestSuite) ValidToken() {
 		Token:    "",
 		Username: "snapp-admin:" + token,
 		Password: "",
+		ClientID: "",
 	})
 	require.NoError(err)
 
