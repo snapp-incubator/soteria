@@ -15,7 +15,7 @@ services:
       EMQX_AUTHENTICATION__1__ENABLE: "true"
       EMQX_AUTHENTICATION__1__METHOD: "post"
       EMQX_AUTHENTICATION__1__URL: "http://soteria:9999/v2/auth"
-      EMQX_AUTHENTICATION__1__BODY: '{"username" = "$${username}", "password" = "$${password}", "token" = "$${username}"}'
+      EMQX_AUTHENTICATION__1__BODY: '{"username" = "$${username}", "password" = "$${password}", "token" = "$${username}", "client_id" = "$${clientid}"}'
       EMQX_AUTHORIZATION__NO_MATCH: deny
       EMQX_AUTHORIZATION__DENY_ACTION: disconnect
       EMQX_AUTHORIZATION__SOURCES__1__TYPE: http
