@@ -144,7 +144,8 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestACLBasics() {
 	})
 
 	suite.Run("testing acl with invalid topic", func() {
-		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, suite.Tokens.Passenger, invalidPassengerCabEventTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub,
+			suite.Tokens.Passenger, invalidPassengerCabEventTopic)
 		require.Error(err)
 		require.False(ok)
 	})
