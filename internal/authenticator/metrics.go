@@ -19,6 +19,7 @@ func IncrementAuthCounter(company string) {
 	AuthenticateCounterMetric.WithLabelValues(company, "success").Inc()
 }
 
+// nolint:cyclop
 func IncrementWithErrorAuthCounter(company string, err error) {
 	var (
 		status                     string
