@@ -14,6 +14,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/api"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
+	"github.com/snapp-incubator/soteria/internal/clientid"
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/stretchr/testify/suite"
 	"go.opentelemetry.io/otel/trace/noop"
@@ -137,6 +138,9 @@ func (suite *APITestSuite) SetupSuite() {
 		DefaultVendor: "snapp",
 		Tracer:        noop.NewTracerProvider().Tracer(""),
 		Logger:        zap.NewExample(),
+		Parser: clientid.NewParser(clientid.Config{
+			Patterns: map[string]string{},
+		}),
 	}
 
 	app.Post("/v2/auth", a.Authv2)

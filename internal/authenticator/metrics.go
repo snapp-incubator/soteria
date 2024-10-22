@@ -8,19 +8,21 @@ import (
 )
 
 // nolint:exhaustruct,gochecknoglobals
-var AuthenticateCounterMetric = promauto.NewCounterVec(prometheus.CounterOpts{
-	Namespace: "dispatching",
-	Subsystem: "soteria",
-	Name:      "auth_total",
-	Help:      "Total number of authentication attempts",
-}, []string{"company", "status", "source"})
+var (
+	AuthenticateCounterMetric = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "dispatching",
+		Subsystem: "soteria",
+		Name:      "auth_total",
+		Help:      "Total number of authentication attempts",
+	}, []string{"company", "status", "source"})
 
-var AuthorizeCounterMetric = promauto.NewCounterVec(prometheus.CounterOpts{
-	Namespace: "dispatching",
-	Subsystem: "soteria",
-	Name:      "acl_total",
-	Help:      "Total number of authorization attempts",
-}, []string{"company", "status"})
+	AuthorizeCounterMetric = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "dispatching",
+		Subsystem: "soteria",
+		Name:      "acl_total",
+		Help:      "Total number of authorization attempts",
+	}, []string{"company", "status"})
+)
 
 func IncrementAuthCounter(company, source string) {
 	AuthenticateCounterMetric.WithLabelValues(company, "success", source).Inc()
