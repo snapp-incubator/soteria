@@ -1,6 +1,7 @@
 package authenticator
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -21,7 +22,7 @@ type ManualAuthenticator struct {
 }
 
 // Auth check user authentication by checking the user's token.
-func (a ManualAuthenticator) Auth(tokenString string) error {
+func (a ManualAuthenticator) Auth(_ context.Context, tokenString string) error {
 	_, err := a.Parser.Parse(tokenString, func(
 		token *jwt.Token,
 	) (interface{}, error) {
@@ -53,6 +54,7 @@ func (a ManualAuthenticator) Auth(tokenString string) error {
 // ACL check a user access to a topic.
 // nolint: funlen, cyclop
 func (a ManualAuthenticator) ACL(
+	_ context.Context,
 	accessType acl.AccessType,
 	tokenString string,
 	topic string,

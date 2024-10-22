@@ -15,7 +15,10 @@ var AuthenticateCounterMetric = promauto.NewCounterVec(prometheus.CounterOpts{
 	Help:      "Total number of authentication attempts",
 }, []string{"company", "status"})
 
-// nolint:cyclop
+func IncrementAuthCounter(company string) {
+	AuthenticateCounterMetric.WithLabelValues(company, "success").Inc()
+}
+
 func IncrementWithErrorAuthCounter(company string, err error) {
 	var (
 		status                     string
@@ -24,8 +27,6 @@ func IncrementWithErrorAuthCounter(company string, err error) {
 	)
 
 	switch {
-	case err == nil:
-		status = "success"
 	case errors.Is(err, ErrInvalidSigningMethod):
 		status = "err_invalid_signing_method"
 	case errors.Is(err, ErrIssNotFound):

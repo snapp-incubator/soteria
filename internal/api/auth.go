@@ -13,71 +13,16 @@ import (
 
 // AuthRequest is the body payload structure of the auth endpoint.
 type AuthRequest struct {
-	Token    string `form:"token"    json:"token,omitempty"`
-	Username string `from:"username" json:"username,omitempty"`
-	Password string `form:"password" json:"password,omitempty"`
+	Token    string `json:"token,omitempty"`
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
+	ClientID string `json:"client_id,omitempty"`
 }
 
 type AuthResponse struct {
 	Result      string `json:"result,omitempty"`
 	IsSuperuser bool   `json:"is_superuser,omitempty"`
-}
-
-// Auth is the handler responsible for authentication.
-// nolint: wrapcheck
-func (a API) Authv1(c *fiber.Ctx) error {
-	_, span := a.Tracer.Start(c.Context(), "api.v1.auth")
-	defer span.End()
-
-	request := new(AuthRequest)
-
-	if err := c.BodyParser(request); err != nil {
-		span.RecordError(err)
-
-		a.Logger.
-			Warn("bad request",
-				zap.Error(err),
-			)
-		authenticator.IncrementWithErrorAuthCounter("unknown_company_before_parse_body", err)
-
-		return c.Status(http.StatusBadRequest).SendString("bad request")
-	}
-
-	vendor, token := ExtractVendorToken(request.Token, request.Username, request.Password)
-
-	auth := a.Authenticator(vendor)
-
-	span.SetAttributes(attribute.String("authenticator", auth.GetCompany()))
-
-	err := auth.Auth(token)
-	if err != nil {
-		authenticator.IncrementWithErrorAuthCounter(vendor, err)
-		span.RecordError(err)
-
-		if !errors.Is(err, jwt.ErrTokenExpired) {
-			a.Logger.
-				Error("auth request is not authorized",
-					zap.Error(err),
-					zap.String("token", request.Token),
-					zap.String("username", request.Username),
-					zap.String("password", request.Password),
-					zap.String("authenticator", auth.GetCompany()),
-				)
-		}
-
-		return c.Status(http.StatusUnauthorized).SendString("request is not authorized")
-	}
-
-	a.Logger.
-		Info("auth ok",
-			zap.String("token", request.Token),
-			zap.String("username", request.Username),
-			zap.String("password", request.Password),
-			zap.String("authenticator", auth.GetCompany()),
-		)
-	authenticator.IncrementWithErrorAuthCounter(vendor, err)
-
-	return c.Status(http.StatusOK).SendString("ok")
+	ExpireAt    int64  `json:"expire_at,omitempty"`
 }
 
 // Auth is the handler responsible for authentication.
@@ -85,7 +30,7 @@ func (a API) Authv1(c *fiber.Ctx) error {
 // https://www.emqx.io/docs/en/latest/access-control/authn/http.html
 // nolint: funlen
 func (a API) Authv2(c *fiber.Ctx) error {
-	_, span := a.Tracer.Start(c.Context(), "api.v2.auth")
+	ctx, span := a.Tracer.Start(c.Context(), "api.v2.auth")
 	defer span.End()
 
 	request := new(AuthRequest)
@@ -102,6 +47,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 		return c.Status(http.StatusOK).JSON(AuthResponse{
 			Result:      "deny",
 			IsSuperuser: false,
+			ExpireAt:    0,
 		})
 	}
 
@@ -111,8 +57,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	span.SetAttributes(attribute.String("authenticator", auth.GetCompany()))
 
-	err := auth.Auth(token)
-	if err != nil {
+	if err := auth.Auth(ctx, token); err != nil {
 		span.RecordError(err)
 		authenticator.IncrementWithErrorAuthCounter(vendor, err)
 
@@ -130,6 +75,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 		return c.Status(http.StatusOK).JSON(AuthResponse{
 			Result:      "deny",
 			IsSuperuser: false,
+			ExpireAt:    0,
 		})
 	}
 
@@ -140,10 +86,11 @@ func (a API) Authv2(c *fiber.Ctx) error {
 			zap.String("password", request.Password),
 			zap.String("authenticator", auth.GetCompany()),
 		)
-	authenticator.IncrementWithErrorAuthCounter(vendor, err)
+	authenticator.IncrementAuthCounter(vendor)
 
 	return c.Status(http.StatusOK).JSON(AuthResponse{
 		Result:      "allow",
 		IsSuperuser: auth.IsSuperuser(),
+		ExpireAt:    0,
 	})
 }

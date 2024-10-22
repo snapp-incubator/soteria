@@ -28,8 +28,8 @@ type AutoAuthenticator struct {
 
 // Auth check user authentication by checking the user's token
 // isSuperuser is a flag that authenticator set it true when credentials is related to a superuser.
-func (a AutoAuthenticator) Auth(tokenString string) error {
-	ctx, span := a.Tracer.Start(context.Background(), "auto-authenticator.auth")
+func (a AutoAuthenticator) Auth(ctx context.Context, tokenString string) error {
+	ctx, span := a.Tracer.Start(ctx, "auto-authenticator.auth")
 	span.End()
 
 	headers := http.Header{
@@ -53,6 +53,7 @@ func (a AutoAuthenticator) Auth(tokenString string) error {
 // ACL check a user access to a topic.
 // nolint: cyclop, dupl
 func (a AutoAuthenticator) ACL(
+	_ context.Context,
 	accessType acl.AccessType,
 	tokenString string,
 	topic string,
