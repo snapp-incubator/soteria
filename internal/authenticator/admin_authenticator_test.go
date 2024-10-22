@@ -1,6 +1,7 @@
 package authenticator_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -56,10 +57,10 @@ func (suite *AdminAuthenticatorTestSuite) TestAuth() {
 	require := suite.Require()
 
 	suite.Run("testing admin token auth", func() {
-		require.NoError(suite.Authenticator.Auth(suite.AdminToken))
+		require.NoError(suite.Authenticator.Auth(context.Background(), suite.AdminToken))
 	})
 
 	suite.Run("testing invalid token auth", func() {
-		require.Error(suite.Authenticator.Auth(invalidToken))
+		require.Error(suite.Authenticator.Auth(context.Background(), invalidToken))
 	})
 }

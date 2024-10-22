@@ -1,6 +1,7 @@
 package authenticator_test
 
 import (
+	"context"
 	"crypto/rsa"
 	"testing"
 
@@ -100,22 +101,22 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestAuth() {
 	require := suite.Require()
 
 	suite.Run("testing driver token auth", func() {
-		require.NoError(suite.Authenticator.Auth(suite.Tokens.Driver))
+		require.NoError(suite.Authenticator.Auth(context.Background(), suite.Tokens.Driver))
 	})
 
 	suite.Run("testing passenger token auth", func() {
-		require.NoError(suite.Authenticator.Auth(suite.Tokens.Passenger))
+		require.NoError(suite.Authenticator.Auth(context.Background(), suite.Tokens.Passenger))
 	})
 
 	suite.Run("testing invalid token auth", func() {
-		require.Error(suite.Authenticator.Auth(invalidToken))
+		require.Error(suite.Authenticator.Auth(context.Background(), invalidToken))
 	})
 
 	suite.Run("testing token with invalid iss", func() {
 		token, err := getSampleToken("-1", suite.PrivateKeys.Passenger)
 		require.NoError(err)
 
-		require.ErrorIs(suite.Authenticator.Auth(token), authenticator.KeyNotFoundError{
+		require.ErrorIs(suite.Authenticator.Auth(context.Background(), token), authenticator.KeyNotFoundError{
 			Issuer: "-1",
 		})
 	})
@@ -125,31 +126,31 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestACLBasics() {
 	require := suite.Require()
 
 	suite.Run("testing acl with invalid access type", func() {
-		ok, err := suite.Authenticator.ACL("invalid-access", suite.Tokens.Passenger, "test")
+		ok, err := suite.Authenticator.ACL(context.Background(), "invalid-access", suite.Tokens.Passenger, "test")
 		require.False(ok)
 		require.ErrorIs(err, authenticator.ErrInvalidAccessType)
 	})
 
 	suite.Run("testing acl with invalid token", func() {
-		ok, err := suite.Authenticator.ACL(acl.Pub, invalidToken, validDriverCabEventTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Pub, invalidToken, validDriverCabEventTopic)
 		require.False(ok)
 		require.ErrorIs(err, jwt.ErrTokenMalformed)
 	})
 
 	suite.Run("testing acl with valid inputs", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, suite.Tokens.Passenger, validPassengerCabEventTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, suite.Tokens.Passenger, validPassengerCabEventTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing acl with invalid topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, suite.Tokens.Passenger, invalidPassengerCabEventTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, suite.Tokens.Passenger, invalidPassengerCabEventTopic)
 		require.Error(err)
 		require.False(ok)
 	})
 
 	suite.Run("testing acl with invalid access type", func() {
-		ok, err := suite.Authenticator.ACL(acl.Pub, suite.Tokens.Passenger, validPassengerCabEventTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Pub, suite.Tokens.Passenger, validPassengerCabEventTopic)
 		require.Error(err)
 		require.False(ok)
 	})
@@ -161,49 +162,49 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestACLPassenger() {
 	token := suite.Tokens.Passenger
 
 	suite.Run("testing passenger subscribe on valid superapp event topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, validPassengerSuperappEventTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, validPassengerSuperappEventTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing passenger subscribe on invalid superapp event topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidPassengerSuperappEventTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, invalidPassengerSuperappEventTopic)
 		require.Error(err)
 		require.False(ok)
 	})
 
 	suite.Run("testing passenger subscribe on valid shared location topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, validPassengerSharedTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, validPassengerSharedTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing passenger subscribe on invalid shared location topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidPassengerSharedTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, invalidPassengerSharedTopic)
 		require.Error(err)
 		require.False(ok)
 	})
 
 	suite.Run("testing passenger subscribe on valid chat topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, validPassengerChatTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, validPassengerChatTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing passenger subscribe on invalid chat topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidPassengerChatTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, invalidPassengerChatTopic)
 		require.Error(err)
 		require.False(ok)
 	})
 
 	suite.Run("testing passenger subscribe on valid entry call topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Pub, token, validPassengerCallEntryTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Pub, token, validPassengerCallEntryTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing passenger subscribe on invalid call entry topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Pub, token, invalidPassengerCallEntryTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Pub, token, invalidPassengerCallEntryTopic)
 		require.ErrorIs(err, authenticator.InvalidTopicError{
 			Topic: invalidPassengerCallEntryTopic,
 		})
@@ -211,19 +212,19 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestACLPassenger() {
 	})
 
 	suite.Run("testing passenger subscribe on valid outgoing call topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, validPassengerCallOutgoingTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, validPassengerCallOutgoingTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing passenger subscribe on valid outgoing call node topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Pub, token, validPassengerNodeCallEntryTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Pub, token, validPassengerNodeCallEntryTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing passenger subscribe on invalid call outgoing topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidPassengerCallOutgoingTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, invalidPassengerCallOutgoingTopic)
 		require.Error(err)
 		require.False(ok)
 	})
@@ -235,85 +236,85 @@ func (suite *ManualAuthenticatorSnappTestSuite) TestACLDriver() {
 	token := suite.Tokens.Driver
 
 	suite.Run("testing driver publish on its location topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Pub, token, validDriverLocationTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Pub, token, validDriverLocationTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing driver publish on invalid location topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Pub, token, invalidDriverLocationTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Pub, token, invalidDriverLocationTopic)
 		require.Error(err)
 		require.False(ok)
 	})
 
 	suite.Run("testing driver subscribe on invalid cab event topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidDriverCabEventTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, invalidDriverCabEventTopic)
 		require.Error(err)
 		require.False(ok)
 	})
 
 	suite.Run("testing driver subscribe on valid superapp event topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, validDriverSuperappEventTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, validDriverSuperappEventTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing driver subscribe on invalid superapp event topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidDriverSuperappEventTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, invalidDriverSuperappEventTopic)
 		require.Error(err)
 		require.False(ok)
 	})
 
 	suite.Run("testing driver subscribe on valid shared location topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, validDriverSharedTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, validDriverSharedTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing driver subscribe on invalid shared location topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidDriverSharedTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, invalidDriverSharedTopic)
 		require.Error(err)
 		require.False(ok)
 	})
 
 	suite.Run("testing driver subscribe on valid chat topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, validDriverChatTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, validDriverChatTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing driver subscribe on invalid chat topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidDriverChatTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, invalidDriverChatTopic)
 		require.Error(err)
 		require.False(ok)
 	})
 
 	suite.Run("testing driver subscribe on valid call entry topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Pub, token, validDriverCallEntryTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Pub, token, validDriverCallEntryTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing driver subscribe on invalid call entry topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Pub, token, invalidDriverCallEntryTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Pub, token, invalidDriverCallEntryTopic)
 		require.Error(err)
 		require.False(ok)
 	})
 
 	suite.Run("testing driver subscribe on valid call outgoing topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, validDriverCallOutgoingTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, validDriverCallOutgoingTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing driver subscribe on valid call outgoing node topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Pub, token, validDriverNodeCallEntryTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Pub, token, validDriverNodeCallEntryTopic)
 		require.NoError(err)
 		require.True(ok)
 	})
 
 	suite.Run("testing driver subscribe on invalid call outgoing topic", func() {
-		ok, err := suite.Authenticator.ACL(acl.Sub, token, invalidDriverCallOutgoingTopic)
+		ok, err := suite.Authenticator.ACL(context.Background(), acl.Sub, token, invalidDriverCallOutgoingTopic)
 		require.Error(err)
 		require.False(ok)
 	})
