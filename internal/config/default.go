@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/snapp-incubator/soteria/internal/clientid"
 	"github.com/snapp-incubator/soteria/internal/logger"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/internal/tracing"
@@ -26,6 +27,9 @@ func Default() Config {
 		Logger: logger.Config{
 			Level:      "debug",
 			Stacktrace: true,
+		},
+		Parser: clientid.Config{
+			Patterns: map[string]string{},
 		},
 		HTTPPort: DefaultHTTPPort,
 		Tracer: tracing.Config{
