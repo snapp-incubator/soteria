@@ -186,68 +186,44 @@ func (suite *APITestSuite) TestValidToken() {
 	token, err := getSampleToken(suite.key)
 	require.NoError(err)
 
-	body, err := json.Marshal(api.AuthRequest{
-		Token:    "",
-		Username: "snapp-admin:" + token,
-		Password: "",
-		ClientID: "",
-	})
-	require.NoError(err)
+	cases := []struct {
+		username string
+	}{
+		{username: "snapp-admin:" + token},
+		{username: token},
+	}
 
-	req := httptest.NewRequest(http.MethodPost, "/v2/auth", bytes.NewReader(body))
-	req.Header.Add("Content-Type", "application/json")
+	for _, c := range cases {
+		suite.Run("username "+c.username, func() {
+			body, err := json.Marshal(api.AuthRequest{
+				Token:    "",
+				Username: c.username,
+				Password: "",
+				ClientID: "",
+			})
+			require.NoError(err)
 
-	resp, err := suite.app.Test(req)
-	require.NoError(err)
+			req := httptest.NewRequest(http.MethodPost, "/v2/auth", bytes.NewReader(body))
+			req.Header.Add("Content-Type", "application/json")
 
-	defer resp.Body.Close()
+			resp, err := suite.app.Test(req)
+			require.NoError(err)
 
-	require.Equal(http.StatusOK, resp.StatusCode)
+			defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	require.NoError(err)
+			require.Equal(http.StatusOK, resp.StatusCode)
 
-	var authResp api.AuthResponse
+			data, err := io.ReadAll(resp.Body)
+			require.NoError(err)
 
-	require.NoError(json.Unmarshal(data, &authResp))
+			var authResp api.AuthResponse
 
-	require.Equal("allow", authResp.Result)
-	require.True(authResp.IsSuperuser)
-}
+			require.NoError(json.Unmarshal(data, &authResp))
 
-func (suite *APITestSuite) TestValidTokenWithDefaultVendor() {
-	require := suite.Require()
-
-	token, err := getSampleToken(suite.key)
-	require.NoError(err)
-
-	body, err := json.Marshal(api.AuthRequest{
-		Token:    "",
-		Username: token,
-		Password: "",
-		ClientID: "",
-	})
-	require.NoError(err)
-
-	req := httptest.NewRequest(http.MethodPost, "/v2/auth", bytes.NewReader(body))
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err := suite.app.Test(req)
-	require.NoError(err)
-
-	defer resp.Body.Close()
-
-	require.Equal(http.StatusOK, resp.StatusCode)
-
-	data, err := io.ReadAll(resp.Body)
-	require.NoError(err)
-
-	var authResp api.AuthResponse
-
-	require.NoError(json.Unmarshal(data, &authResp))
-
-	require.Equal("allow", authResp.Result)
-	require.True(authResp.IsSuperuser)
+			require.Equal("allow", authResp.Result)
+			require.True(authResp.IsSuperuser)
+		})
+	}
 }
 
 func TestAPITestSuite(t *testing.T) {
