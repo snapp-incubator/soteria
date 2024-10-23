@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/clientid"
+	"github.com/snapp-incubator/soteria/internal/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
@@ -20,6 +21,7 @@ type API struct {
 	Tracer         trace.Tracer
 	Parser         *clientid.Parser
 	Logger         *zap.Logger
+	Metrics        *metric.APIMetrics
 }
 
 // MetricLogSkipper check if route is equal "metric" disable log.
@@ -39,7 +41,7 @@ func (a API) ReSTServer() *fiber.App {
 		Logger: a.Logger.Named("fiber"),
 	}))
 
-	prometheus := fiberprometheus.NewWith("http", "dispatching", "soteria")
+	prometheus := fiberprometheus.NewWith("http", "platform", "soteria")
 	prometheus.RegisterAt(app, "/metrics")
 	app.Use(prometheus.Middleware)
 

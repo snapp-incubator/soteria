@@ -16,6 +16,7 @@ import (
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/clientid"
 	"github.com/snapp-incubator/soteria/internal/config"
+	"github.com/snapp-incubator/soteria/internal/metric"
 	"github.com/stretchr/testify/suite"
 	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/zap"
@@ -138,6 +139,7 @@ func (suite *APITestSuite) SetupSuite() {
 		DefaultVendor: "snapp",
 		Tracer:        noop.NewTracerProvider().Tracer(""),
 		Logger:        zap.NewExample(),
+		Metrics:       metric.NewAPIMetrics(),
 		Parser: clientid.NewParser(clientid.Config{
 			Patterns: map[string]string{},
 		}),

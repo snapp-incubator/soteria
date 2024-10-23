@@ -43,7 +43,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 				zap.String("username", request.Username),
 				zap.String("password", request.Password),
 			)
-		authenticator.IncrementWithErrorACLCounter("unknown_company_before_parse_body", err)
+		a.Metrics.ACLFailed("unknown_company_before_parse_body", err)
 
 		return c.Status(http.StatusOK).JSON(ACLResponse{
 			Result: "deny",
@@ -85,7 +85,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 			span.RecordError(err)
 		}
 
-		authenticator.IncrementWithErrorACLCounter(vendor, err)
+		a.Metrics.ACLFailed(vendor, err)
 
 		var tnaErr authenticator.TopicNotAllowedError
 
@@ -106,7 +106,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 
 	logger.
 		Info("acl ok")
-	authenticator.IncrementACLCounter(vendor)
+	a.Metrics.ACLSuccess(vendor)
 
 	return c.Status(http.StatusOK).JSON(ACLResponse{
 		Result: "allow",
