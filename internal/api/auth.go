@@ -69,11 +69,13 @@ func (a API) Authv2(c *fiber.Ctx) error {
 		attribute.String("authenticator", auth.GetCompany()),
 		attribute.String("cliend-id", request.ClientID),
 		attribute.String("source", source),
+		attribute.String("username", request.Username),
+		attribute.String("password", request.Password),
 	)
 
 	if err := auth.Auth(ctx, token); err != nil {
 		span.RecordError(err)
-		a.Metrics.AuthFailed(vendor, source, err)
+		a.Metrics.AuthFailed(auth.GetCompany(), source, err)
 
 		if !errors.Is(err, jwt.ErrTokenExpired) {
 			logger.
@@ -91,7 +93,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	logger.
 		Info("auth ok")
-	a.Metrics.AuthSuccess(vendor, source)
+	a.Metrics.AuthSuccess(auth.GetCompany(), source)
 
 	return c.Status(http.StatusOK).JSON(AuthResponse{
 		Result:      "allow",
