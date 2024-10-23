@@ -150,7 +150,7 @@ func (suite *APITestSuite) SetupSuite() {
 	suite.app = app
 }
 
-func (suite *APITestSuite) BadRequest() {
+func (suite *APITestSuite) TestBadRequest() {
 	require := suite.Require()
 
 	body, err := json.Marshal(api.AuthRequest{
@@ -168,10 +168,19 @@ func (suite *APITestSuite) BadRequest() {
 
 	defer resp.Body.Close()
 
-	require.Equal(http.StatusBadRequest, resp.StatusCode)
+	require.Equal(http.StatusOK, resp.StatusCode)
+
+	data, err := io.ReadAll(resp.Body)
+	require.NoError(err)
+
+	var authResp api.AuthResponse
+
+	require.NoError(json.Unmarshal(data, &authResp))
+
+	require.Equal("deny", authResp.Result)
 }
 
-func (suite *APITestSuite) ValidToken() {
+func (suite *APITestSuite) TestValidToken() {
 	require := suite.Require()
 
 	token, err := getSampleToken(suite.key)
