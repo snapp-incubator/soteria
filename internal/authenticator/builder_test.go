@@ -6,6 +6,8 @@ import (
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
+	"github.com/snapp-incubator/soteria/pkg/acl"
+	"github.com/snapp-incubator/soteria/pkg/validator"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/zap"
@@ -65,6 +67,53 @@ func TestBuilderInvalidAuthenticator(t *testing.T) {
 
 	_, err := b.Authenticators()
 	require.ErrorIs(err, authenticator.ErrInvalidAuthenticator)
+}
+
+func TestBuilderAutoAuthenticator(t *testing.T) {
+	t.Parallel()
+
+	require := require.New(t)
+
+	b := authenticator.Builder{
+		Tracer: noop.NewTracerProvider().Tracer(""),
+		Vendors: []config.Vendor{
+			{
+				Jwt: config.JWT{
+					IssName:       "",
+					SubName:       "",
+					SigningMethod: "",
+				},
+				Company:            "auto",
+				Type:               "auto",
+				AllowedAccessTypes: []string{"pub"},
+				Topics:             nil,
+				HashIDMap:          nil,
+				IssEntityMap:       nil,
+				IssPeerMap:         nil,
+				Keys:               nil,
+			},
+		},
+		Logger: zap.NewNop(),
+		ValidatorConfig: config.Validator{
+			URL:     "https://httpbin.org",
+			Timeout: 0,
+		},
+	}
+
+	vendors, err := b.Authenticators()
+	require.NoError(err)
+	require.Len(vendors, 1)
+	require.Contains(vendors, "auto")
+
+	a := vendors["auto"]
+	require.Equal("auto", a.GetCompany())
+	require.IsType(new(authenticator.AutoAuthenticator), a)
+	require.True(a.ValidateAccessType(acl.Pub))
+	require.False(a.ValidateAccessType(acl.Sub))
+
+	aa, ok := a.(*authenticator.AutoAuthenticator)
+	require.True(ok)
+	require.Equal(validator.New(b.ValidatorConfig.URL, b.ValidatorConfig.Timeout), aa.Validator)
 }
 
 func TestBuilderInternalAuthenticator(t *testing.T) {
