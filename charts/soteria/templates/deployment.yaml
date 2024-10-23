@@ -67,6 +67,14 @@ spec:
           env:
             - name: TZ
               value: {{ .Values.timezone }}
+            {{ if .Values.tracing.useDaemonset }}
+            - name: SOTERIA_TRACER__ENDPOINT
+              value: $(JAEGER_AGENT_HOST):4317
+            - name: JAEGER_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            {{ end }}
           volumeMounts:
             - name: configuration
               mountPath: "/app/config.yml"

@@ -1,6 +1,9 @@
 ---
 replicaCount: 1
 
+tracing:
+  useDaemonset: false
+
 labels:
   managedby: cloud-platform-team
   createdby: cloud-platform-team
