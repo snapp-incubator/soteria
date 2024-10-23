@@ -160,12 +160,14 @@ func (suite *APITestSuite) TestToken() {
 		username    string
 		action      string
 		isSuperuser bool
+		sendHeader  bool
 	}{
-		{username: "snapp-admin:" + token, action: "allow", isSuperuser: true},
-		{username: token, action: "allow", isSuperuser: true},
-		{username: "not-found:token", action: "deny", isSuperuser: false},
-		{username: "token", action: "deny", isSuperuser: false},
-		{username: "snapp-admin:token", action: "deny", isSuperuser: false},
+		{username: "snapp-admin:" + token, action: "allow", isSuperuser: true, sendHeader: true},
+		{username: token, action: "allow", isSuperuser: true, sendHeader: true},
+		{username: "not-found:token", action: "deny", isSuperuser: false, sendHeader: true},
+		{username: "token", action: "deny", isSuperuser: false, sendHeader: true},
+		{username: "snapp-admin:token", action: "deny", isSuperuser: false, sendHeader: true},
+		{username: "snapp-admin:" + token, action: "deny", isSuperuser: false, sendHeader: false},
 	}
 
 	for _, c := range cases {
@@ -179,7 +181,9 @@ func (suite *APITestSuite) TestToken() {
 			require.NoError(err)
 
 			req := httptest.NewRequest(http.MethodPost, "/v2/auth", bytes.NewReader(body))
-			req.Header.Add("Content-Type", "application/json")
+			if c.sendHeader {
+				req.Header.Add("Content-Type", "application/json")
+			}
 
 			resp, err := suite.app.Test(req)
 			require.NoError(err)
