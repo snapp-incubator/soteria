@@ -67,6 +67,8 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 	span.SetAttributes(
 		attribute.String("access", request.Action),
 		attribute.String("topic", request.Topic),
+		attribute.String("username", request.Username),
+		attribute.String("password", request.Password),
 		attribute.String("authenticator", auth.GetCompany()),
 	)
 
@@ -85,7 +87,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 			span.RecordError(err)
 		}
 
-		a.Metrics.ACLFailed(vendor, err)
+		a.Metrics.ACLFailed(auth.GetCompany(), err)
 
 		var tnaErr authenticator.TopicNotAllowedError
 
@@ -106,7 +108,7 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 
 	logger.
 		Info("acl ok")
-	a.Metrics.ACLSuccess(vendor)
+	a.Metrics.ACLSuccess(auth.GetCompany())
 
 	return c.Status(http.StatusOK).JSON(ACLResponse{
 		Result: "allow",
