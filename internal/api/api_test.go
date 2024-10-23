@@ -136,7 +136,7 @@ func (suite *APITestSuite) SetupSuite() {
 				Parser: jwt.NewParser(),
 			},
 		},
-		DefaultVendor: "snapp",
+		DefaultVendor: "snapp-admin",
 		Tracer:        noop.NewTracerProvider().Tracer(""),
 		Logger:        zap.NewExample(),
 		Metrics:       metric.NewAPIMetrics(),
@@ -189,6 +189,41 @@ func (suite *APITestSuite) TestValidToken() {
 	body, err := json.Marshal(api.AuthRequest{
 		Token:    "",
 		Username: "snapp-admin:" + token,
+		Password: "",
+		ClientID: "",
+	})
+	require.NoError(err)
+
+	req := httptest.NewRequest(http.MethodPost, "/v2/auth", bytes.NewReader(body))
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := suite.app.Test(req)
+	require.NoError(err)
+
+	defer resp.Body.Close()
+
+	require.Equal(http.StatusOK, resp.StatusCode)
+
+	data, err := io.ReadAll(resp.Body)
+	require.NoError(err)
+
+	var authResp api.AuthResponse
+
+	require.NoError(json.Unmarshal(data, &authResp))
+
+	require.Equal("allow", authResp.Result)
+	require.True(authResp.IsSuperuser)
+}
+
+func (suite *APITestSuite) TestValidTokenWithDefaultVendor() {
+	require := suite.Require()
+
+	token, err := getSampleToken(suite.key)
+	require.NoError(err)
+
+	body, err := json.Marshal(api.AuthRequest{
+		Token:    "",
+		Username: token,
 		Password: "",
 		ClientID: "",
 	})
