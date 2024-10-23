@@ -68,7 +68,7 @@ spec:
             - name: TZ
               value: {{ .Values.timezone }}
             {{ if .Values.tracing.useDaemonset }}
-            - name: SOTERIA_TRACER__ENDPOINT
+            - name: soteria_tracer__endpoint
               value: $(JAEGER_AGENT_HOST):4317
             - name: JAEGER_AGENT_HOST
               valueFrom:
