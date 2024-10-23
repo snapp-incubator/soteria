@@ -6,7 +6,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
@@ -42,7 +41,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 			Warn("bad request",
 				zap.Error(err),
 			)
-		authenticator.IncrementWithErrorAuthCounter("unknown_company_before_parse_body", "-", err)
+		a.Metrics.AuthFailed("unknown_company_before_parse_body", "-", err)
 
 		return c.Status(http.StatusOK).JSON(AuthResponse{
 			Result:      "deny",
@@ -74,7 +73,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	if err := auth.Auth(ctx, token); err != nil {
 		span.RecordError(err)
-		authenticator.IncrementWithErrorAuthCounter(vendor, source, err)
+		a.Metrics.AuthFailed(vendor, source, err)
 
 		if !errors.Is(err, jwt.ErrTokenExpired) {
 			logger.
@@ -92,7 +91,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	logger.
 		Info("auth ok")
-	authenticator.IncrementAuthCounter(vendor, source)
+	a.Metrics.AuthSuccess(vendor, source)
 
 	return c.Status(http.StatusOK).JSON(AuthResponse{
 		Result:      "allow",
