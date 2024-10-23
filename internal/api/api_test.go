@@ -150,47 +150,22 @@ func (suite *APITestSuite) SetupSuite() {
 	suite.app = app
 }
 
-func (suite *APITestSuite) TestBadRequest() {
-	require := suite.Require()
-
-	body, err := json.Marshal(api.AuthRequest{
-		Token:    "",
-		Username: "not-found:token",
-		Password: "",
-		ClientID: "",
-	})
-	require.NoError(err)
-
-	req := httptest.NewRequest(http.MethodPost, "/v2/auth", bytes.NewReader(body))
-
-	resp, err := suite.app.Test(req)
-	require.NoError(err)
-
-	defer resp.Body.Close()
-
-	require.Equal(http.StatusOK, resp.StatusCode)
-
-	data, err := io.ReadAll(resp.Body)
-	require.NoError(err)
-
-	var authResp api.AuthResponse
-
-	require.NoError(json.Unmarshal(data, &authResp))
-
-	require.Equal("deny", authResp.Result)
-}
-
-func (suite *APITestSuite) TestValidToken() {
+func (suite *APITestSuite) TestToken() {
 	require := suite.Require()
 
 	token, err := getSampleToken(suite.key)
 	require.NoError(err)
 
 	cases := []struct {
-		username string
+		username    string
+		action      string
+		isSuperuser bool
 	}{
-		{username: "snapp-admin:" + token},
-		{username: token},
+		{username: "snapp-admin:" + token, action: "allow", isSuperuser: true},
+		{username: token, action: "allow", isSuperuser: true},
+		{username: "not-found:token", action: "deny", isSuperuser: false},
+		{username: "token", action: "deny", isSuperuser: false},
+		{username: "snapp-admin:token", action: "deny", isSuperuser: false},
 	}
 
 	for _, c := range cases {
@@ -220,8 +195,8 @@ func (suite *APITestSuite) TestValidToken() {
 
 			require.NoError(json.Unmarshal(data, &authResp))
 
-			require.Equal("allow", authResp.Result)
-			require.True(authResp.IsSuperuser)
+			require.Equal(c.action, authResp.Result)
+			require.Equal(c.isSuperuser, authResp.IsSuperuser)
 		})
 	}
 }
