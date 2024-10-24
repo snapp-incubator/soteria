@@ -38,6 +38,7 @@ func (a AutoAuthenticator) Auth(ctx context.Context, tokenString string) error {
 		"X-APP-Version-Code":        []string{""},
 		"X-APP-Version":             []string{""},
 		"X-APP-Name":                []string{"soteria"},
+		"X-Original-URI":            []string{"/v2/auth"},
 		"locale":                    []string{"en-US"},
 	}
 
