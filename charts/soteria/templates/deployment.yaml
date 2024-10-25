@@ -94,4 +94,4 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              {{- include "soteria.selectorLabels" . | nindent 8 }}
+              {{- include "soteria.selectorLabels" . | nindent 14 }}
