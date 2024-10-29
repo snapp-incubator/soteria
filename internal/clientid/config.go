@@ -1,6 +1,6 @@
 package clientid
 
-import "regexp"
+import regexp "github.com/wasilibs/go-re2"
 
 type Config struct {
 	Patterns map[string]string `json:"patterns,omitempty" koanf:"patterns"`
