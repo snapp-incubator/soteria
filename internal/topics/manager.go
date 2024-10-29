@@ -7,12 +7,12 @@ import (
 	"crypto/md5" //nolint: gosec
 	"encoding/hex"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
 
 	"github.com/speps/go-hashids/v2"
+	regexp "github.com/wasilibs/go-re2"
 	"go.uber.org/zap"
 )
 
