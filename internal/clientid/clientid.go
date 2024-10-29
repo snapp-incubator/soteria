@@ -1,6 +1,6 @@
 package clientid
 
-import "regexp"
+import regexp "github.com/wasilibs/go-re2"
 
 type Parser struct {
 	regexs map[string]*regexp.Regexp
