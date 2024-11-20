@@ -6,6 +6,7 @@ import (
 	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/contrib/fiberzap"
 	"github.com/gofiber/fiber/v2"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/clientid"
 	"github.com/snapp-incubator/soteria/internal/metric"
@@ -41,7 +42,7 @@ func (a API) ReSTServer() *fiber.App {
 		Logger: a.Logger.Named("fiber"),
 	}))
 
-	prometheus := fiberprometheus.NewWith("http", "platform", "soteria")
+	prometheus := fiberprometheus.NewWithRegistry(prometheus.DefaultRegisterer, "http", "platform", "soteria", nil)
 	prometheus.RegisterAt(app, "/metrics")
 	app.Use(prometheus.Middleware)
 
