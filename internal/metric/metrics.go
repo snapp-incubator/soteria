@@ -2,6 +2,7 @@ package metric
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
@@ -21,8 +22,8 @@ func NewAutoAuthenticatorMetrics() *AutoAuthenticatorMetrics {
 		latency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Namespace:                       "platform",
 			Subsystem:                       "soteria",
-			Name:                            "auto_auth_latency",
-			Help:                            "Automatic authentication latency",
+			Name:                            "auto_auth_latency_seconds",
+			Help:                            "Automatic authentication latency in seconds",
 			ConstLabels:                     prometheus.Labels{},
 			Buckets:                         prometheus.DefBuckets,
 			NativeHistogramBucketFactor:     0,
@@ -38,6 +39,11 @@ func NewAutoAuthenticatorMetrics() *AutoAuthenticatorMetrics {
 	m.register()
 
 	return m
+}
+
+// Latency measures latency in seconds.
+func (m *AutoAuthenticatorMetrics) Latency(latency float64, company string, status int) {
+	m.latency.WithLabelValues(company, strconv.Itoa(status)).Observe(latency)
 }
 
 func (m *AutoAuthenticatorMetrics) register() {
