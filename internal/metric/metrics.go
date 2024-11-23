@@ -7,9 +7,41 @@ import (
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 )
 
+type AutoAuthenticatorMetrics struct {
+	latency *prometheus.HistogramVec
+}
+
 type APIMetrics struct {
 	auth *prometheus.CounterVec
 	acl  *prometheus.CounterVec
+}
+
+func NewAutoAuthenticatorMetrics() *AutoAuthenticatorMetrics {
+	m := &AutoAuthenticatorMetrics{
+		latency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+			Namespace:                       "platform",
+			Subsystem:                       "soteria",
+			Name:                            "auto_auth_latency",
+			Help:                            "Automatic authentication latency",
+			ConstLabels:                     prometheus.Labels{},
+			Buckets:                         prometheus.DefBuckets,
+			NativeHistogramBucketFactor:     0,
+			NativeHistogramZeroThreshold:    0,
+			NativeHistogramMaxBucketNumber:  0,
+			NativeHistogramMinResetDuration: 0,
+			NativeHistogramMaxZeroThreshold: 0,
+			NativeHistogramMaxExemplars:     0,
+			NativeHistogramExemplarTTL:      0,
+		}, []string{"company", "status"}),
+	}
+
+	m.register()
+
+	return m
+}
+
+func (m *AutoAuthenticatorMetrics) register() {
+	register(m.latency)
 }
 
 func NewAPIMetrics() *APIMetrics {
