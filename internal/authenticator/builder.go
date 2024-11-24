@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/config"
+	"github.com/snapp-incubator/soteria/internal/metric"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
@@ -138,6 +139,7 @@ func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, er
 	return &AutoAuthenticator{
 		AllowedAccessTypes: allowedAccessTypes,
 		Company:            vendor.Company,
+		metrics:            metric.NewAutoAuthenticatorMetrics(),
 		TopicManager: topics.NewTopicManager(
 			vendor.Topics,
 			hid,
