@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/snapp-incubator/soteria/internal/authenticator"
+	serror "github.com/snapp-incubator/soteria/internal/error"
 )
 
 type AutoAuthenticatorMetrics struct {
@@ -86,28 +86,28 @@ func (m *APIMetrics) AuthSuccess(company, source string) {
 func (m *APIMetrics) AuthFailed(company, source string, err error) {
 	var (
 		status                     string
-		topicNotAllowedErrorTarget *authenticator.TopicNotAllowedError
-		keyNotFoundErrorTarget     *authenticator.KeyNotFoundError
+		topicNotAllowedErrorTarget *serror.TopicNotAllowedError
+		keyNotFoundErrorTarget     *serror.KeyNotFoundError
 	)
 
 	switch {
-	case errors.Is(err, authenticator.ErrInvalidSigningMethod):
+	case errors.Is(err, serror.ErrInvalidSigningMethod):
 		status = "err_invalid_signing_method"
-	case errors.Is(err, authenticator.ErrIssNotFound):
+	case errors.Is(err, serror.ErrIssNotFound):
 		status = "err_iss_not_found"
-	case errors.Is(err, authenticator.ErrSubNotFound):
+	case errors.Is(err, serror.ErrSubNotFound):
 		status = "err_sub_not_found"
-	case errors.Is(err, authenticator.ErrInvalidClaims):
+	case errors.Is(err, serror.ErrInvalidClaims):
 		status = "err_invalid_claims"
-	case errors.Is(err, authenticator.ErrInvalidIP):
+	case errors.Is(err, serror.ErrInvalidIP):
 		status = "err_invalid_ip"
-	case errors.Is(err, authenticator.ErrInvalidAccessType):
+	case errors.Is(err, serror.ErrInvalidAccessType):
 		status = "err_invalid_access_type"
-	case errors.Is(err, authenticator.ErrDecodeHashID):
+	case errors.Is(err, serror.ErrDecodeHashID):
 		status = "err_decode_hash_id"
-	case errors.Is(err, authenticator.ErrInvalidSecret):
+	case errors.Is(err, serror.ErrInvalidSecret):
 		status = "err_invalid_secret"
-	case errors.Is(err, authenticator.ErrIncorrectPassword):
+	case errors.Is(err, serror.ErrIncorrectPassword):
 		status = "err_incorrect_password"
 	case errors.As(err, &topicNotAllowedErrorTarget):
 		status = "topic_not_allowed_error"
@@ -128,28 +128,28 @@ func (m *APIMetrics) ACLSuccess(company string) {
 func (m *APIMetrics) ACLFailed(company string, err error) {
 	var (
 		status                     string
-		topicNotAllowedErrorTarget *authenticator.TopicNotAllowedError
-		keyNotFoundErrorTarget     *authenticator.KeyNotFoundError
+		topicNotAllowedErrorTarget *serror.TopicNotAllowedError
+		keyNotFoundErrorTarget     *serror.KeyNotFoundError
 	)
 
 	switch {
-	case errors.Is(err, authenticator.ErrInvalidSigningMethod):
+	case errors.Is(err, serror.ErrInvalidSigningMethod):
 		status = "err_invalid_signing_method"
-	case errors.Is(err, authenticator.ErrIssNotFound):
+	case errors.Is(err, serror.ErrIssNotFound):
 		status = "err_iss_not_found"
-	case errors.Is(err, authenticator.ErrSubNotFound):
+	case errors.Is(err, serror.ErrSubNotFound):
 		status = "err_sub_not_found"
-	case errors.Is(err, authenticator.ErrInvalidClaims):
+	case errors.Is(err, serror.ErrInvalidClaims):
 		status = "err_invalid_claims"
-	case errors.Is(err, authenticator.ErrInvalidIP):
+	case errors.Is(err, serror.ErrInvalidIP):
 		status = "err_invalid_ip"
-	case errors.Is(err, authenticator.ErrInvalidAccessType):
+	case errors.Is(err, serror.ErrInvalidAccessType):
 		status = "err_invalid_access_type"
-	case errors.Is(err, authenticator.ErrDecodeHashID):
+	case errors.Is(err, serror.ErrDecodeHashID):
 		status = "err_decode_hash_id"
-	case errors.Is(err, authenticator.ErrInvalidSecret):
+	case errors.Is(err, serror.ErrInvalidSecret):
 		status = "err_invalid_secret"
-	case errors.Is(err, authenticator.ErrIncorrectPassword):
+	case errors.Is(err, serror.ErrIncorrectPassword):
 		status = "err_incorrect_password"
 	case errors.As(err, &topicNotAllowedErrorTarget):
 		status = "topic_not_allowed_error"
