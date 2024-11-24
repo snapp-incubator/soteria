@@ -2,10 +2,9 @@ package metric
 
 import (
 	"errors"
-	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
-	serror "github.com/snapp-incubator/soteria/internal/error"
+	serrors "github.com/snapp-incubator/soteria/internal/errors"
 )
 
 type AutoAuthenticatorMetrics struct {
@@ -42,8 +41,13 @@ func NewAutoAuthenticatorMetrics() *AutoAuthenticatorMetrics {
 }
 
 // Latency measures latency in seconds.
-func (m *AutoAuthenticatorMetrics) Latency(latency float64, company string, status int) {
-	m.latency.WithLabelValues(company, strconv.Itoa(status)).Observe(latency)
+func (m *AutoAuthenticatorMetrics) Latency(latency float64, company string, err error) {
+	message := ""
+	if err != nil {
+		message = err.Error()
+	}
+
+	m.latency.WithLabelValues(company, message).Observe(latency)
 }
 
 func (m *AutoAuthenticatorMetrics) register() {
@@ -86,28 +90,28 @@ func (m *APIMetrics) AuthSuccess(company, source string) {
 func (m *APIMetrics) AuthFailed(company, source string, err error) {
 	var (
 		status                     string
-		topicNotAllowedErrorTarget *serror.TopicNotAllowedError
-		keyNotFoundErrorTarget     *serror.KeyNotFoundError
+		topicNotAllowedErrorTarget *serrors.TopicNotAllowedError
+		keyNotFoundErrorTarget     *serrors.KeyNotFoundError
 	)
 
 	switch {
-	case errors.Is(err, serror.ErrInvalidSigningMethod):
+	case errors.Is(err, serrors.ErrInvalidSigningMethod):
 		status = "err_invalid_signing_method"
-	case errors.Is(err, serror.ErrIssNotFound):
+	case errors.Is(err, serrors.ErrIssNotFound):
 		status = "err_iss_not_found"
-	case errors.Is(err, serror.ErrSubNotFound):
+	case errors.Is(err, serrors.ErrSubNotFound):
 		status = "err_sub_not_found"
-	case errors.Is(err, serror.ErrInvalidClaims):
+	case errors.Is(err, serrors.ErrInvalidClaims):
 		status = "err_invalid_claims"
-	case errors.Is(err, serror.ErrInvalidIP):
+	case errors.Is(err, serrors.ErrInvalidIP):
 		status = "err_invalid_ip"
-	case errors.Is(err, serror.ErrInvalidAccessType):
+	case errors.Is(err, serrors.ErrInvalidAccessType):
 		status = "err_invalid_access_type"
-	case errors.Is(err, serror.ErrDecodeHashID):
+	case errors.Is(err, serrors.ErrDecodeHashID):
 		status = "err_decode_hash_id"
-	case errors.Is(err, serror.ErrInvalidSecret):
+	case errors.Is(err, serrors.ErrInvalidSecret):
 		status = "err_invalid_secret"
-	case errors.Is(err, serror.ErrIncorrectPassword):
+	case errors.Is(err, serrors.ErrIncorrectPassword):
 		status = "err_incorrect_password"
 	case errors.As(err, &topicNotAllowedErrorTarget):
 		status = "topic_not_allowed_error"
@@ -128,28 +132,28 @@ func (m *APIMetrics) ACLSuccess(company string) {
 func (m *APIMetrics) ACLFailed(company string, err error) {
 	var (
 		status                     string
-		topicNotAllowedErrorTarget *serror.TopicNotAllowedError
-		keyNotFoundErrorTarget     *serror.KeyNotFoundError
+		topicNotAllowedErrorTarget *serrors.TopicNotAllowedError
+		keyNotFoundErrorTarget     *serrors.KeyNotFoundError
 	)
 
 	switch {
-	case errors.Is(err, serror.ErrInvalidSigningMethod):
+	case errors.Is(err, serrors.ErrInvalidSigningMethod):
 		status = "err_invalid_signing_method"
-	case errors.Is(err, serror.ErrIssNotFound):
+	case errors.Is(err, serrors.ErrIssNotFound):
 		status = "err_iss_not_found"
-	case errors.Is(err, serror.ErrSubNotFound):
+	case errors.Is(err, serrors.ErrSubNotFound):
 		status = "err_sub_not_found"
-	case errors.Is(err, serror.ErrInvalidClaims):
+	case errors.Is(err, serrors.ErrInvalidClaims):
 		status = "err_invalid_claims"
-	case errors.Is(err, serror.ErrInvalidIP):
+	case errors.Is(err, serrors.ErrInvalidIP):
 		status = "err_invalid_ip"
-	case errors.Is(err, serror.ErrInvalidAccessType):
+	case errors.Is(err, serrors.ErrInvalidAccessType):
 		status = "err_invalid_access_type"
-	case errors.Is(err, serror.ErrDecodeHashID):
+	case errors.Is(err, serrors.ErrDecodeHashID):
 		status = "err_decode_hash_id"
-	case errors.Is(err, serror.ErrInvalidSecret):
+	case errors.Is(err, serrors.ErrInvalidSecret):
 		status = "err_invalid_secret"
-	case errors.Is(err, serror.ErrIncorrectPassword):
+	case errors.Is(err, serrors.ErrIncorrectPassword):
 		status = "err_incorrect_password"
 	case errors.As(err, &topicNotAllowedErrorTarget):
 		status = "topic_not_allowed_error"

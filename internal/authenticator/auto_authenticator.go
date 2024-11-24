@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/config"
+	"github.com/snapp-incubator/soteria/internal/metric"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
@@ -24,6 +26,7 @@ type AutoAuthenticator struct {
 	Validator          validator.Client
 	Parser             *jwt.Parser
 	Tracer             trace.Tracer
+	metrics            *metric.AutoAuthenticatorMetrics
 }
 
 // Auth check user authentication by checking the user's token
@@ -44,9 +47,15 @@ func (a AutoAuthenticator) Auth(ctx context.Context, tokenString string) error {
 
 	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(headers))
 
+	start := time.Now()
+
 	if _, err := a.Validator.Validate(ctx, headers, "bearer "+tokenString); err != nil {
+		a.metrics.Latency(time.Since(start).Seconds(), a.Company, err)
+
 		return fmt.Errorf("token is invalid: %w", err)
 	}
+
+	a.metrics.Latency(time.Since(start).Seconds(), a.Company, nil)
 
 	return nil
 }
@@ -88,11 +97,11 @@ func (a AutoAuthenticator) ACL(
 
 	if !topicTemplate.HasAccess(issuer, accessType) {
 		return false, TopicNotAllowedError{
-			issuer,
-			sub,
-			accessType,
-			topic,
-			topicTemplate.Type,
+			Issuer:     issuer,
+			Sub:        sub,
+			AccessType: accessType,
+			Topic:      topic,
+			TopicType:  topicTemplate.Type,
 		}
 	}
 

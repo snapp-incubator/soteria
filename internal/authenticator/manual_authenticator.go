@@ -114,11 +114,11 @@ func (a ManualAuthenticator) ACL(
 
 	if !topicTemplate.HasAccess(issuer, accessType) {
 		return false, TopicNotAllowedError{
-			issuer,
-			sub,
-			accessType,
-			topic,
-			topicTemplate.Type,
+			Issuer:     issuer,
+			Sub:        sub,
+			AccessType: accessType,
+			Topic:      topic,
+			TopicType:  topicTemplate.Type,
 		}
 	}
 

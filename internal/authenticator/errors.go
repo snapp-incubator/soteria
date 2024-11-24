@@ -1,21 +1,21 @@
 package authenticator
 
-import "github.com/snapp-incubator/soteria/internal/error"
+import "github.com/snapp-incubator/soteria/internal/errors"
 
 var (
-	ErrInvalidSigningMethod = error.ErrInvalidSigningMethod
-	ErrIssNotFound          = error.ErrIssNotFound
-	ErrSubNotFound          = error.ErrSubNotFound
-	ErrInvalidClaims        = error.ErrInvalidClaims
-	ErrInvalidIP            = error.ErrInvalidIP
-	ErrInvalidAccessType    = error.ErrInvalidAccessType
-	ErrDecodeHashID         = error.ErrDecodeHashID
-	ErrInvalidSecret        = error.ErrInvalidSecret
-	ErrIncorrectPassword    = error.ErrIncorrectPassword
+	ErrInvalidSigningMethod = errors.ErrInvalidSigningMethod
+	ErrIssNotFound          = errors.ErrIssNotFound
+	ErrSubNotFound          = errors.ErrSubNotFound
+	ErrInvalidClaims        = errors.ErrInvalidClaims
+	ErrInvalidIP            = errors.ErrInvalidIP
+	ErrInvalidAccessType    = errors.ErrInvalidAccessType
+	ErrDecodeHashID         = errors.ErrDecodeHashID
+	ErrInvalidSecret        = errors.ErrInvalidSecret
+	ErrIncorrectPassword    = errors.ErrIncorrectPassword
 )
 
-type TopicNotAllowedError = error.TopicNotAllowedError
+type TopicNotAllowedError = errors.TopicNotAllowedError
 
-type KeyNotFoundError = error.KeyNotFoundError
+type KeyNotFoundError = errors.KeyNotFoundError
 
-type InvalidTopicError = error.InvalidTopicError
+type InvalidTopicError = errors.InvalidTopicError
