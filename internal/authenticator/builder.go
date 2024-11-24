@@ -139,7 +139,7 @@ func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, er
 	return &AutoAuthenticator{
 		AllowedAccessTypes: allowedAccessTypes,
 		Company:            vendor.Company,
-		metrics:            metric.NewAutoAuthenticatorMetrics(),
+		Metrics:            metric.NewAutoAuthenticatorMetrics(),
 		TopicManager: topics.NewTopicManager(
 			vendor.Topics,
 			hid,
