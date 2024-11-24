@@ -26,7 +26,7 @@ type AutoAuthenticator struct {
 	Validator          validator.Client
 	Parser             *jwt.Parser
 	Tracer             trace.Tracer
-	metrics            *metric.AutoAuthenticatorMetrics
+	Metrics            *metric.AutoAuthenticatorMetrics
 }
 
 // Auth check user authentication by checking the user's token
@@ -50,12 +50,12 @@ func (a AutoAuthenticator) Auth(ctx context.Context, tokenString string) error {
 	start := time.Now()
 
 	if _, err := a.Validator.Validate(ctx, headers, "bearer "+tokenString); err != nil {
-		a.metrics.Latency(time.Since(start).Seconds(), a.Company, err)
+		a.Metrics.Latency(time.Since(start).Seconds(), a.Company, err)
 
 		return fmt.Errorf("token is invalid: %w", err)
 	}
 
-	a.metrics.Latency(time.Since(start).Seconds(), a.Company, nil)
+	a.Metrics.Latency(time.Since(start).Seconds(), a.Company, nil)
 
 	return nil
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/config"
+	"github.com/snapp-incubator/soteria/internal/metric"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
 	"github.com/snapp-incubator/soteria/pkg/validator"
@@ -95,6 +96,7 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 		Tracer:             noop.NewTracerProvider().Tracer(""),
 		Company:            "snapp",
 		Parser:             jwt.NewParser(),
+		Metrics:            metric.NewAutoAuthenticatorMetrics(),
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
 		JWTConfig: config.JWT{
 			IssName:       "iss",
