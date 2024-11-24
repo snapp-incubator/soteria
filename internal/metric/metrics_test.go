@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/snapp-incubator/soteria/internal/authenticator"
+	serror "github.com/snapp-incubator/soteria/internal/error"
 	"github.com/snapp-incubator/soteria/internal/metric"
 )
 
@@ -14,44 +14,44 @@ func TestAuthIncrement(t *testing.T) {
 	m := metric.NewAPIMetrics()
 
 	m.AuthSuccess("snapp", "-")
-	m.AuthFailed("snapp", "-", authenticator.ErrInvalidSigningMethod)
-	m.AuthFailed("snapp", "-", authenticator.ErrIssNotFound)
-	m.AuthFailed("snapp", "-", authenticator.ErrSubNotFound)
-	m.AuthFailed("snapp", "-", authenticator.ErrInvalidClaims)
-	m.AuthFailed("snapp", "-", authenticator.ErrInvalidIP)
+	m.AuthFailed("snapp", "-", serror.ErrInvalidSigningMethod)
+	m.AuthFailed("snapp", "-", serror.ErrIssNotFound)
+	m.AuthFailed("snapp", "-", serror.ErrSubNotFound)
+	m.AuthFailed("snapp", "-", serror.ErrInvalidClaims)
+	m.AuthFailed("snapp", "-", serror.ErrInvalidIP)
 
-	m.AuthFailed("snapp", "-", authenticator.ErrInvalidAccessType)
-	m.AuthFailed("snapp", "-", authenticator.ErrDecodeHashID)
-	m.AuthFailed("snapp", "-", authenticator.ErrInvalidSecret)
-	m.AuthFailed("snapp", "-", authenticator.ErrIncorrectPassword)
-	m.AuthFailed("snapp", "-", &authenticator.TopicNotAllowedError{
+	m.AuthFailed("snapp", "-", serror.ErrInvalidAccessType)
+	m.AuthFailed("snapp", "-", serror.ErrDecodeHashID)
+	m.AuthFailed("snapp", "-", serror.ErrInvalidSecret)
+	m.AuthFailed("snapp", "-", serror.ErrIncorrectPassword)
+	m.AuthFailed("snapp", "-", &serror.TopicNotAllowedError{
 		Issuer:     "issuer",
 		Sub:        "subject",
 		AccessType: "1",
 		Topic:      "topic",
 		TopicType:  "pub",
 	})
-	m.AuthFailed("snapp", "-", &authenticator.KeyNotFoundError{Issuer: "iss"})
+	m.AuthFailed("snapp", "-", &serror.KeyNotFoundError{Issuer: "iss"})
 	m.AuthFailed("snapp", "-", errors.ErrUnsupported)
 
 	m.ACLSuccess("snapp")
-	m.ACLFailed("snapp", authenticator.ErrInvalidSigningMethod)
-	m.ACLFailed("snapp", authenticator.ErrIssNotFound)
-	m.ACLFailed("snapp", authenticator.ErrSubNotFound)
-	m.ACLFailed("snapp", authenticator.ErrInvalidClaims)
-	m.ACLFailed("snapp", authenticator.ErrInvalidIP)
+	m.ACLFailed("snapp", serror.ErrInvalidSigningMethod)
+	m.ACLFailed("snapp", serror.ErrIssNotFound)
+	m.ACLFailed("snapp", serror.ErrSubNotFound)
+	m.ACLFailed("snapp", serror.ErrInvalidClaims)
+	m.ACLFailed("snapp", serror.ErrInvalidIP)
 
-	m.ACLFailed("snapp", authenticator.ErrInvalidAccessType)
-	m.ACLFailed("snapp", authenticator.ErrDecodeHashID)
-	m.ACLFailed("snapp", authenticator.ErrInvalidSecret)
-	m.ACLFailed("snapp", authenticator.ErrIncorrectPassword)
-	m.ACLFailed("snapp", &authenticator.TopicNotAllowedError{
+	m.ACLFailed("snapp", serror.ErrInvalidAccessType)
+	m.ACLFailed("snapp", serror.ErrDecodeHashID)
+	m.ACLFailed("snapp", serror.ErrInvalidSecret)
+	m.ACLFailed("snapp", serror.ErrIncorrectPassword)
+	m.ACLFailed("snapp", &serror.TopicNotAllowedError{
 		Issuer:     "issuer",
 		Sub:        "subject",
 		AccessType: "1",
 		Topic:      "topic",
 		TopicType:  "pub",
 	})
-	m.ACLFailed("snapp", &authenticator.KeyNotFoundError{Issuer: "iss"})
+	m.ACLFailed("snapp", &serror.KeyNotFoundError{Issuer: "iss"})
 	m.ACLFailed("snapp", errors.ErrUnsupported)
 }
