@@ -69,7 +69,9 @@ func NewTopicManager(
 		Company:        company,
 		IssEntityMap:   issEntityMap,
 		IssPeerMap:     issPeerMap,
-		Logger:         logger,
+		Logger: logger.With(
+			zap.String("company", company),
+		),
 	}
 
 	manager.Functions = template.FuncMap{
@@ -121,7 +123,6 @@ func (t *Manager) ParseTopic(topic, iss, sub string, claims map[string]any) *Tem
 			zap.String("topic", regex.String()),
 			zap.String("iss", iss),
 			zap.String("sub", sub),
-			zap.String("company", t.Company),
 		)
 
 		if regexp.MustCompile(regex.String()).MatchString(topic) {
