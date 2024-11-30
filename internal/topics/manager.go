@@ -14,6 +14,8 @@ import (
 	"github.com/speps/go-hashids/v2"
 	regexp "github.com/wasilibs/go-re2"
 	"go.uber.org/zap"
+
+	jwtstrconv "github.com/snapp-incubator/soteria/pkg/strconv"
 )
 
 const (
@@ -103,7 +105,7 @@ func (t *Manager) ParseTopic(topic, iss, sub string, claims map[string]any) *Tem
 	fields := make(map[string]string)
 
 	for k, v := range claims {
-		fields[k] = fmt.Sprintf("%v", v)
+		fields[k] = jwtstrconv.ToString(v)
 	}
 
 	fields["iss"] = iss
