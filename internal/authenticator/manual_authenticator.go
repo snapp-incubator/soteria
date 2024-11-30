@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/hashicorp/hcl/hcl/strconv"
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
@@ -99,13 +100,13 @@ func (a ManualAuthenticator) ACL(
 		return false, ErrIssNotFound
 	}
 
-	issuer := fmt.Sprintf("%v", claims[a.JWTConfig.IssName])
+	issuer := strconv.ToString(claims[a.JWTConfig.IssName])
 
 	if claims[a.JWTConfig.SubName] == nil {
 		return false, ErrSubNotFound
 	}
 
-	sub := fmt.Sprintf("%v", claims[a.JWTConfig.SubName])
+	sub := strconv.ToString(claims[a.JWTConfig.SubName])
 
 	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub, map[string]any(claims))
 	if topicTemplate == nil {
