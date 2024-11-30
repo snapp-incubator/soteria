@@ -11,11 +11,10 @@ import (
 	"strings"
 	"text/template"
 
+	jwtstrconv "github.com/snapp-incubator/soteria/pkg/strconv"
 	"github.com/speps/go-hashids/v2"
 	regexp "github.com/wasilibs/go-re2"
 	"go.uber.org/zap"
-
-	jwtstrconv "github.com/snapp-incubator/soteria/pkg/strconv"
 )
 
 const (
