@@ -11,6 +11,7 @@ import (
 	"github.com/snapp-incubator/soteria/internal/metric"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
+	"github.com/snapp-incubator/soteria/pkg/strconv"
 	"github.com/snapp-incubator/soteria/pkg/validator"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
@@ -82,13 +83,13 @@ func (a AutoAuthenticator) ACL(
 		return false, ErrIssNotFound
 	}
 
-	issuer := fmt.Sprintf("%v", claims[a.JWTConfig.IssName])
+	issuer := strconv.ToString(claims[a.JWTConfig.IssName])
 
 	if claims[a.JWTConfig.SubName] == nil {
 		return false, ErrSubNotFound
 	}
 
-	sub := fmt.Sprintf("%v", claims[a.JWTConfig.SubName])
+	sub := strconv.ToString(claims[a.JWTConfig.SubName])
 
 	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub, map[string]any(claims))
 	if topicTemplate == nil {

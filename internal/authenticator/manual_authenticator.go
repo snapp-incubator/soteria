@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/hashicorp/hcl/hcl/strconv"
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/pkg/acl"
+	"github.com/snapp-incubator/soteria/pkg/strconv"
 )
 
 // ManualAuthenticator is responsible for Acl/Auth/Token of users without calling
