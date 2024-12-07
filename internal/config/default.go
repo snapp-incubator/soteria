@@ -5,6 +5,7 @@ import (
 
 	"github.com/snapp-incubator/soteria/internal/clientid"
 	"github.com/snapp-incubator/soteria/internal/logger"
+	"github.com/snapp-incubator/soteria/internal/profiler"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/internal/tracing"
 	"github.com/snapp-incubator/soteria/pkg/acl"
@@ -40,6 +41,10 @@ func Default() Config {
 		Validator: Validator{
 			URL:     "http://validator-lb",
 			Timeout: 5 * time.Second,
+		},
+		Profiler: profiler.Config{
+			Enabled: false,
+			URL:     "",
 		},
 	}
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/knadh/koanf/v2"
 	"github.com/snapp-incubator/soteria/internal/clientid"
 	"github.com/snapp-incubator/soteria/internal/logger"
+	"github.com/snapp-incubator/soteria/internal/profiler"
 	"github.com/snapp-incubator/soteria/internal/topics"
 	"github.com/snapp-incubator/soteria/internal/tracing"
 	"github.com/tidwall/pretty"
@@ -33,6 +34,7 @@ type (
 		DefaultVendor string          `json:"default_vendor,omitempty" koanf:"default_vendor"`
 		Validator     Validator       `json:"validator,omitempty"      koanf:"validator"`
 		Parser        clientid.Config `json:"parser,omitempty"         koanf:"parser"`
+		Profiler      profiler.Config `json:"profiler,omitempty"       koanf:"profiler"`
 	}
 
 	Vendor struct {
