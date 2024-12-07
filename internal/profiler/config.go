@@ -1,6 +1,6 @@
 package profiler
 
 type Config struct {
-	Enabled bool
-	URL     string
+	Enabled bool   `json:"enabled,omitempty" koanf:"enabled"`
+	URL     string `json:"url,omitempty"     koanf:"url"`
 }
