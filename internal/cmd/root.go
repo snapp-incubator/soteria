@@ -6,6 +6,7 @@ import (
 	"github.com/snapp-incubator/soteria/internal/cmd/serve"
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/logger"
+	"github.com/snapp-incubator/soteria/internal/profiler"
 	"github.com/snapp-incubator/soteria/internal/tracing"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -22,6 +23,8 @@ func Execute() {
 	logger := logger.New(cfg.Logger).Named("root")
 
 	tracer := tracing.New(cfg.Tracer, logger.Named("tracer"))
+
+	profiler.Start(cfg.Profiler)
 
 	//nolint: exhaustruct
 	root := &cobra.Command{
