@@ -50,7 +50,7 @@ func (a AutoAuthenticator) Auth(ctx context.Context, tokenString string) error {
 
 	start := time.Now()
 
-	if _, err := a.Validator.Validate(ctx, headers, "bearer "+tokenString); err != nil {
+	if err := a.Validator.Validate(ctx, headers, "bearer "+tokenString); err != nil {
 		a.Metrics.Latency(time.Since(start).Seconds(), a.Company, err)
 
 		return fmt.Errorf("token is invalid: %w", err)

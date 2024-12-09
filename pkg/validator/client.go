@@ -2,7 +2,6 @@ package validator
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -34,17 +33,6 @@ type Client struct {
 	isOptional bool
 }
 
-type Payload struct {
-	IAT    int    `json:"iat"`
-	Aud    string `json:"aud"`
-	Iss    int    `json:"iss"`
-	Sub    string `json:"sub"`
-	UserID int    `json:"user_id"`
-	Email  string `json:"email"`
-	Exp    int    `json:"exp"`
-	Locale string `json:"locale"`
-}
-
 // New creates a new Client with default attributes.
 func New(url string, timeout time.Duration) Client {
 	return Client{
@@ -74,14 +62,14 @@ func (c *Client) WithOptionalValidate() {
 // Consider that the bearerToken must contain Bearer keyword and JWT.
 // For `X-Service-Name` you should put your project/service name in this header.
 // nolint: funlen, cyclop
-func (c *Client) Validate(parentCtx context.Context, headers http.Header, bearerToken string) (*Payload, error) {
+func (c *Client) Validate(parentCtx context.Context, headers http.Header, bearerToken string) error {
 	if headers.Get(ServiceNameHeader) == "" {
-		return nil, ErrEmptyServiceName
+		return ErrEmptyServiceName
 	}
 
 	segments := strings.Split(bearerToken, " ")
 	if len(segments) < 2 || strings.ToLower(segments[0]) != "bearer" {
-		return nil, ErrInvalidJWT
+		return ErrInvalidJWT
 	}
 
 	ctx, cancel := context.WithTimeout(parentCtx, c.timeout)
@@ -91,7 +79,7 @@ func (c *Client) Validate(parentCtx context.Context, headers http.Header, bearer
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("validator creating request failed %w", err)
+		return fmt.Errorf("validator creating request failed %w", err)
 	}
 
 	request.Header = headers
@@ -106,60 +94,21 @@ func (c *Client) Validate(parentCtx context.Context, headers http.Header, bearer
 
 	response, err := c.client.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("validator sending request failed %w", err)
+		return fmt.Errorf("validator sending request failed %w", err)
 	}
 
 	closeBody(response)
 
 	if response.StatusCode != http.StatusOK {
-		return nil, ErrRequestFailed
+		return ErrRequestFailed
 	}
 
 	userDataHeader := response.Header.Get(userDataHeader)
 	if userDataHeader == "" {
-		return nil, ErrInvalidJWT
+		return ErrInvalidJWT
 	}
 
-	userData := map[string]interface{}{}
-
-	if err := json.Unmarshal([]byte(userDataHeader), &userData); err != nil {
-		return nil, fmt.Errorf("X-User-Data header unmarshal failed: %w", err)
-	}
-
-	payload := new(Payload)
-	if iat, ok := userData["iat"].(float64); ok {
-		payload.IAT = int(iat)
-	}
-
-	if aud, ok := userData["aud"].(string); ok {
-		payload.Aud = aud
-	}
-
-	if iss, ok := userData["iss"].(float64); ok {
-		payload.Iss = int(iss)
-	}
-
-	if sub, ok := userData["sub"].(string); ok {
-		payload.Sub = sub
-	}
-
-	if userID, ok := userData["user_id"].(float64); ok {
-		payload.UserID = int(userID)
-	}
-
-	if email, ok := userData["email"].(string); ok {
-		payload.Email = email
-	}
-
-	if exp, ok := userData["exp"].(float64); ok {
-		payload.Exp = int(exp)
-	}
-
-	if locale, ok := userData["locale"].(string); ok {
-		payload.Locale = locale
-	}
-
-	return payload, nil
+	return nil
 }
 
 // closeBody to avoid memory leak when reusing http connection.
