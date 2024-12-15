@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -114,7 +113,6 @@ func (c *Client) Validate(parentCtx context.Context, headers http.Header, bearer
 // closeBody to avoid memory leak when reusing http connection.
 func closeBody(response *http.Response) {
 	if response != nil {
-		_, _ = io.Copy(io.Discard, response.Body)
 		_ = response.Body.Close()
 	}
 }
