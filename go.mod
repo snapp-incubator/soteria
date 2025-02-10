@@ -3,7 +3,7 @@ module github.com/snapp-incubator/soteria
 go 1.23
 
 require (
-	github.com/ansrivas/fiberprometheus/v2 v2.7.0
+	github.com/ansrivas/fiberprometheus/v2 v2.8.0
 	github.com/gofiber/contrib/fiberzap v1.0.2
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/golang-jwt/jwt/v5 v5.2.1
