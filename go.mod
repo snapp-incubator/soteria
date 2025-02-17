@@ -1,6 +1,6 @@
 module github.com/snapp-incubator/soteria
 
-go 1.23
+go 1.24
 
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.8.0
