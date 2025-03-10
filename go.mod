@@ -10,7 +10,7 @@ require (
 	github.com/grafana/pyroscope-go v1.2.0
 	github.com/knadh/koanf v1.5.0
 	github.com/knadh/koanf/v2 v2.1.2
-	github.com/prometheus/client_golang v1.21.0
+	github.com/prometheus/client_golang v1.21.1
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
@@ -55,7 +55,6 @@ require (
 	github.com/tetratelabs/wazero v1.9.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.59.0 // indirect
-	github.com/valyala/tcplisten v1.0.0 // indirect
 	github.com/wasilibs/wazero-helpers v0.0.0-20250123031827-cd30c44769bb // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.34.0 // indirect
