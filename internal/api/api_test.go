@@ -188,7 +188,9 @@ func (suite *APITestSuite) TestToken() {
 			resp, err := suite.app.Test(req)
 			require.NoError(err)
 
-			defer resp.Body.Close()
+			defer func() {
+				_ = resp.Body.Close()
+			}()
 
 			require.Equal(http.StatusOK, resp.StatusCode)
 

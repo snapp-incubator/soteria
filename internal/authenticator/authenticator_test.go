@@ -70,7 +70,7 @@ func getPublicKey(u string) (*rsa.PublicKey, error) {
 		return nil, ErrPublicKeyNotFound
 	}
 
-	pem, err := os.ReadFile(fileName)
+	pem, err := os.ReadFile(fileName) // nolint: gosec
 	if err != nil {
 		return nil, fmt.Errorf("reading public key failed %w", err)
 	}
@@ -97,7 +97,7 @@ func getPrivateKey(u string) (*rsa.PrivateKey, error) {
 		return nil, ErrPrivateKeyNotFound
 	}
 
-	pem, err := os.ReadFile(fileName)
+	pem, err := os.ReadFile(fileName) // nolint: gosec
 	if err != nil {
 		return nil, fmt.Errorf("reading private key failed %w", err)
 	}
