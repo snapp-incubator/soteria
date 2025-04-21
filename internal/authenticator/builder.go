@@ -68,6 +68,48 @@ func (b Builder) Authenticators() (map[string]Authenticator, error) {
 	return all, nil
 }
 
+// GetAllowedAccessTypes will return all allowed access types in Soteria.
+func (b Builder) GetAllowedAccessTypes(accessTypes []string) ([]acl.AccessType, error) {
+	allowedAccessTypes := make([]acl.AccessType, 0, len(accessTypes))
+
+	for _, a := range accessTypes {
+		at, err := toUserAccessType(a)
+		if err != nil {
+			return nil, fmt.Errorf("could not convert %s: %w", at, err)
+		}
+
+		allowedAccessTypes = append(allowedAccessTypes, at)
+	}
+
+	return allowedAccessTypes, nil
+}
+
+// toUserAccessType will convert string access type to it's own type.
+func toUserAccessType(access string) (acl.AccessType, error) {
+	switch access {
+	case "pub", "publish":
+		return acl.Pub, nil
+	case "sub", "subscribe":
+		return acl.Sub, nil
+	case "pubsub", "subpub":
+		return acl.PubSub, nil
+	}
+
+	return "", ErrInvalidAccessType
+}
+
+func (b Builder) ValidateMappers(issEntityMap, issPeerMap map[string]string) error {
+	if _, ok := issEntityMap[topics.Default]; !ok {
+		return ErrNoDefaultCaseIssEntity
+	}
+
+	if _, ok := issPeerMap[topics.Default]; !ok {
+		return ErrNoDefaultCaseIssPeer
+	}
+
+	return nil
+}
+
 func (b Builder) adminAuthenticator(vendor config.Vendor) (*AdminAuthenticator, error) {
 	if _, ok := vendor.Keys["system"]; !ok || len(vendor.Keys) != 1 {
 		return nil, ErrAdminAuthenticatorSystemKey
@@ -153,46 +195,4 @@ func (b Builder) autoAuthenticator(vendor config.Vendor) (*AutoAuthenticator, er
 		Validator: client,
 		Parser:    jwt.NewParser(),
 	}, nil
-}
-
-// GetAllowedAccessTypes will return all allowed access types in Soteria.
-func (b Builder) GetAllowedAccessTypes(accessTypes []string) ([]acl.AccessType, error) {
-	allowedAccessTypes := make([]acl.AccessType, 0, len(accessTypes))
-
-	for _, a := range accessTypes {
-		at, err := toUserAccessType(a)
-		if err != nil {
-			return nil, fmt.Errorf("could not convert %s: %w", at, err)
-		}
-
-		allowedAccessTypes = append(allowedAccessTypes, at)
-	}
-
-	return allowedAccessTypes, nil
-}
-
-// toUserAccessType will convert string access type to it's own type.
-func toUserAccessType(access string) (acl.AccessType, error) {
-	switch access {
-	case "pub", "publish":
-		return acl.Pub, nil
-	case "sub", "subscribe":
-		return acl.Sub, nil
-	case "pubsub", "subpub":
-		return acl.PubSub, nil
-	}
-
-	return "", ErrInvalidAccessType
-}
-
-func (b Builder) ValidateMappers(issEntityMap, issPeerMap map[string]string) error {
-	if _, ok := issEntityMap[topics.Default]; !ok {
-		return ErrNoDefaultCaseIssEntity
-	}
-
-	if _, ok := issPeerMap[topics.Default]; !ok {
-		return ErrNoDefaultCaseIssPeer
-	}
-
-	return nil
 }

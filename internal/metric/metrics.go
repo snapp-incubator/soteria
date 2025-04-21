@@ -50,10 +50,6 @@ func (m *AutoAuthenticatorMetrics) Latency(latency float64, company string, err 
 	m.latency.WithLabelValues(company, message).Observe(latency)
 }
 
-func (m *AutoAuthenticatorMetrics) register() {
-	register(m.latency)
-}
-
 func NewAPIMetrics() *APIMetrics {
 	m := &APIMetrics{
 		auth: prometheus.NewCounterVec(prometheus.CounterOpts{
@@ -77,9 +73,8 @@ func NewAPIMetrics() *APIMetrics {
 	return m
 }
 
-func (m *APIMetrics) register() {
-	register(m.acl)
-	register(m.auth)
+func (m *AutoAuthenticatorMetrics) register() {
+	register(m.latency)
 }
 
 func (m *APIMetrics) AuthSuccess(company, source string) {
@@ -164,4 +159,9 @@ func (m *APIMetrics) ACLFailed(company string, err error) {
 	}
 
 	m.acl.WithLabelValues(company, status).Inc()
+}
+
+func (m *APIMetrics) register() {
+	register(m.acl)
+	register(m.auth)
 }
