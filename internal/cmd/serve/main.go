@@ -65,7 +65,8 @@ func (s Serve) main() {
 	rest := api.ReSTServer()
 
 	go func() {
-		if err := rest.Listen(fmt.Sprintf(":%d", s.Cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		err := rest.Listen(fmt.Sprintf(":%d", s.Cfg.HTTPPort))
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			s.Logger.Fatal("failed to run REST HTTP server", zap.Error(err))
 		}
 	}()
@@ -74,7 +75,8 @@ func (s Serve) main() {
 	signal.Notify(c, os.Interrupt)
 	<-c
 
-	if err := rest.Shutdown(); err != nil {
+	err = rest.Shutdown()
+	if err != nil {
 		s.Logger.Error("error happened during REST API shutdown", zap.Error(err))
 	}
 }

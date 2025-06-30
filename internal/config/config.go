@@ -68,24 +68,28 @@ func New() Config {
 	k := koanf.New(".")
 
 	// load default configuration from file
-	if err := k.Load(structs.Provider(Default(), "koanf"), nil); err != nil {
+	err := k.Load(structs.Provider(Default(), "koanf"), nil)
+	if err != nil {
 		log.Fatalf("error loading default: %s", err)
 	}
 
 	// load configuration from file
-	if err := k.Load(file.Provider("config.yml"), yaml.Parser()); err != nil {
+	err = k.Load(file.Provider("config.yml"), yaml.Parser())
+	if err != nil {
 		log.Printf("error loading config.yml: %s", err)
 	}
 
 	// load environment variables
-	if err := k.Load(env.Provider(Prefix, ".", func(s string) string {
+	err = k.Load(env.Provider(Prefix, ".", func(s string) string {
 		return strings.ReplaceAll(strings.ToLower(
 			strings.TrimPrefix(s, Prefix)), "__", ".")
-	}), nil); err != nil {
+	}), nil)
+	if err != nil {
 		log.Printf("error loading environment variables: %s", err)
 	}
 
-	if err := k.Unmarshal("", &instance); err != nil {
+	err = k.Unmarshal("", &instance)
+	if err != nil {
 		log.Fatalf("error unmarshalling config: %s", err)
 	}
 

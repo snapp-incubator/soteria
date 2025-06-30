@@ -10,7 +10,7 @@ import (
 func Start(cfg Config) {
 	if cfg.Enabled {
 		// nolint: exhaustruct
-		if _, err := pyroscope.Start(pyroscope.Config{
+		_, err := pyroscope.Start(pyroscope.Config{
 			ApplicationName: "snapp.soteria",
 			ServerAddress:   cfg.URL,
 			Tags:            map[string]string{"hostname": os.Getenv("HOSTNAME")},
@@ -30,7 +30,8 @@ func Start(cfg Config) {
 				pyroscope.ProfileBlockCount,
 				pyroscope.ProfileBlockDuration,
 			},
-		}); err != nil {
+		})
+		if err != nil {
 			log.Printf("failed to start the profiler")
 		}
 	}

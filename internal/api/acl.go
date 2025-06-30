@@ -33,7 +33,9 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 	defer span.End()
 
 	request := new(ACLRequest)
-	if err := c.BodyParser(request); err != nil {
+
+	err := c.BodyParser(request)
+	if err != nil {
 		a.Logger.
 			Warn("acl bad request",
 				zap.Error(err),
@@ -90,7 +92,6 @@ func (a API) ACLv2(c *fiber.Ctx) error {
 		a.Metrics.ACLFailed(auth.GetCompany(), err)
 
 		var tnaErr authenticator.TopicNotAllowedError
-
 		if errors.As(err, &tnaErr) {
 			logger.
 				Warn("acl request is not authorized",
