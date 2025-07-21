@@ -5,7 +5,7 @@ go 1.24
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.12.0
 	github.com/gofiber/contrib/fiberzap v1.0.2
-	github.com/gofiber/fiber/v2 v2.52.8
+	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/grafana/pyroscope-go v1.2.3
 	github.com/knadh/koanf v1.5.0
