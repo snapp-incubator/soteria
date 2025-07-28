@@ -3,7 +3,7 @@ module github.com/snapp-incubator/soteria
 go 1.24
 
 require (
-	github.com/ansrivas/fiberprometheus/v2 v2.12.0
+	github.com/ansrivas/fiberprometheus/v2 v2.13.0
 	github.com/gofiber/contrib/fiberzap v1.0.2
 	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/golang-jwt/jwt/v5 v5.2.3
@@ -27,7 +27,7 @@ require (
 require (
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/cenkalti/backoff/v5 v5.0.2 // indirect
+	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -64,8 +64,8 @@ require (
 	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20250715232539-7130f93afb79 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250715232539-7130f93afb79 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250721164621-a45f3dfb1074 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250721164621-a45f3dfb1074 // indirect
 	google.golang.org/grpc v1.75.0-dev // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
