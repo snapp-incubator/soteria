@@ -42,8 +42,7 @@ func Execute() {
 		Tracer: tracer,
 	}.Register(root)
 
-	err := root.Execute()
-	if err != nil {
+	if err := root.Execute(); err != nil {
 		logger.Error("failed to execute root command", zap.Error(err))
 
 		os.Exit(ExitFailure)

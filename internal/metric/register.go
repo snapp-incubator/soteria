@@ -7,8 +7,7 @@ import (
 )
 
 func register[T prometheus.Collector](metric T) T {
-	err := prometheus.Register(metric)
-	if err != nil {
+	if err := prometheus.Register(metric); err != nil {
 		var are prometheus.AlreadyRegisteredError
 		if ok := errors.As(err, &are); ok {
 			metric, ok = are.ExistingCollector.(T)

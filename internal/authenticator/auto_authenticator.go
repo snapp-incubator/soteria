@@ -50,8 +50,7 @@ func (a AutoAuthenticator) Auth(ctx context.Context, tokenString string) error {
 
 	start := time.Now()
 
-	err := a.Validator.Validate(ctx, headers, "bearer "+tokenString)
-	if err != nil {
+	if err := a.Validator.Validate(ctx, headers, "bearer "+tokenString); err != nil {
 		a.Metrics.Latency(time.Since(start).Seconds(), a.Company, err)
 
 		return fmt.Errorf("token is invalid: %w (validator response time %g)", err, time.Since(start).Seconds())
@@ -76,8 +75,7 @@ func (a AutoAuthenticator) ACL(
 
 	var claims jwt.MapClaims
 
-	_, _, err := a.Parser.ParseUnverified(tokenString, &claims)
-	if err != nil {
+	if _, _, err := a.Parser.ParseUnverified(tokenString, &claims); err != nil {
 		return false, ErrInvalidClaims
 	}
 

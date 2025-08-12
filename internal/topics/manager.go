@@ -114,8 +114,7 @@ func (t *Manager) ParseTopic(topic, iss, sub string, claims map[string]any) *Tem
 	for _, topicTemplate := range t.TopicTemplates {
 		regex := new(strings.Builder)
 
-		err := topicTemplate.Template.Execute(regex, fields)
-		if err != nil {
+		if err := topicTemplate.Template.Execute(regex, fields); err != nil {
 			t.Logger.Error("template execution failed", zap.Error(err), zap.String("template", topicTemplate.Type))
 
 			return nil

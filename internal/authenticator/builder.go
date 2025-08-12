@@ -129,8 +129,7 @@ func (b Builder) adminAuthenticator(vendor config.Vendor) (*AdminAuthenticator, 
 }
 
 func (b Builder) manualAuthenticator(vendor config.Vendor) (*ManualAuthenticator, error) {
-	err := b.ValidateMappers(vendor.IssEntityMap, vendor.IssPeerMap)
-	if err != nil {
+	if err := b.ValidateMappers(vendor.IssEntityMap, vendor.IssPeerMap); err != nil {
 		return nil, fmt.Errorf("failed to validate mappers %w", err)
 	}
 

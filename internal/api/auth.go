@@ -34,8 +34,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 
 	request := new(AuthRequest)
 
-	err := c.BodyParser(request)
-	if err != nil {
+	if err := c.BodyParser(request); err != nil {
 		span.RecordError(err)
 
 		a.Logger.
@@ -74,8 +73,7 @@ func (a API) Authv2(c *fiber.Ctx) error {
 		attribute.String("password", request.Password),
 	)
 
-	err = auth.Auth(ctx, token)
-	if err != nil {
+	if err := auth.Auth(ctx, token); err != nil {
 		span.RecordError(err)
 		a.Metrics.AuthFailed(auth.GetCompany(), source, err)
 
