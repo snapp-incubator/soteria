@@ -16,6 +16,8 @@ github.com/ansrivas/fiberprometheus/v2 v2.12.0 h1:R/trfUg1JulKXLKxOIZl6A7mDoYpTV
 github.com/ansrivas/fiberprometheus/v2 v2.12.0/go.mod h1:kpfawHbyug8cjEO6uTPyik7s9TZzSfW8vtcdeAZBzc8=
 github.com/ansrivas/fiberprometheus/v2 v2.13.0 h1:AaEumvQHYl7NnirDSf6NWI/pPXNIZqZt7kz3K2TrvQw=
 github.com/ansrivas/fiberprometheus/v2 v2.13.0/go.mod h1:18nW6LgEohSFMmS8WHAZGOib7uJ/VFUQ2HbXxt7cm18=
+github.com/ansrivas/fiberprometheus/v2 v2.14.0 h1:4DhjAk+zA2cRA8VSlZBLjCms40AITc9Cbs8Y/ovq/SU=
+github.com/ansrivas/fiberprometheus/v2 v2.14.0/go.mod h1:sekqW4C04j0fWHXrimsTTX7ZUbPnX0d/8w+E5SxHTeg=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
