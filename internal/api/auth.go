@@ -24,7 +24,7 @@ type AuthResponse struct {
 	ExpireAt    int64  `json:"expire_at,omitempty"`
 }
 
-// Auth is the handler responsible for authentication.
+// Authv2 is the handler responsible for authentication.
 // Endpoint will be used by EMQ version 5 which supports JSON on both request and response.
 // https://www.emqx.io/docs/en/latest/access-control/authn/http.html
 // nolint: funlen

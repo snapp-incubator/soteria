@@ -49,8 +49,7 @@ func Default() Config {
 	}
 }
 
-// nolint: funlen
-func SnappVendor() Vendor {
+func SnappVendor() Vendor { // nolint: funlen
 	return Vendor{
 		Type: "manual",
 		AllowedAccessTypes: []string{

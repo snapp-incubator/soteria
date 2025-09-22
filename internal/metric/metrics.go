@@ -81,8 +81,7 @@ func (m *APIMetrics) AuthSuccess(company, source string) {
 	m.auth.WithLabelValues(company, "success", source).Inc()
 }
 
-// nolint:cyclop
-func (m *APIMetrics) AuthFailed(company, source string, err error) {
+func (m *APIMetrics) AuthFailed(company, source string, err error) { // nolint:cyclop
 	var (
 		status                     string
 		topicNotAllowedErrorTarget *serrors.TopicNotAllowedError
@@ -123,8 +122,7 @@ func (m *APIMetrics) ACLSuccess(company string) {
 	m.acl.WithLabelValues(company, "success").Inc()
 }
 
-// nolint:cyclop
-func (m *APIMetrics) ACLFailed(company string, err error) {
+func (m *APIMetrics) ACLFailed(company string, err error) { // nolint:cyclop
 	var (
 		status                     string
 		topicNotAllowedErrorTarget *serrors.TopicNotAllowedError
