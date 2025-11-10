@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -110,13 +111,7 @@ func (a AutoAuthenticator) ACL(
 }
 
 func (a AutoAuthenticator) ValidateAccessType(accessType acl.AccessType) bool {
-	for _, allowedAccessType := range a.AllowedAccessTypes {
-		if allowedAccessType == accessType {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(a.AllowedAccessTypes, accessType)
 }
 
 func (a AutoAuthenticator) GetCompany() string {

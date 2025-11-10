@@ -135,7 +135,7 @@ func (t *Manager) ParseTopic(topic, iss, sub string, claims map[string]any) *Tem
 }
 
 func (t *Manager) EncodeMD5(iss string) string {
-	hid := md5.Sum([]byte(fmt.Sprintf("%s-%s", EmqCabHashPrefix, iss))) //nolint:gosec
+	hid := md5.Sum(fmt.Appendf(nil, "%s-%s", EmqCabHashPrefix, iss)) //nolint:gosec
 
 	return hex.EncodeToString(hid[:])
 }

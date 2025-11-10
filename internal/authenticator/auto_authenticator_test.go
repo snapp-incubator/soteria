@@ -68,7 +68,7 @@ func (suite *AutoAuthenticatorTestSuite) SetupSuite() {
 
 		_, err := jwt.Parse(tokenString, func(
 			_ *jwt.Token,
-		) (interface{}, error) {
+		) (any, error) {
 			return pkey0, nil
 		})
 		if err != nil {

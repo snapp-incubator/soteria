@@ -3,6 +3,7 @@ package authenticator
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/config"
@@ -26,7 +27,7 @@ type ManualAuthenticator struct {
 func (a ManualAuthenticator) Auth(_ context.Context, tokenString string) error {
 	_, err := a.Parser.Parse(tokenString, func(
 		token *jwt.Token,
-	) (interface{}, error) {
+	) (any, error) {
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			return nil, ErrInvalidClaims
@@ -64,7 +65,7 @@ func (a ManualAuthenticator) ACL(
 		return false, ErrInvalidAccessType
 	}
 
-	token, err := a.Parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := a.Parser.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			return nil, ErrInvalidClaims
@@ -127,13 +128,7 @@ func (a ManualAuthenticator) ACL(
 }
 
 func (a ManualAuthenticator) ValidateAccessType(accessType acl.AccessType) bool {
-	for _, allowedAccessType := range a.AllowedAccessTypes {
-		if allowedAccessType == accessType {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(a.AllowedAccessTypes, accessType)
 }
 
 func (a ManualAuthenticator) GetCompany() string {

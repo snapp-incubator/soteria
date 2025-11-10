@@ -28,13 +28,13 @@ type (
 	// Config is the main container of Soteria's config.
 	Config struct {
 		Vendors       []Vendor        `json:"vendors,omitempty"        koanf:"vendors"`
-		Logger        logger.Config   `json:"logger,omitempty"         koanf:"logger"`
+		Logger        logger.Config   `json:"logger"                   koanf:"logger"`
 		HTTPPort      int             `json:"http_port,omitempty"      koanf:"http_port"`
-		Tracer        tracing.Config  `json:"tracer,omitempty"         koanf:"tracer"`
+		Tracer        tracing.Config  `json:"tracer"                   koanf:"tracer"`
 		DefaultVendor string          `json:"default_vendor,omitempty" koanf:"default_vendor"`
-		Validator     Validator       `json:"validator,omitempty"      koanf:"validator"`
-		Parser        clientid.Config `json:"parser,omitempty"         koanf:"parser"`
-		Profiler      profiler.Config `json:"profiler,omitempty"       koanf:"profiler"`
+		Validator     Validator       `json:"validator"                koanf:"validator"`
+		Parser        clientid.Config `json:"parser"                   koanf:"parser"`
+		Profiler      profiler.Config `json:"profiler"                 koanf:"profiler"`
 	}
 
 	Vendor struct {
@@ -44,7 +44,7 @@ type (
 		Keys               map[string]string          `json:"keys,omitempty"                 koanf:"keys"`
 		IssEntityMap       map[string]string          `json:"iss_entity_map,omitempty"       koanf:"iss_entity_map"`
 		IssPeerMap         map[string]string          `json:"iss_peer_map,omitempty"         koanf:"iss_peer_map"`
-		Jwt                JWT                        `json:"jwt,omitempty"                  koanf:"jwt"`
+		Jwt                JWT                        `json:"jwt"                            koanf:"jwt"`
 		Type               string                     `json:"type,omitempty"                 koanf:"type"`
 		HashIDMap          map[string]topics.HashData `json:"hash_id_map,omitempty"          koanf:"hashid_map"`
 	}

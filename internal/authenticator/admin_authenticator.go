@@ -23,7 +23,7 @@ type AdminAuthenticator struct {
 func (a AdminAuthenticator) Auth(_ context.Context, tokenString string) error {
 	_, err := a.Parser.Parse(tokenString, func(
 		token *jwt.Token,
-	) (interface{}, error) {
+	) (any, error) {
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			return nil, ErrInvalidClaims
