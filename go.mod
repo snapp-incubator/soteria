@@ -5,7 +5,7 @@ go 1.25
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.14.0
 	github.com/gofiber/contrib/fiberzap v1.0.2
-	github.com/gofiber/fiber/v2 v2.52.9
+	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/grafana/pyroscope-go v1.2.7
 	github.com/knadh/koanf v1.5.0
@@ -52,7 +52,6 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.67.2 // indirect
 	github.com/prometheus/procfs v0.19.2 // indirect
-	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/tetratelabs/wazero v1.10.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
