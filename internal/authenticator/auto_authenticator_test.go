@@ -150,6 +150,7 @@ func TestAutoAuthenticator_ValidateTopicBySender(t *testing.T) {
 	})
 }
 
+// nolint: funlen
 func TestAutoAuthenticator_TenantValidation(t *testing.T) {
 	t.Parallel()
 
@@ -158,14 +159,16 @@ func TestAutoAuthenticator_TenantValidation(t *testing.T) {
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(t, err)
 
+	// nolint: exhaustruct
 	auth := authenticator.AutoAuthenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",
 		Parser:             jwt.NewParser(),
 		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
 		JWTConfig: config.JWT{
-			IssName: "iss",
-			SubName: "sub",
+			IssName:       "iss",
+			SubName:       "sub",
+			SigningMethod: "RS256",
 		},
 	}
 
