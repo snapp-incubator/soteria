@@ -109,6 +109,15 @@ func (a ManualAuthenticator) ACL(
 
 	sub := strconv.ToString(claims[a.JWTConfig.SubName])
 
+	matched, err := validateTopicByTenant(topic, claims)
+	if err != nil {
+		return false, err
+	}
+
+	if matched {
+		return true, nil
+	}
+
 	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub, map[string]any(claims))
 	if topicTemplate == nil {
 		return false, InvalidTopicError{Topic: topic}

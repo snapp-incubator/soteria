@@ -31,7 +31,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/feat/multitenancy-support' }}
     steps:
       - name: checkout
         uses: actions/checkout@v6
@@ -47,10 +47,18 @@ jobs:
 
       - name: package soteria helm chart
         run: |
-          version=${{ github.ref_name }}
-          helm package --version "${version##v}" --app-version "${version}" ./charts/soteria
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            version=${{ github.ref_name }}
+            helm package --version "${version##v}" --app-version "${version}" ./charts/soteria
+          else
+            helm package --version "0.0.0-multitenancy" --app-version "multitenancy" ./charts/soteria
+          fi
 
       - name: publish soteria chart to github container registry
         run: |
-          version=${{ github.ref_name }}
-          helm push "soteria-${version##v}".tgz oci://ghcr.io/snapp-incubator/soteria-chart
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            version=${{ github.ref_name }}
+            helm push "soteria-${version##v}.tgz" oci://ghcr.io/snapp-incubator/soteria-chart
+          else
+            helm push "soteria-0.0.0-multitenancy.tgz" oci://ghcr.io/snapp-incubator/soteria-chart
+          fi
