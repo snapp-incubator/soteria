@@ -83,7 +83,7 @@ func NewTopicManager(
 		"IssToPeer":    manager.IssPeerMapper,
 	}
 
-	templates := make([]Template, 0)
+	templates := make([]Template, 0, len(topicList))
 
 	for _, topic := range topicList {
 		each := Template{
