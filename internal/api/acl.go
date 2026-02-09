@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/pkg/acl"
@@ -28,12 +28,12 @@ type ACLRequest struct {
 // ACLv2 is the handler responsible for ACL requests coming from EMQv5.
 // https://www.emqx.io/docs/en/latest/access-control/authz/http.html
 // nolint: funlen
-func (a API) ACLv2(c *fiber.Ctx) error {
+func (a API) ACLv2(c fiber.Ctx) error {
 	ctx, span := a.Tracer.Start(c.Context(), "api.v2.acl")
 	defer span.End()
 
 	request := new(ACLRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		a.Logger.
 			Warn("acl bad request",
 				zap.Error(err),

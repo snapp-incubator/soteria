@@ -3,15 +3,15 @@ package api
 import (
 	"strings"
 
-	"github.com/ansrivas/fiberprometheus/v2"
-	"github.com/gofiber/contrib/fiberzap"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/clientid"
 	"github.com/snapp-incubator/soteria/internal/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
+
+	fiberzap "github.com/gofiber/contrib/v3/zap"
 )
 
 const VendorTokenSeparator = ":"
@@ -26,7 +26,7 @@ type API struct {
 }
 
 // MetricLogSkipper check if route is equal "metric" disable log.
-func MetricLogSkipper(ctx *fiber.Ctx) bool {
+func MetricLogSkipper(ctx fiber.Ctx) bool {
 	route := string(ctx.Request().URI().Path())
 
 	return route == "/metrics"
@@ -42,9 +42,9 @@ func (a API) ReSTServer() *fiber.App {
 		Logger: a.Logger.Named("fiber"),
 	}))
 
-	prometheus := fiberprometheus.NewWithRegistry(prometheus.DefaultRegisterer, "http", "platform", "soteria", nil)
-	prometheus.RegisterAt(app, "/metrics")
-	app.Use(prometheus.Middleware)
+	prom := NewPrometheusMiddleware(prometheus.DefaultRegisterer)
+	prom.RegisterAt(app, "/metrics")
+	app.Use(prom.Handler)
 
 	app.Post("/v2/auth", a.Authv2)
 	app.Post("/v2/acl", a.ACLv2)

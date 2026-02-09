@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/snapp-incubator/soteria/internal/api"
 	"github.com/snapp-incubator/soteria/internal/authenticator"

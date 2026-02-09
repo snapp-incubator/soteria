@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
@@ -28,13 +28,13 @@ type AuthResponse struct {
 // Endpoint will be used by EMQ version 5 which supports JSON on both request and response.
 // https://www.emqx.io/docs/en/latest/access-control/authn/http.html
 // nolint: funlen
-func (a API) Authv2(c *fiber.Ctx) error {
+func (a API) Authv2(c fiber.Ctx) error {
 	ctx, span := a.Tracer.Start(c.Context(), "api.v2.auth")
 	defer span.End()
 
 	request := new(AuthRequest)
 
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		span.RecordError(err)
 
 		a.Logger.
