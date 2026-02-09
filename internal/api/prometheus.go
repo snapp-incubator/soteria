@@ -1,7 +1,6 @@
 package api
 
 import (
-	"net/http"
 	"strconv"
 	"time"
 
@@ -13,21 +12,26 @@ import (
 
 // PrometheusMiddleware collects HTTP metrics for Fiber v3.
 type PrometheusMiddleware struct {
-	requestsTotal   *prometheus.CounterVec
-	requestDuration *prometheus.HistogramVec
+	gatherer         prometheus.Gatherer
+	requestsTotal    *prometheus.CounterVec
+	requestDuration  *prometheus.HistogramVec
 	requestsInFlight prometheus.Gauge
 }
 
 // NewPrometheusMiddleware creates a new PrometheusMiddleware and registers its
-// collectors with the given registerer.
+// collectors with the given registerer. The gatherer is used to serve the
+// /metrics endpoint.
 func NewPrometheusMiddleware(reg prometheus.Registerer) *PrometheusMiddleware {
+	//nolint: exhaustruct
 	m := &PrometheusMiddleware{
+		//nolint: exhaustruct
 		requestsTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: "platform",
 			Subsystem: "soteria",
 			Name:      "http_requests_total",
 			Help:      "Total number of HTTP requests.",
 		}, []string{"status_code", "method", "path"}),
+		//nolint: exhaustruct
 		requestDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Namespace: "platform",
 			Subsystem: "soteria",
@@ -35,6 +39,7 @@ func NewPrometheusMiddleware(reg prometheus.Registerer) *PrometheusMiddleware {
 			Help:      "Duration of HTTP requests in seconds.",
 			Buckets:   prometheus.DefBuckets,
 		}, []string{"status_code", "method", "path"}),
+		//nolint: exhaustruct
 		requestsInFlight: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: "platform",
 			Subsystem: "soteria",
@@ -45,12 +50,19 @@ func NewPrometheusMiddleware(reg prometheus.Registerer) *PrometheusMiddleware {
 
 	reg.MustRegister(m.requestsTotal, m.requestDuration, m.requestsInFlight)
 
+	if gatherer, ok := reg.(prometheus.Gatherer); ok {
+		m.gatherer = gatherer
+	} else {
+		m.gatherer = prometheus.DefaultGatherer
+	}
+
 	return m
 }
 
 // RegisterAt registers the /metrics endpoint on the given Fiber app.
 func (m *PrometheusMiddleware) RegisterAt(app *fiber.App, path string) {
-	app.Get(path, adaptor.HTTPHandler(promhttp.Handler()))
+	//nolint: exhaustruct
+	app.Get(path, adaptor.HTTPHandler(promhttp.HandlerFor(m.gatherer, promhttp.HandlerOpts{})))
 }
 
 // Handler is the Fiber middleware that records metrics for each request.
@@ -61,6 +73,7 @@ func (m *PrometheusMiddleware) Handler(c fiber.Ctx) error {
 	}
 
 	m.requestsInFlight.Inc()
+
 	start := time.Now()
 
 	err := c.Next()
@@ -78,12 +91,5 @@ func (m *PrometheusMiddleware) Handler(c fiber.Ctx) error {
 	m.requestDuration.WithLabelValues(status, method, path).Observe(duration)
 	m.requestsInFlight.Dec()
 
-	if err != nil {
-		return &fiber.Error{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-
-	return nil
+	return err
 }

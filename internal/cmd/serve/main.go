@@ -1,12 +1,12 @@
 package serve
 
 import (
-	"errors"
+	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 
+	"github.com/gofiber/fiber/v3"
 	"github.com/snapp-incubator/soteria/internal/api"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/clientid"
@@ -64,17 +64,13 @@ func (s Serve) main() {
 
 	rest := api.ReSTServer()
 
-	go func() {
-		if err := rest.Listen(fmt.Sprintf(":%d", s.Cfg.HTTPPort)); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			s.Logger.Fatal("failed to run REST HTTP server", zap.Error(err))
-		}
-	}()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	<-c
-
-	if err := rest.Shutdown(); err != nil {
-		s.Logger.Error("error happened during REST API shutdown", zap.Error(err))
+	//nolint: exhaustruct
+	if err := rest.Listen(fmt.Sprintf(":%d", s.Cfg.HTTPPort), fiber.ListenConfig{
+		GracefulContext: ctx,
+	}); err != nil {
+		s.Logger.Fatal("failed to run REST HTTP server", zap.Error(err))
 	}
 }

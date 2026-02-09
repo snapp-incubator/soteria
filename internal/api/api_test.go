@@ -12,11 +12,13 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/snapp-incubator/soteria/internal/api"
 	"github.com/snapp-incubator/soteria/internal/authenticator"
 	"github.com/snapp-incubator/soteria/internal/clientid"
 	"github.com/snapp-incubator/soteria/internal/config"
 	"github.com/snapp-incubator/soteria/internal/metric"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/zap"
@@ -211,4 +213,30 @@ func TestAPITestSuite(t *testing.T) {
 	t.Parallel()
 
 	suite.Run(t, new(APITestSuite))
+}
+
+func TestMetricsEndpoint(t *testing.T) {
+	t.Parallel()
+
+	reg := prometheus.NewRegistry()
+	app := fiber.New()
+
+	prom := api.NewPrometheusMiddleware(reg)
+	prom.RegisterAt(app, "/metrics")
+	app.Use(prom.Handler)
+
+	req := httptest.NewRequest(http.MethodGet, "/metrics", nil)
+
+	resp, err := app.Test(req)
+	require.NoError(t, err)
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	require.Contains(t, string(body), "platform_soteria_http_requests_in_progress")
 }

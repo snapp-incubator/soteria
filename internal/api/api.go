@@ -27,9 +27,7 @@ type API struct {
 
 // MetricLogSkipper check if route is equal "metric" disable log.
 func MetricLogSkipper(ctx fiber.Ctx) bool {
-	route := string(ctx.Request().URI().Path())
-
-	return route == "/metrics"
+	return ctx.Path() == "/metrics"
 }
 
 // ReSTServer will return fiber app.
