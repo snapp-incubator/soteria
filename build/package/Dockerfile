@@ -1,4 +1,4 @@
-FROM golang:1.25-alpine3.22 AS builder
+FROM golang:1.26-alpine3.23 AS builder
 
 # hadolint ignore=DL3018
 RUN apk --no-cache add git
@@ -14,7 +14,7 @@ COPY . .
 WORKDIR /app/cmd/soteria
 RUN go build -o /soteria
 
-FROM alpine:3.22
+FROM alpine:3.23
 
 # hadolint ignore=DL3018
 RUN apk --no-cache add ca-certificates tzdata && \
