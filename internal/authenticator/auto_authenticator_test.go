@@ -149,3 +149,73 @@ func TestAutoAuthenticator_ValidateTopicBySender(t *testing.T) {
 		require.NotNil(t, topicTemplate)
 	})
 }
+
+// nolint: funlen
+func TestAutoAuthenticator_TenantValidation(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.SnappVendor()
+
+	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
+	require.NoError(t, err)
+
+	// nolint: exhaustruct
+	auth := authenticator.AutoAuthenticator{
+		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
+		Company:            "snapp",
+		Parser:             jwt.NewParser(),
+		TopicManager:       topics.NewTopicManager(cfg.Topics, hid, "snapp", cfg.IssEntityMap, cfg.IssPeerMap, zap.NewNop()),
+		JWTConfig: config.JWT{
+			IssName:       "iss",
+			SubName:       "sub",
+			SigningMethod: "RS256",
+		},
+	}
+
+	t.Run("tenant matches topic prefix", func(t *testing.T) {
+		t.Parallel()
+
+		claims := jwt.MapClaims{
+			"iss":       "0",
+			"sub":       "123",
+			"tenant_id": "snapp-ir",
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodNone, claims)
+		tokenString, _ := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
+
+		ok, err := auth.ACL(context.Background(), acl.Pub, tokenString, "snapp-ir/driver/123/location")
+		require.NoError(t, err)
+		require.True(t, ok)
+	})
+
+	t.Run("tenant does not match topic prefix", func(t *testing.T) {
+		t.Parallel()
+
+		claims := jwt.MapClaims{
+			"iss":       "0",
+			"sub":       "123",
+			"tenant_id": "snapp-ir",
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodNone, claims)
+		tokenString, _ := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
+
+		ok, err := auth.ACL(context.Background(), acl.Pub, tokenString, "baly-iq/driver/123/location")
+		require.Error(t, err)
+		require.False(t, ok)
+	})
+
+	t.Run("no tenant falls back to regex validation", func(t *testing.T) {
+		t.Parallel()
+
+		claims := jwt.MapClaims{
+			"iss": "0",
+			"sub": "DXKgaNQa7N5Y7bo",
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodNone, claims)
+		tokenString, _ := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
+
+		ok, err := auth.ACL(context.Background(), acl.Pub, tokenString, validDriverLocationTopic)
+		require.NoError(t, err)
+		require.True(t, ok)
+	})
+}
