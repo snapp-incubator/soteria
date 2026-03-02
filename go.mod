@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	github.com/gofiber/contrib/v3/zap v1.0.0
-	github.com/gofiber/fiber/v3 v3.0.0
+	github.com/gofiber/fiber/v3 v3.1.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/grafana/pyroscope-go v1.2.7
 	github.com/knadh/koanf v1.5.0
