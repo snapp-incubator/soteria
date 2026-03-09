@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -182,7 +183,7 @@ func (suite *APITestSuite) TestToken() {
 			})
 			require.NoError(err)
 
-			req := httptest.NewRequest(http.MethodPost, "/v2/auth", bytes.NewReader(body))
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/v2/auth", bytes.NewReader(body))
 			if c.sendHeader {
 				req.Header.Add("Content-Type", "application/json")
 			}
@@ -225,7 +226,7 @@ func TestMetricsEndpoint(t *testing.T) {
 	prom.RegisterAt(app, "/metrics")
 	app.Use(prom.Handler)
 
-	req := httptest.NewRequest(http.MethodGet, "/metrics", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/metrics", nil)
 
 	resp, err := app.Test(req)
 	require.NoError(t, err)
