@@ -6,7 +6,7 @@ require (
 	github.com/gofiber/contrib/v3/zap v1.0.1
 	github.com/gofiber/fiber/v3 v3.1.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
-	github.com/grafana/pyroscope-go v1.2.7
+	github.com/grafana/pyroscope-go v1.2.8
 	github.com/knadh/koanf v1.5.0
 	github.com/knadh/koanf/v2 v2.3.4
 	github.com/prometheus/client_golang v1.23.2
