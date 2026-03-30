@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: set up helm
-        uses: azure/setup-helm@v6
+        uses: azure/setup-helm@v5
 
       - uses: actions/setup-python@v6
         with:
@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: set up helm
-        uses: azure/setup-helm@v6
+        uses: azure/setup-helm@v5
 
       - name: login to github container registry using helm
         run: |
