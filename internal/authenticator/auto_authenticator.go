@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -18,6 +19,29 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
+
+const (
+	// TenantClaimKey is the JWT claim key for tenant ID (from snapp-mt-sdk).
+	TenantClaimKey = "tenant_id"
+)
+
+// validateTopicByTenant checks if topic matches tenant prefix from JWT claims.
+// Returns:
+//   - (true, nil) if tenant exists in claims and topic prefix matches
+//   - (false, nil) if tenant doesn't exist in claims (caller should fall back to regex validation)
+//   - (false, error) if tenant exists but topic prefix doesn't match
+func validateTopicByTenant(topic string, claims jwt.MapClaims) (bool, error) {
+	tenantID := strconv.ToString(claims[TenantClaimKey])
+	if tenantID == "" {
+		return false, nil
+	}
+
+	if !strings.HasPrefix(topic, tenantID+"/") {
+		return false, InvalidTopicError{Topic: topic}
+	}
+
+	return true, nil
+}
 
 // AutoAuthenticator is responsible for Acl/Auth/Token of users.
 type AutoAuthenticator struct {
@@ -91,6 +115,15 @@ func (a AutoAuthenticator) ACL(
 	}
 
 	sub := strconv.ToString(claims[a.JWTConfig.SubName])
+	
+	matched, err := validateTopicByTenant(topic, claims)
+	if err != nil {
+		return false, err
+	}
+
+	if matched {
+		return true, nil
+	}
 
 	topicTemplate := a.TopicManager.ParseTopic(topic, issuer, sub, map[string]any(claims))
 	if topicTemplate == nil {
