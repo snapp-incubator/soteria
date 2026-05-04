@@ -4,13 +4,19 @@ linters:
   default: all
   disable:
     - depguard
-    # we don't use json with camel-case
+    - gomodguard
+    - wsl
     - tagliatelle
     - nolintlint
-    # it should improve to support more known patterns
     - varnamelen
     - ireturn
     - revive
     - wrapcheck
     - noinlineerr
     - gosec
+    - goconst
+  settings:
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      branch-max-lines: 2
