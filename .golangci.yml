@@ -4,6 +4,7 @@ linters:
   default: all
   disable:
     - depguard
+    - exhaustruct # deprecated, replaced by exhaustruct_v5
     - gomodguard
     - wsl
     - tagliatelle

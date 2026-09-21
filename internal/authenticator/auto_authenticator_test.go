@@ -130,7 +130,7 @@ func TestAutoAuthenticator_ValidateTopicBySender(t *testing.T) {
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(t, err)
 
-	// nolint: exhaustruct
+	// nolint: exhaustruct_v5
 	authenticator := authenticator.AutoAuthenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",

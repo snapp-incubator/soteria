@@ -26,7 +26,7 @@ func Execute() {
 
 	profiler.Start(cfg.Profiler)
 
-	//nolint: exhaustruct
+	//nolint: exhaustruct_v5
 	root := &cobra.Command{
 		Use:   "soteria",
 		Short: "Soteria is the authentication service.",

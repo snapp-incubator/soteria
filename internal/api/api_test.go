@@ -29,7 +29,7 @@ func getSampleToken(key string) (string, error) {
 	exp := time.Now().Add(time.Hour * 24 * 365 * 10)
 	sub := "DXKgaNQa7N5Y7bo"
 
-	// nolint: exhaustruct
+	// nolint: exhaustruct_v5
 	claims := jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(exp),
 		Issuer:    "Colony",

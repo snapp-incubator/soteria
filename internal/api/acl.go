@@ -89,9 +89,7 @@ func (a API) ACLv2(c fiber.Ctx) error {
 
 		a.Metrics.ACLFailed(auth.GetCompany(), err)
 
-		var tnaErr authenticator.TopicNotAllowedError
-
-		if errors.As(err, &tnaErr) {
+		if tnaErr, ok := errors.AsType[authenticator.TopicNotAllowedError](err); ok {
 			logger.
 				Warn("acl request is not authorized",
 					zap.Error(tnaErr))

@@ -65,7 +65,7 @@ func NewTopicManager(
 	issEntityMap, issPeerMap map[string]string,
 	logger *zap.Logger,
 ) *Manager {
-	manager := &Manager{ //nolint: exhaustruct
+	manager := &Manager{ //nolint: exhaustruct_v5
 		HashIDSManager: hashIDManager,
 		Company:        company,
 		IssEntityMap:   issEntityMap,

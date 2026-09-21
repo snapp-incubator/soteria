@@ -1,6 +1,6 @@
 module github.com/snapp-incubator/soteria
 
-go 1.26
+go 1.27
 
 require (
 	github.com/gofiber/contrib/v3/zap v1.0.8

@@ -26,7 +26,7 @@ type Serve struct {
 // Register serve command.
 func (s Serve) Register(root *cobra.Command) {
 	root.AddCommand(
-		//nolint: exhaustruct
+		//nolint: exhaustruct_v5
 		&cobra.Command{
 			Use:   "serve",
 			Short: "serve runs the application",
@@ -67,7 +67,7 @@ func (s Serve) main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	//nolint: exhaustruct
+	//nolint: exhaustruct_v5
 	if err := rest.Listen(fmt.Sprintf(":%d", s.Cfg.HTTPPort), fiber.ListenConfig{
 		GracefulContext: ctx,
 	}); err != nil {

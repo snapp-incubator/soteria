@@ -329,7 +329,7 @@ func TestManualAuthenticator_ValidateTopicBySender(t *testing.T) {
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(t, err)
 
-	// nolint: exhaustruct
+	// nolint: exhaustruct_v5
 	authenticator := authenticator.ManualAuthenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",
@@ -369,7 +369,7 @@ func TestManualAuthenticator_ValidateTopicBySenderAndClaims(t *testing.T) {
 	hid, err := topics.NewHashIDManager(cfg.HashIDMap)
 	require.NoError(t, err)
 
-	// nolint: exhaustruct
+	// nolint: exhaustruct_v5
 	authenticator := authenticator.ManualAuthenticator{
 		AllowedAccessTypes: []acl.AccessType{acl.Pub, acl.Sub},
 		Company:            "snapp",
@@ -469,7 +469,7 @@ func TestManualAuthenticator_validateAccessType(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			// nolint: exhaustruct
+			// nolint: exhaustruct_v5
 			a := authenticator.ManualAuthenticator{
 				AllowedAccessTypes: tt.fields.AllowedAccessTypes,
 			}

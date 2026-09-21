@@ -22,16 +22,16 @@ type PrometheusMiddleware struct {
 // collectors with the given registerer. The gatherer is used to serve the
 // /metrics endpoint.
 func NewPrometheusMiddleware(reg prometheus.Registerer) *PrometheusMiddleware {
-	//nolint: exhaustruct
+	//nolint: exhaustruct_v5
 	m := &PrometheusMiddleware{
-		//nolint: exhaustruct
+		//nolint: exhaustruct_v5
 		requestsTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: "platform",
 			Subsystem: "soteria",
 			Name:      "http_requests_total",
 			Help:      "Total number of HTTP requests.",
 		}, []string{"status_code", "method", "path"}),
-		//nolint: exhaustruct
+		//nolint: exhaustruct_v5
 		requestDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Namespace: "platform",
 			Subsystem: "soteria",
@@ -39,7 +39,7 @@ func NewPrometheusMiddleware(reg prometheus.Registerer) *PrometheusMiddleware {
 			Help:      "Duration of HTTP requests in seconds.",
 			Buckets:   prometheus.DefBuckets,
 		}, []string{"status_code", "method", "path"}),
-		//nolint: exhaustruct
+		//nolint: exhaustruct_v5
 		requestsInFlight: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: "platform",
 			Subsystem: "soteria",
@@ -61,7 +61,7 @@ func NewPrometheusMiddleware(reg prometheus.Registerer) *PrometheusMiddleware {
 
 // RegisterAt registers the /metrics endpoint on the given Fiber app.
 func (m *PrometheusMiddleware) RegisterAt(app *fiber.App, path string) {
-	//nolint: exhaustruct
+	//nolint: exhaustruct_v5
 	app.Get(path, adaptor.HTTPHandler(promhttp.HandlerFor(m.gatherer, promhttp.HandlerOpts{})))
 }
 

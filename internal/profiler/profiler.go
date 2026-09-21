@@ -9,7 +9,7 @@ import (
 
 func Start(cfg Config) {
 	if cfg.Enabled {
-		// nolint: exhaustruct
+		// nolint: exhaustruct_v5
 		if _, err := pyroscope.Start(pyroscope.Config{
 			ApplicationName: "snapp.soteria",
 			ServerAddress:   cfg.URL,
