@@ -75,6 +75,9 @@ spec:
             - name: soteria_tracer__endpoint
               value: $(JAEGER_AGENT_HOST):4317
             {{ end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           volumeMounts:
             - name: configuration
               mountPath: "/app/config.yml"
